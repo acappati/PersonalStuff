@@ -1,0 +1,270 @@
+#!/usr/bin/env python
+
+
+# *******************
+# usage: 
+#    - choose the options 
+#    - python FitMC.py
+#
+# structure:
+#    - read MC file (inputTree) (1 file by time)
+#    - store weighted events in histos and save them in a file.root (if redoHistos)
+#    - read the root file 
+#    - fit the histos with a function from helper.py and print on screen fit results
+# ********************
+ 
+
+import ROOT, helper, math
+from ROOT import TFile, TH1, TH1F, TCanvas, gSystem
+from helper import DoSimpleFit, Result
+
+# *****************************
+# Declare all the variables
+# fit options 
+fitMC       = True    #true for fitting MC in FitMC.py 
+fitDATA     = False   #true for fitting DATA in FitDATA.py 
+redoHistos  = True
+applyPU2017 = True    # always true for 2017 data
+
+# data tree options 
+ZZTree   = False
+CRZLTree = True
+ZTree    = False
+
+# data periods options
+# period = "data2016"
+period = "data2017"
+
+# MC sample
+MCsample = "DYJets"
+# MCsample = "TTJets"
+# *****************************
+
+
+if(period == "data2016"):
+    lumi = 35.9     # fb-1
+elif(period == "data2017"):
+    lumi = 35.88    # fb-1
+
+#input file
+if(MCsample == "DYJets"):
+    inputTree = TFile.Open("/data3/Higgs/170907_2016/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets
+elif(MCsample == "TTJets"):
+    inputTree = TFile.Open("/data3/Higgs/170907_2016/TTJets_DiLept/ZZ4lAnalysis.root")  #TTJets
+else:
+    print ("Error: wrong MC sample!")
+
+
+#PU weights
+if(applyPU2017):
+    fPU = TFile.Open("../../data/PileUpWeights/puWeight_Spring2016MC_to_2017Data_294927-305636.root");
+    hPUWeight= fPU.Get("weights")
+
+
+if(ZZTree):
+    tree      = inputTree.Get("ZZTree/candTree")
+    treeText  = "ZZTree"
+elif(CRZLTree):
+    tree      = inputTree.Get("CRZLTree/candTree")
+    treeText  = "CRZLTree"
+elif(ZTree):
+    tree      = inputTree.Get("ZTree/candTree")
+    treeText  = "ZTree"
+else:
+    print ("Error: wrong option!")
+
+
+#create output directory 
+if(applyPU2017):
+    outputDir = "FitResults_MC_" + str(MCsample) + "_" + str(period) + "_" + str(treeText) + "_2017PU"
+else:
+    outputDir = "FitResults_MC_" + str(MCsample) + "_" + str(period) + "_" + str(treeText) 
+gSystem.Exec("mkdir -p " + outputDir)
+print "Output directories created!"
+
+
+
+
+if(redoHistos) : 
+
+    TH1.SetDefaultSumw2() # set sumw2 = true fro all the histograms created from now on
+
+    #define histogramms 
+    #Z->ee histos
+    ZMass_ele_hist      = TH1F( 'ZMass_ele'      , 'ZMass_ele'      , 120, 60, 120)  #ZMass , Z->ee
+    ZMass_ele_hist_EBEB = TH1F( 'ZMass_ele_EBEB' , 'ZMass_ele_EBEB' , 120, 60, 120)  #ZMass , Z->ee , Barrel-Barrel
+    ZMass_ele_hist_EBEE = TH1F( 'ZMass_ele_EBEE' , 'ZMass_ele_EBEE' , 120, 60, 120)  #ZMass , Z->ee , Barrel-Endcap
+    ZMass_ele_hist_EEEE = TH1F( 'ZMass_ele_EEEE' , 'ZMass_ele_EEEE' , 120, 60, 120)  #ZMass , Z->ee , Endcap-Endcap
+    if not ZTree :
+        ZMass_ele_hist_extraMu = TH1F( 'ZMass_ele_extraMu', 'ZMass_ele_extraMu', 120, 60, 120)  #ZMass , Z->ee + Extra mu
+        ZMass_ele_hist_extraEl = TH1F( 'ZMass_ele_extraEl', 'ZMass_ele_extraEl', 120, 60, 120)  #ZMass , Z->ee + Extra e
+    
+    #Z->mumu histos
+    ZMass_mu_hist      = TH1F( 'ZMass_mu'      , 'ZMass_mu'      , 120, 60, 120)  #ZMass , Z->mumu
+    ZMass_mu_hist_MBMB = TH1F( 'ZMass_mu_MBMB' , 'ZMass_mu_MBMB' , 120, 60, 120)  #ZMass , Z->mumu , Barrel-Barrel
+    ZMass_mu_hist_MBME = TH1F( 'ZMass_mu_MBME' , 'ZMass_mu_MBME' , 120, 60, 120)  #ZMass , Z->mumu , Barrel-Endcap
+    ZMass_mu_hist_MEME = TH1F( 'ZMass_mu_MEME' , 'ZMass_mu_MEME' , 120, 60, 120)  #ZMass , Z->mumu , Endcap-Endcap
+    if not ZTree :
+        ZMass_mu_hist_extraMu  = TH1F( 'ZMass_mu_extraMu' , 'ZMass_mu_extraMu' , 120, 60, 120)  #ZMass , Z->mumu + Extra mu
+        ZMass_mu_hist_extraEl  = TH1F( 'ZMass_mu_extraEl' , 'ZMass_mu_extraEl' , 120, 60, 120)  #ZMass , Z->mumu + Extra e
+    
+
+
+    # get partial event weight
+    hcounters           = inputTree.Get("ZZTree/Counters")
+    gen_sumWeights      = hcounters.GetBinContent(40)
+    partialSampleWeight = lumi * 1000 / gen_sumWeights
+
+
+    #read ttree ZTree
+    if ZTree : 
+        print "reading tree", inputTree.GetName(),treeText,tree.GetName()  ,"..."
+        for event in tree:
+            if ( event.Zsel < 0 ) : continue # skip events that do not pass the trigger 
+
+            if(applyPU2017):
+                weight = partialSampleWeight*event.xsec*event.overallEventWeight/event.PUWeight*(hPUWeight.GetBinContent(hPUWeight.FindBin(event.NTrueInt)));
+            else:
+                weight = partialSampleWeight*event.xsec*event.overallEventWeight
+
+            #Z->ee histos
+            if(int(math.fabs(event.LepLepId[0])) == 11 ):
+                ZMass_ele_hist.Fill(event.ZMass, weight)             #ZMass , Z->ee
+                if(math.fabs(event.LepEta[0]) < 1.479 and math.fabs(event.LepEta[1]) < 1.479):
+                    ZMass_ele_hist_EBEB.Fill(event.ZMass, weight)    #ZMass , Z->ee , Barrel-Barrel
+                elif(math.fabs(event.LepEta[0]) > 1.479 and math.fabs(event.LepEta[1]) > 1.479):
+                    ZMass_ele_hist_EEEE.Fill(event.ZMass, weight)    #ZMass , Z->ee , Endcap-Endcap
+                else:
+                    ZMass_ele_hist_EBEE.Fill(event.ZMass, weight)    #ZMass , Z->ee , Barrel-Endcap
+
+            #Z->mumu histos
+            elif(int(math.fabs(event.LepLepId[0])) == 13 ):
+                ZMass_mu_hist.Fill(event.ZMass, weight)              #ZMass , Z->mumu
+                if(math.fabs(event.LepEta[0]) < 1. and math.fabs(event.LepEta[1]) < 1.):
+                    ZMass_mu_hist_MBMB.Fill(event.ZMass, weight)     #ZMass , Z->mumu , Barrel-Barrel
+                elif(math.fabs(event.LepEta[0]) > 1. and math.fabs(event.LepEta[1]) > 1.):
+                    ZMass_mu_hist_MEME.Fill(event.ZMass, weight)     #ZMass , Z->mumu , Endcap-Endcap
+                else:
+                    ZMass_mu_hist_MBME.Fill(event.ZMass, weight)     #ZMass , Z->mumu , Barrel-Endcap
+
+
+    #read ttree ZZTree or CRZLTree
+    else :    
+        print "reading tree", inputTree.GetName(),treeText,tree.GetName()  ,"..."
+        for event in tree:
+            if ( event.ZZsel < 0 ) : continue # skip events that do not pass the trigger 
+        
+            if(applyPU2017):
+                weight = partialSampleWeight*event.xsec*event.overallEventWeight/event.PUWeight*(hPUWeight.GetBinContent(hPUWeight.FindBin(event.NTrueInt)));
+            else:
+                weight = partialSampleWeight*event.xsec*event.overallEventWeight
+            
+    
+            #Z->ee histos
+            if(int(math.fabs(event.LepLepId[0])) == 11 ):
+                ZMass_ele_hist.Fill(event.Z1Mass, weight)             #ZMass , Z->ee
+                if(math.fabs(event.LepEta[0]) < 1.479 and math.fabs(event.LepEta[1]) < 1.479):
+                    ZMass_ele_hist_EBEB.Fill(event.Z1Mass, weight)    #ZMass , Z->ee , Barrel-Barrel
+                elif(math.fabs(event.LepEta[0]) > 1.479 and math.fabs(event.LepEta[1]) > 1.479):
+                    ZMass_ele_hist_EEEE.Fill(event.Z1Mass, weight)    #ZMass , Z->ee , Endcap-Endcap
+                else:
+                    ZMass_ele_hist_EBEE.Fill(event.Z1Mass, weight)    #ZMass , Z->ee , Barrel-Endcap
+                if(int(math.fabs(event.LepLepId[2])) == 11 ):
+                    ZMass_ele_hist_extraEl.Fill(event.Z1Mass, weight) #ZMass , Z->ee   + Extra e
+                else:
+                    ZMass_ele_hist_extraMu.Fill(event.Z1Mass, weight) #ZMass , Z->ee   + Extra mu
+    
+            #Z->mumu histos
+            elif(int(math.fabs(event.LepLepId[0])) == 13 ):
+                ZMass_mu_hist.Fill(event.Z1Mass, weight)              #ZMass , Z->mumu
+                if(math.fabs(event.LepEta[0]) < 1. and math.fabs(event.LepEta[1]) < 1.):
+                    ZMass_mu_hist_MBMB.Fill(event.Z1Mass, weight)     #ZMass , Z->mumu , Barrel-Barrel
+                elif(math.fabs(event.LepEta[0]) > 1. and math.fabs(event.LepEta[1]) > 1.):
+                    ZMass_mu_hist_MEME.Fill(event.Z1Mass, weight)     #ZMass , Z->mumu , Endcap-Endcap
+                else:
+                    ZMass_mu_hist_MBME.Fill(event.Z1Mass, weight)     #ZMass , Z->mumu , Barrel-Endcap
+                if(int(math.fabs(event.LepLepId[2])) == 11 ):
+                    ZMass_mu_hist_extraEl.Fill(event.Z1Mass, weight)  #ZMass , Z->mumu + Extra e
+                else:
+                    ZMass_mu_hist_extraMu.Fill(event.Z1Mass, weight)  #ZMass , Z->mumu + Extra mu
+
+    #save histograms in a root file 
+    print "saving histograms to histo MC ..."
+    if(applyPU2017):
+        histoMC = TFile.Open("histoMC_" + MCsample + "_" + period + "_" + treeText + "_2017PU.root", "RECREATE")
+    else: 
+        histoMC = TFile.Open("histoMC_" + MCsample + "_" + period + "_" + treeText + ".root", "RECREATE")
+    histoMC.cd()
+    ZMass_ele_hist.Write()   
+    if not ZTree :      
+        ZMass_ele_hist_extraMu.Write() 
+        ZMass_ele_hist_extraEl.Write() 
+    ZMass_ele_hist_EBEB.Write()    
+    ZMass_ele_hist_EBEE.Write()    
+    ZMass_ele_hist_EEEE.Write()       
+    ZMass_mu_hist.Write()       
+    if not ZTree :    
+        ZMass_mu_hist_extraMu.Write()  
+        ZMass_mu_hist_extraEl.Write()  
+    ZMass_mu_hist_MBMB.Write()     
+    ZMass_mu_hist_MBME.Write()     
+    ZMass_mu_hist_MEME.Write()     
+
+    histoMC.Close()
+
+
+#read histo from histoMC.root
+if(applyPU2017):
+    histoMC_input = TFile.Open("histoMC_" + MCsample + "_" + period + "_" + treeText + "_2017PU.root")
+else:
+    histoMC_input = TFile.Open("histoMC_" + MCsample + "_" + period + "_" + treeText + ".root")
+print 'Reading file', histoMC_input.GetName(),'...'
+
+histogramList = []
+
+histogramList.append(histoMC_input.Get('ZMass_ele'))
+if not ZTree :
+    histogramList.append(histoMC_input.Get('ZMass_ele_extraMu'))
+    histogramList.append(histoMC_input.Get('ZMass_ele_extraEl'))
+histogramList.append(histoMC_input.Get('ZMass_ele_EBEB'))
+histogramList.append(histoMC_input.Get('ZMass_ele_EBEE'))
+histogramList.append(histoMC_input.Get('ZMass_ele_EEEE'))
+histogramList.append(histoMC_input.Get('ZMass_mu'))
+if not ZTree :
+    histogramList.append(histoMC_input.Get('ZMass_mu_extraMu'))
+    histogramList.append(histoMC_input.Get('ZMass_mu_extraEl'))
+histogramList.append(histoMC_input.Get('ZMass_mu_MBMB'))
+histogramList.append(histoMC_input.Get('ZMass_mu_MBME'))
+histogramList.append(histoMC_input.Get('ZMass_mu_MEME'))
+
+
+
+#define lists for the fit function
+if ZTree :
+    histTitleList  = ['ZMass_ele_hist', 'ZMass_ele_hist_EBEB', 'ZMass_ele_hist_EBEE', 'ZMass_ele_hist_EEEE', 'ZMass_mu_hist', 'ZMass_mu_hist_MBMB', 'ZMass_mu_hist_MBME', 'ZMass_mu_hist_MEME']
+else : 
+    histTitleList  = ['ZMass_ele_hist', 'ZMass_ele_hist_extraMu', 'ZMass_ele_hist_extraEl', 'ZMass_ele_hist_EBEB', 'ZMass_ele_hist_EBEE', 'ZMass_ele_hist_EEEE', 'ZMass_mu_hist', 'ZMass_mu_hist_extraMu', 'ZMass_mu_hist_extraEl', 'ZMass_mu_hist_MBMB', 'ZMass_mu_hist_MBME', 'ZMass_mu_hist_MEME']
+
+luminosityList = [ lumi for i in range(len(histogramList))]
+
+#do the fit
+if(MCsample == "DYJets"):
+    fitResult = DoSimpleFit(histogramList, luminosityList, ZZTree, outputDir, histTitleList, fitMC, fitDATA)
+
+    print "Fit done!!"
+
+    massFitMC  = []
+    widthFitMC = []
+
+    # print fit results
+    for i in range(len(fitResult)) :
+        massFitMC.append(fitResult[i].mean) 
+        widthFitMC.append(fitResult[i].width)
+
+    # 'Zee', 'Zee_extraMu', 'Zee_extraEl', 'Zee_EBEB', 'Zee_EBEE', 'Zee_EEEE', 'Zmumu', 'Zmumu_extraMu', 'Zmumu_extraEl', 'Zmumu_MBMB', 'Zmumu_MBME', 'Zmumu_MEME'
+    if ZTree :
+        print "massFitMC  = [", massFitMC[0] ,",",0.,",",0.,",",massFitMC[1], ",",massFitMC[2], ",",massFitMC[3], ",",massFitMC[4], ",",0.,",",0.,",",massFitMC[5], ",",massFitMC[6], ",",massFitMC[7], "]"
+        print "widthFitMC = [", widthFitMC[0],",",0.,",",0.,",",widthFitMC[1],",",widthFitMC[2],",",widthFitMC[3],",",widthFitMC[4],",",0.,",",0.,",",widthFitMC[5],",",widthFitMC[6],",",widthFitMC[7],"]"
+    else:
+        print "massFitMC  = ", massFitMC
+        print "widthFitMC = ", widthFitMC
