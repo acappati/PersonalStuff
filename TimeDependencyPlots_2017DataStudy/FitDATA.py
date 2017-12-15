@@ -9,10 +9,10 @@
 #    - read Data file (inputTree) 
 #    - store data events in histos and save them in a file.root (if redoHistos)
 #    - read the root file 
-#    - fit the histos with a function from helper.py and print on screen fit results
+#    - fit the histos with a function from helper.py and print on file fit results
 # ********************
 
-
+import json
 import ROOT, helper, math
 from ROOT import TFile, TH1, TH1F, TCanvas, gSystem
 from helper import DoSimpleFit, Result
@@ -53,8 +53,8 @@ if(period == "data2016"):
         print ("Error: wrong option!")
 
 elif(period == "data2017"):
-    data = TFile.Open("/data3/Higgs/171107_Data2017/AllData/ZZ4lAnalysis.root") #2017 data
-    lumi = 35.88   # fb-1
+    data = TFile.Open("/data3/Higgs/171206_Data2017/AllData/ZZ4lAnalysis.root") #2017 data
+    lumi = 41.96   # fb-1
     if(ZZTree):
         tree      = data.Get("ZZTree/candTree")
         treeText  = "ZZTree"
@@ -219,20 +219,41 @@ fitResult = DoSimpleFit(histogramList, luminosityList, ZZTree, outputDir, histTi
 
 print "Fit done!!"
 
-massFitDATA  = []
-widthFitDATA = []
 
-# print fit results
-for i in range(len(fitResult)) :
-    massFitDATA.append(fitResult[i].mean) 
-    widthFitDATA.append(fitResult[i].width)
 
-# 'Zee', 'Zee_extraMu', 'Zee_extraEl', 'Zee_EBEB', 'Zee_EBEE', 'Zee_EEEE', 'Zmumu', 'Zmumu_extraMu', 'Zmumu_extraEl', 'Zmumu_MBMB', 'Zmumu_MBME', 'Zmumu_MEME'
-if ZTree :
-    print "massFitDATA  = [", massFitDATA[0] ,",",0.,",",0.,",",massFitDATA[1], ",",massFitDATA[2], ",",massFitDATA[3], ",",massFitDATA[4], ",",0.,",",0.,",",massFitDATA[5], ",",massFitDATA[6], ",",massFitDATA[7], "]"
-    print "widthFitDATA = [", widthFitDATA[0],",",0.,",",0.,",",widthFitDATA[1],",",widthFitDATA[2],",",widthFitDATA[3],",",widthFitDATA[4],",",0.,",",0.,",",widthFitDATA[5],",",widthFitDATA[6],",",widthFitDATA[7],"]"
-else :
-    print "massFitDATA  = ", massFitDATA
-    print "widthFitDATA = ", widthFitDATA
+# ************************************
+# store fit results in dictionaries
+if CRZLTree :
 
-#fixthis
+    massFitDATA_dict  = {'Zee': fitResult[0].mean, 'Zee_extraMu': fitResult[1].mean, 'Zee_extraEl': fitResult[2].mean, 'Zee_EBEB': fitResult[3].mean, 'Zee_EBEE': fitResult[4].mean, 'Zee_EEEE': fitResult[5].mean, 'Zmumu': fitResult[6].mean, 'Zmumu_extraMu': fitResult[7].mean, 'Zmumu_extraEl': fitResult[8].mean, 'Zmumu_MBMB': fitResult[9].mean, 'Zmumu_MBME': fitResult[10].mean, 'Zmumu_MEME': fitResult[11].mean}
+
+    widthFitDATA_dict = {'Zee': fitResult[0].width, 'Zee_extraMu': fitResult[1].width, 'Zee_extraEl': fitResult[2].width, 'Zee_EBEB': fitResult[3].width, 'Zee_EBEE': fitResult[4].width, 'Zee_EEEE': fitResult[5].width, 'Zmumu': fitResult[6].width, 'Zmumu_extraMu': fitResult[7].width, 'Zmumu_extraEl': fitResult[8].width, 'Zmumu_MBMB': fitResult[9].width, 'Zmumu_MBME': fitResult[10].width, 'Zmumu_MEME': fitResult[11].width}
+
+
+elif ZTree :
+
+    massFitDATA_dict  = {'Zee': fitResult[0].mean, 'Zee_extraMu': 0, 'Zee_extraEl': 0, 'Zee_EBEB': fitResult[1].mean, 'Zee_EBEE': fitResult[2].mean, 'Zee_EEEE': fitResult[3].mean, 'Zmumu': fitResult[4].mean, 'Zmumu_extraMu': 0, 'Zmumu_extraEl': 0, 'Zmumu_MBMB': fitResult[5].mean, 'Zmumu_MBME': fitResult[6].mean, 'Zmumu_MEME': fitResult[7].mean }
+
+    widthFitDATA_dict = {'Zee': fitResult[0].width, 'Zee_extraMu': 0, 'Zee_extraEl': 0, 'Zee_EBEB': fitResult[1].width, 'Zee_EBEE': fitResult[2].width, 'Zee_EEEE': fitResult[3].width, 'Zmumu': fitResult[4].width, 'Zmumu_extraMu': 0, 'Zmumu_extraEl': 0, 'Zmumu_MBMB': fitResult[5].width, 'Zmumu_MBME': fitResult[6].width, 'Zmumu_MEME': fitResult[7].width}
+
+
+
+
+# ***********************************
+# save result on output files
+# save Z DCB mean result on file json
+
+with open("out_ZDBCmean_DATA_" + period + "_" + treeText  + ".json","w") as handle1 :
+    json.dump(massFitDATA_dict, handle1)
+
+print "Z DCB mean output written on file"
+
+
+# save Z DCB width result on file json
+with open("out_ZDBCwidth_DATA_" + period + "_" + treeText  + ".json","w") as handle2 :
+    json.dump(widthFitDATA_dict, handle2)
+
+print "Z DCB width output written on file"
+#************************************
+
+

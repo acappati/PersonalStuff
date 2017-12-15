@@ -4,7 +4,8 @@
 # usage: 
 #    python yellowPlots.py
 #
-# structure:
+# structure: 
+#    - read json files which contain DATA and MC DCB fit results obtained by running FitDATA.py and FitMC.py
 #    - read root files where data and MC histos are stored 
 #    - read 3 files: 2 MC and 1 DATA file (root files created by FitMC.py and FitDATA.py)
 #    - append histos in 3 lists
@@ -12,11 +13,13 @@
 #    - save plots in OutputPath
 # ********************
 
-import ROOT, math, helper, CMSGraphics
-from ROOT import TFile, TH1F, TCanvas, gSystem, TAttFill, TLegend, TRatioPlot, TPad, TStyle, THStack
+import json
+import ROOT, math, helper, CMSGraphics, CMS_lumi
+from ROOT import TFile, TH1F, TCanvas, gSystem, TAttFill, TLegend, TRatioPlot, TPad, TStyle, THStack, TPaveText
 from helper import ReadJSON
 from CMSGraphics import makeCMSCanvas, makeLegend
 from ROOT import kBlue, kRed, kBlack, kWhite
+
 
 
 # *****************************
@@ -31,12 +34,35 @@ ZTree    = False
 # period = "data2016"
 period = "data2017"
 # *****************************
+lumiText = '41.96 fb^{-1}'
+#******************************
 
 
 if(ZZTree):     treeText  = "ZZTree"
 elif(CRZLTree): treeText  = "CRZLTree"
 elif(ZTree):    treeText  = "ZTree"
 else: print ("Error: wrong option!")
+
+
+#******************************************************************************
+# read fit values from output files obtained by running FitDATA.py and FitMC.py
+
+with open("out_ZDBCmean_DATA_" + period + "_" + treeText  + ".json","r") as handle1 :
+    massFitDATA_dict = json.load(handle1)
+
+with open("out_ZDBCwidth_DATA_" + period + "_" + treeText  + ".json","r") as handle2 :
+    widthFitDATA_dict = json.load(handle2)
+
+with open("out_ZDBCmean_MC_DYJets_" + period + "_" + treeText  + ".json","r") as handle3 :
+    massFitMC_dict = json.load(handle3)
+
+with open("out_ZDBCwidth_MC_DYJets_" + period + "_" + treeText  + ".json","r") as handle4 :
+    widthFitMC_dict = json.load(handle4)
+
+print 'Input files with Fit values read!'
+#****************************************************************************
+
+
 
 
 # create output directory
@@ -136,12 +162,28 @@ else :
     nameList = ['ZMass_ele', 'ZMass_ele_extraMu', 'ZMass_ele_extraEl', 'ZMass_ele_EBEB', 'ZMass_ele_EBEE', 'ZMass_ele_EEEE', 'ZMass_mu', 'ZMass_mu_extraMu', 'ZMass_mu_extraEl', 'ZMass_mu_MBMB', 'ZMass_mu_MBME', 'ZMass_mu_MEME']
 
 
+
+# list of dictionary keys to loop over dictionaries in the correct order
+keyList = ['Zee','Zee_extraMu','Zee_extraEl','Zee_EBEB','Zee_EBEE','Zee_EEEE','Zmumu','Zmumu_extraMu','Zmumu_extraEl','Zmumu_MBMB','Zmumu_MBME','Zmumu_MEME']
+
+
 # *** do plots *** 
-for i in range(len(nameList)) :
+i = 0  #counter for histos lists
+
+for key in keyList :
+
+    # debug
+    # print key, massFitDATA_dict[key]
+    # print key, widthFitDATA_dict[key]                  
+    # print key, massFitMC_dict[key]
+    # print key, widthFitMC_dict[key]
+
+
+    if (ZTree and massFitDATA_dict[key]==0) : continue
+
     canvas = TCanvas("canvas","canvas",800,800)
-
+    
     hs = THStack("hs","")
-
 
     # norm = 1 # normalize to MC xsection 
     norm = ZMass_DATA[i].Integral() / (ZMass_MC_TTJets[i].Integral() + ZMass_MC_DY[i].Integral()) #normalize MC to data
@@ -169,6 +211,7 @@ for i in range(len(nameList)) :
     pad1.Draw()
     pad1.cd()
 
+    
     hs.Draw("histo")
     ZMass_DATA[i].Draw("sameEP")    
 
@@ -184,8 +227,8 @@ for i in range(len(nameList)) :
     hs.GetYaxis().SetTitle("Events")
 
     
-
-    legend = TLegend(0.75,0.76,0.98,0.95)
+    # legend
+    legend = TLegend(0.74,0.68,0.94,0.87)
     legend.AddEntry(ZMass_DATA[i],"Data", "p")
     legend.AddEntry(ZMass_MC_DY[i],"Drell-Yan","f")
     legend.AddEntry(ZMass_MC_TTJets[i],"t#bar{t}","f")
@@ -194,6 +237,48 @@ for i in range(len(nameList)) :
     legend.SetTextFont(43)
     legend.SetTextSize(20)
     legend.Draw()
+
+    
+    # box with fit results
+    pv = TPaveText(0.64,0.35,0.94,0.65,"brNDC")
+    pv.AddText("DATA:")
+    pv.AddText("Z DCBmean = "  + str(round(massFitDATA_dict[key],2))  + " GeV")
+    pv.AddText("Z DCBwidth = " + str(round(widthFitDATA_dict[key],2)) + " GeV")
+    pv.AddText("MC:")         
+    pv.AddText("Z DCBmean = "  + str(round(massFitMC_dict[key],2))  + " GeV")
+    pv.AddText("Z DCBwidth = " + str(round(widthFitMC_dict[key],2)) + " GeV")
+    pv.SetFillColor(kWhite)
+    pv.SetBorderSize(1)
+    pv.SetTextFont(40)
+    pv.SetTextSize(0.037)
+    pv.SetTextFont(42)
+    pv.SetTextAlign(12) #text left aligned 
+    # cange color of text 
+    if "ele" in nameList[i] : 
+        pv.SetTextColor(kBlue)
+    elif "mu" in nameList[i] :
+        pv.SetTextColor(kRed)
+    else :
+        pv.SetTextColor(kBlack)
+    pv.Draw()
+
+
+    # box with decay mode
+    pv2 = TPaveText(0.19,0.75,0.35,0.85,"brNDC")
+    if "ele" in nameList[i] : 
+        pv2.AddText("Z #rightarrow e^{+} e^{-}")
+        pv2.SetTextColor(kBlue)
+    elif "mu" in nameList[i] :
+        pv2.AddText("Z #rightarrow #mu^{+} #mu^{-}")
+        pv2.SetTextColor(kRed)
+    pv2.SetFillColor(kWhite)
+    pv2.SetBorderSize(1)
+    pv2.SetTextFont(40)
+    pv2.SetTextSize(0.05)
+    pv2.SetTextFont(42)
+    pv2.SetTextAlign(22) #text centering
+    pv2.Draw()
+
     
     canvas.Update()
     
@@ -231,10 +316,32 @@ for i in range(len(nameList)) :
 
     rp.Draw("ep")
 
- 
+
+    canvas.Update()
+
+
+    #draw CMS and lumi text
+    CMS_lumi.writeExtraText = True
+    CMS_lumi.extraText      = "Preliminary"
+    CMS_lumi.lumi_sqrtS     = lumiText + " (13 TeV)"
+    CMS_lumi.cmsTextSize    = 0.6
+    CMS_lumi.lumiTextSize   = 0.46
+    CMS_lumi.extraOverCmsTextSize = 0.75
+    CMS_lumi.relPosX = 0.12
+    CMS_lumi.CMS_lumi(pad1, 0, 0)
     
+    
+    canvas.Update()
+
+     
     canvas.SaveAs(OutputPath + "/" + nameList[i] + ".pdf")
     canvas.SaveAs(OutputPath + "/" + nameList[i] + ".png")
 
 
+    i = i +1   #counter for histos lists
+
+
 print "plots done"
+
+
+

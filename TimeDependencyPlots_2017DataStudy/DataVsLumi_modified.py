@@ -14,6 +14,7 @@
 
 
 # First import ROOT and helper functions
+import json
 import ROOT, helper, math
 ROOT.gROOT.SetBatch(True)
 from helper import DoSimpleFit, DoRooFit, ReadJSON, FillHisto, Result, GraphVsLumi, ZMultVsLumi, MeanRMSVsLumi, Ratio, SAME3VsLumi, SAME2VsLumi, TwoFileSAME3VsLumi,TwoFileSAME2VsLumi, PlotNpv
@@ -30,8 +31,8 @@ applyPU2017 = False
 
 # data tree options 
 ZZTree   = False
-CRZLTree = True
-ZTree    = False
+CRZLTree = False
+ZTree    = True
 
 # data periods options
 # period = "data2016"
@@ -72,53 +73,25 @@ else:
 
 
 
-
-# ***********************************************
+#******************************************************************************
 # MC and DATA fit for orizontal lines in graphs
-# values from FitMC.py and FitDATA.py scripts
+# read fit values from output files obtained by running FitDATA.py and FitMC.py
 # 'Z_ele', 'Z_ele_extraMu', 'Z_ele_extraEl', 'Z_ele_EBEB', 'Z_ele_EBEE', 'Z_ele_EEEE', 'Z_mu', 'Z_mu_extraMu', 'Z_mu_extraEl', 'Z_mu_MBMB', 'Z_mu_MBME', 'Z_mu_MEME'
 
-# 2016 data
-if(period == "data2016"):
+with open("out_ZDBCmean_DATA_" + period + "_" + treeText  + ".json","r") as handle1 :
+    massFitDATA_dict = json.load(handle1)
 
-    massFitDATA  = [90.59790612299334, 90.56586193497857, 90.61123369417315, 90.68748261478433, 90.4105096437472, 90.40042309419971, 90.95284851134053, 90.95161309749076, 90.95341231648246, 91.01802298154813, 90.94863739783477, 90.85522027213003]
-    widthFitDATA = [2.7793220292028646, 2.7983184869956923, 2.770902871058797, 2.437303194241703, 3.345729864688405, 3.5543577358221774, 2.1039712874410155, 2.095408440226358, 2.1070842206971414, 1.782698407932242, 2.130510238786742, 2.5762502815831216]
+with open("out_ZDBCwidth_DATA_" + period + "_" + treeText  + ".json","r") as handle2 :
+    widthFitDATA_dict = json.load(handle2)
 
-    if(applyPU2017):
-        # MC with 2017 PU weight
-        massFitMC  = [90.65328942151869, 90.63221459025714, 90.66226591929488, 90.73905897160829, 90.49687522164919, 90.44664928472986, 90.96881109491301, 90.97561425677574, 90.96789317642569, 91.03452262626013, 90.95418168038236, 90.90261382484313]
-        widthFitMC =  [2.708906632827382, 2.7409155191468426, 2.6970765254112408, 2.3881037584654785, 3.1840490179797953, 3.5311904444581, 2.058956442696573, 2.0325794026858595, 2.0661613654651156, 1.7393828049165871, 2.0939116562892806, 2.4692045993046148]
-    else:
-        massFitMC  =  [90.64052467378977, 90.62190039429665, 90.64751531089786, 90.72771221866611, 90.49328659226262, 90.40547950810351, 90.96597099539777, 90.96029768841535, 90.96955739282213, 91.02290971026528, 90.95416866647793, 90.91310312395267]
-        widthFitMC = [2.698804434077731, 2.7003390875493243, 2.6980006774989267, 2.3785367213968605, 3.1622727628487697, 3.5180734187921154, 2.056758233455251, 2.033399531416025, 2.061778269002473, 1.7351410697864615, 2.0847651732174604, 2.4627711316803427]
+with open("out_ZDBCmean_MC_DYJets_" + period + "_" + treeText  + ".json","r") as handle3 :
+    massFitMC_dict = json.load(handle3)
 
+with open("out_ZDBCwidth_MC_DYJets_" + period + "_" + treeText  + ".json","r") as handle4 :
+    widthFitMC_dict = json.load(handle4)
 
-
-# 2017 data
-if(period == "data2017"):
-
-    if(CRZLTree) :
-        # 'Z_ele', 'Z_ele_extraMu' , 'Z_ele_extraEl' , 'Z_ele_EBEB', 'Z_ele_EBEE', 'Z_ele_EEEE', 'Z_mu', 'Z_mu_extraMu', 'Z_mu_extraEl' , 'Z_mu_MBMB', 'Z_mu_MBME', 'Z_mu_MEME'
-        massFitDATA  =  [89.88965685750605, 89.83604009222441, 89.91744063612994, 90.10866981966532, 89.25015974265675, 89.17309896072628, 90.95801807564867, 90.96723524458726, 90.95314598861657, 91.00873418485791, 90.96065733772602, 90.86880022623268]
-        widthFitDATA =  [3.0601841820913336, 3.0888748014814182, 3.0449043972409995, 2.7199786078358645, 3.846217064066446, 4.317488374749054, 2.120339359868412, 2.1156000446794594, 2.1228544933260625, 1.802036357361082, 2.1420573120444226, 2.624797465456659]       
-
-
-        massFitMC  =  [90.65277015222286, 90.66368802692999, 90.64576457104178, 90.73902956981016, 90.51708924382893, 90.40247924553357, 90.9863966398518, 91.00730553897829, 90.97773097050066, 91.05584099471746, 90.95908670972341, 90.95491497422672]
-        widthFitMC =  [2.7607404335865833, 2.800870093633652, 2.7554494130630625, 2.4549688506168317, 3.205917852505671, 3.562119743243076, 2.0490557722630482, 2.0255669688610363, 2.0601441072750966, 1.7366790997575798, 2.1148660467970832, 2.4145429630724697]
-
-
-    if(ZTree) : 
-        # 'Z_ele', 'Z_ele_extraMu' = 0, 'Z_ele_extraEl' = 0, 'Z_ele_EBEB', 'Z_ele_EBEE', 'Z_ele_EEEE', 'Z_mu', 'Z_mu_extraMu' = 0, 'Z_mu_extraEl' = 0, 'Z_mu_MBMB', 'Z_mu_MBME', 'Z_mu_MEME'
-        massFitDATA  = [ 89.7259289974 , 0.0 , 0.0 , 89.9863243635 , 89.0330157062 , 88.9058383479 , 90.9586964084 , 0.0 , 0.0 , 91.0098081907 , 90.9602975573 , 90.8731034006 ]
-        widthFitDATA = [ 3.08812216575 , 0.0 , 0.0 , 2.7286689019 , 3.86955462913 , 4.35953081802 , 2.03838726915 , 0.0 , 0.0 , 1.71251696754 , 2.0527381423 , 2.53118453796 ]
-
-        
-        massFitMC  = [ 90.5294468571 , 0.0 , 0.0 , 90.6310074073 , 90.3581021096 , 90.3065609158 , 90.9632405666 , 0.0 , 0.0 , 91.0188009053 , 90.9594607923 , 90.894544852 ]
-        widthFitMC = [ 2.80998665972 , 0.0 , 0.0 , 2.44645216736 , 3.32158184654 , 3.57923319861 , 2.02814146029 , 0.0 , 0.0 , 1.68756636642 , 2.05136385477 , 2.47269415969 ]
-
-   
-
-# ***********************************************
+print 'Input files with Fit values read!'
+#****************************************************************************
 
 
 
@@ -318,30 +291,30 @@ Data2017_muSIPMin1,Data2017_muSIPMin2   = MeanRMSVsLumi(MuonSIP_F1_Min_hist,    
 
 
 #Ele vs mu
-SAME3VsLumi(None,Data2017_ele1,Data2017_mu1, str(outDir_ZPlots) + "/" + period + "_ZMass_ele_mu_together", "Zmass",  0.,0.,massFitMC[0], massFitDATA[0], massFitMC[6], massFitDATA[6], False, period) 
-SAME3VsLumi(None,Data2017_ele2,Data2017_mu2, str(outDir_ZPlots) + "/" + period + "_ZWidth_ele_mu_together","Zwidth", 0.,0.,widthFitMC[0],widthFitDATA[0],widthFitMC[6],widthFitDATA[6],False, period) 
+SAME3VsLumi(None,Data2017_ele1,Data2017_mu1, str(outDir_ZPlots) + "/" + period + "_ZMass_ele_mu_together", "Zmass",  0.,0.,massFitMC_dict['Zee'], massFitDATA_dict['Zee'], massFitMC_dict['Zmumu'], massFitDATA_dict['Zmumu'], False, period) 
+SAME3VsLumi(None,Data2017_ele2,Data2017_mu2, str(outDir_ZPlots) + "/" + period + "_ZWidth_ele_mu_together","Zwidth", 0.,0.,widthFitMC_dict['Zee'],widthFitDATA_dict['Zee'],widthFitMC_dict['Zmumu'],widthFitDATA_dict['Zmumu'],False, period) 
 SAME3VsLumi(None,Data2017_eleM,Data2017_muM, str(outDir_ZPlots) + "/" + period + "_ZMult_ele_mu_together", "Zmult",  0.,0.,0.,0.,0.,0.,False, period)
 
 #Ele vs mu, extra mu    
 if not ZTree :
-    SAME3VsLumi(None,Data2017_ele1_extraMu,Data2017_mu1_extraMu, str(outDir_ZPlots) + "/" + period + "_ZMass_ele_mu_together_extraMu", "Zmass",  0.,0.,massFitMC[1], massFitDATA[1], massFitMC[7], massFitDATA[7], False, period) 
-    SAME3VsLumi(None,Data2017_ele2_extraMu,Data2017_mu2_extraMu, str(outDir_ZPlots) + "/" + period + "_ZWidth_ele_mu_together_extraMu","Zwidth", 0.,0.,widthFitMC[1],widthFitDATA[1],widthFitMC[7],widthFitDATA[7],False, period) 
+    SAME3VsLumi(None,Data2017_ele1_extraMu,Data2017_mu1_extraMu, str(outDir_ZPlots) + "/" + period + "_ZMass_ele_mu_together_extraMu", "Zmass",  0.,0.,massFitMC_dict['Zee_extraMu'], massFitDATA_dict['Zee_extraMu'], massFitMC_dict['Zmumu_extraMu'], massFitDATA_dict['Zmumu_extraMu'], False, period) 
+    SAME3VsLumi(None,Data2017_ele2_extraMu,Data2017_mu2_extraMu, str(outDir_ZPlots) + "/" + period + "_ZWidth_ele_mu_together_extraMu","Zwidth", 0.,0.,widthFitMC_dict['Zee_extraMu'],widthFitDATA_dict['Zee_extraMu'],widthFitMC_dict['Zmumu_extraMu'],widthFitDATA_dict['Zmumu_extraMu'],False, period) 
     SAME3VsLumi(None,Data2017_eleM_extraMu,Data2017_muM_extraMu, str(outDir_ZPlots) + "/" + period + "_ZMult_ele_mu_together_extraMu", "Zmult",  0.,0.,0.,0.,0.,0.,False, period) 
 
 #Ele vs mu, extra ele
 if not ZTree :
-    SAME3VsLumi(None,Data2017_ele1_extraEl,Data2017_mu1_extraEl, str(outDir_ZPlots) + "/" + period + "_ZMass_ele_mu_together_extraEl", "Zmass", 0.,0.,massFitMC[2], massFitDATA[2], massFitMC[8], massFitDATA[8], False, period)  
-    SAME3VsLumi(None,Data2017_ele2_extraEl,Data2017_mu2_extraEl, str(outDir_ZPlots) + "/" + period + "_ZWidth_ele_mu_together_extraEl","Zwidth",0.,0.,widthFitMC[2],widthFitDATA[2],widthFitMC[8],widthFitDATA[8],False, period)
+    SAME3VsLumi(None,Data2017_ele1_extraEl,Data2017_mu1_extraEl, str(outDir_ZPlots) + "/" + period + "_ZMass_ele_mu_together_extraEl", "Zmass", 0.,0.,massFitMC_dict['Zee_extraEl'], massFitDATA_dict['Zee_extraEl'], massFitMC_dict['Zmumu_extraEl'], massFitDATA_dict['Zmumu_extraEl'], False, period)  
+    SAME3VsLumi(None,Data2017_ele2_extraEl,Data2017_mu2_extraEl, str(outDir_ZPlots) + "/" + period + "_ZWidth_ele_mu_together_extraEl","Zwidth",0.,0.,widthFitMC_dict['Zee_extraEl'],widthFitDATA_dict['Zee_extraEl'],widthFitMC_dict['Zmumu_extraEl'],widthFitDATA_dict['Zmumu_extraEl'],False, period)
     SAME3VsLumi(None,Data2017_eleM_extraEl,Data2017_muM_extraEl, str(outDir_ZPlots) + "/" + period + "_ZMult_ele_mu_together_extraEl", "Zmult", 0.,0.,0.,0.,0.,0.,False, period)
 
 #Ele, EBEB vs EBEE vs EEEE        
-SAME3VsLumi(Data2017_ele_EBEB1,Data2017_ele_EBEE1,Data2017_ele_EEEE1, str(outDir_ZPlots) + "/" + period + "_ZMass_ele_EBEB_EBEE_EEEE", "Zmass", massFitMC[3], massFitDATA[3], massFitMC[4], massFitDATA[4], massFitMC[5], massFitDATA[5], True, period)  
-SAME3VsLumi(Data2017_ele_EBEB2,Data2017_ele_EBEE2,Data2017_ele_EEEE2, str(outDir_ZPlots) + "/" + period + "_ZWidth_ele_EBEB_EBEE_EEEE","Zwidth",widthFitMC[3],widthFitDATA[3],widthFitMC[4],widthFitDATA[4],widthFitMC[5],widthFitDATA[5],True, period)
+SAME3VsLumi(Data2017_ele_EBEB1,Data2017_ele_EBEE1,Data2017_ele_EEEE1, str(outDir_ZPlots) + "/" + period + "_ZMass_ele_EBEB_EBEE_EEEE", "Zmass", massFitMC_dict['Zee_EBEB'], massFitDATA_dict['Zee_EBEB'], massFitMC_dict['Zee_EBEE'], massFitDATA_dict['Zee_EBEE'], massFitMC_dict['Zee_EEEE'], massFitDATA_dict['Zee_EEEE'], True, period)  
+SAME3VsLumi(Data2017_ele_EBEB2,Data2017_ele_EBEE2,Data2017_ele_EEEE2, str(outDir_ZPlots) + "/" + period + "_ZWidth_ele_EBEB_EBEE_EEEE","Zwidth",widthFitMC_dict['Zee_EBEB'],widthFitDATA_dict['Zee_EBEB'],widthFitMC_dict['Zee_EBEE'],widthFitDATA_dict['Zee_EBEE'],widthFitMC_dict['Zee_EEEE'],widthFitDATA_dict['Zee_EEEE'],True, period)
 SAME3VsLumi(Data2017_eleM_EBEB,Data2017_eleM_EBEE,Data2017_eleM_EEEE, str(outDir_ZPlots) + "/" + period + "_ZMult_ele_EBEB_EBEE_EEEE", "Zmult", 0.,0.,0.,0.,0.,0.,True, period)
 
 #Mu, MBMB vs MBME vs MEME        
-SAME3VsLumi(Data2017_mu_MBMB1,Data2017_mu_MBME1,Data2017_mu_MEME1, str(outDir_ZPlots) + "/" + period + "_ZMass_mu_MBMB_MBME_MEME", "Zmass", massFitMC[9], massFitDATA[9], massFitMC[10], massFitDATA[10], massFitMC[11], massFitDATA[11], True, period) 
-SAME3VsLumi(Data2017_mu_MBMB2,Data2017_mu_MBME2,Data2017_mu_MEME2, str(outDir_ZPlots) + "/" + period + "_ZWidth_mu_MBMB_MBME_MEME","Zwidth",widthFitMC[9],widthFitDATA[9],widthFitMC[10],widthFitDATA[10],widthFitMC[11],widthFitDATA[11],True, period)
+SAME3VsLumi(Data2017_mu_MBMB1,Data2017_mu_MBME1,Data2017_mu_MEME1, str(outDir_ZPlots) + "/" + period + "_ZMass_mu_MBMB_MBME_MEME", "Zmass", massFitMC_dict['Zmumu_MBMB'], massFitDATA_dict['Zmumu_MBMB'], massFitMC_dict['Zmumu_MBME'], massFitDATA_dict['Zmumu_MBME'], massFitMC_dict['Zmumu_MEME'], massFitDATA_dict['Zmumu_MEME'], True, period) 
+SAME3VsLumi(Data2017_mu_MBMB2,Data2017_mu_MBME2,Data2017_mu_MEME2, str(outDir_ZPlots) + "/" + period + "_ZWidth_mu_MBMB_MBME_MEME","Zwidth",widthFitMC_dict['Zmumu_MBMB'],widthFitDATA_dict['Zmumu_MBMB'],widthFitMC_dict['Zmumu_MBME'],widthFitDATA_dict['Zmumu_MBME'],widthFitMC_dict['Zmumu_MEME'],widthFitDATA_dict['Zmumu_MEME'],True, period)
 SAME3VsLumi(Data2017_muM_MBMB,Data2017_muM_MBME,Data2017_muM_MEME, str(outDir_ZPlots) + "/" + period + "_ZMult_mu_MBMB_MBME_MEME", "Zmult", 0.,0.,0.,0.,0.,0.,True, period)
 
 #ISO, SIP

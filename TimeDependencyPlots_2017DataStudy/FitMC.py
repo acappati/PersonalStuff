@@ -10,10 +10,10 @@
 #    - read MC file (inputTree) (1 file by time)
 #    - store weighted events in histos and save them in a file.root (if redoHistos)
 #    - read the root file 
-#    - fit the histos with a function from helper.py and print on screen fit results
+#    - fit the histos with a function from helper.py and print on file fit results
 # ********************
  
-
+import json
 import ROOT, helper, math
 from ROOT import TFile, TH1, TH1F, TCanvas, gSystem
 from helper import DoSimpleFit, Result
@@ -44,7 +44,7 @@ MCsample = "DYJets"
 if(period == "data2016"):
     lumi = 35.9     # fb-1
 elif(period == "data2017"):
-    lumi = 35.88    # fb-1
+    lumi = 41.96    # fb-1
 
 #input file
 if(MCsample == "DYJets"):
@@ -57,7 +57,7 @@ else:
 
 #PU weights
 if(applyPU2017):
-    fPU = TFile.Open("../../data/PileUpWeights/puWeight_Spring2016MC_to_2017Data_294927-305636.root");
+    fPU = TFile.Open("../../data/PileUpWeights/puWeight_Spring2016MC_to_2017Data_294927-306462.root");
     hPUWeight= fPU.Get("weights")
 
 
@@ -247,24 +247,52 @@ else :
 
 luminosityList = [ lumi for i in range(len(histogramList))]
 
+
 #do the fit
 if(MCsample == "DYJets"):
     fitResult = DoSimpleFit(histogramList, luminosityList, ZZTree, outputDir, histTitleList, fitMC, fitDATA)
 
     print "Fit done!!"
 
-    massFitMC  = []
-    widthFitMC = []
 
-    # print fit results
-    for i in range(len(fitResult)) :
-        massFitMC.append(fitResult[i].mean) 
-        widthFitMC.append(fitResult[i].width)
+    # ************************************
+    # store fit results in dictionaries
+    if CRZLTree :
+        
+        massFitMC_dict  = {'Zee': fitResult[0].mean, 'Zee_extraMu': fitResult[1].mean, 'Zee_extraEl': fitResult[2].mean, 'Zee_EBEB': fitResult[3].mean, 'Zee_EBEE': fitResult[4].mean, 'Zee_EEEE': fitResult[5].mean, 'Zmumu': fitResult[6].mean, 'Zmumu_extraMu': fitResult[7].mean, 'Zmumu_extraEl': fitResult[8].mean, 'Zmumu_MBMB': fitResult[9].mean, 'Zmumu_MBME': fitResult[10].mean, 'Zmumu_MEME': fitResult[11].mean}
 
-    # 'Zee', 'Zee_extraMu', 'Zee_extraEl', 'Zee_EBEB', 'Zee_EBEE', 'Zee_EEEE', 'Zmumu', 'Zmumu_extraMu', 'Zmumu_extraEl', 'Zmumu_MBMB', 'Zmumu_MBME', 'Zmumu_MEME'
-    if ZTree :
-        print "massFitMC  = [", massFitMC[0] ,",",0.,",",0.,",",massFitMC[1], ",",massFitMC[2], ",",massFitMC[3], ",",massFitMC[4], ",",0.,",",0.,",",massFitMC[5], ",",massFitMC[6], ",",massFitMC[7], "]"
-        print "widthFitMC = [", widthFitMC[0],",",0.,",",0.,",",widthFitMC[1],",",widthFitMC[2],",",widthFitMC[3],",",widthFitMC[4],",",0.,",",0.,",",widthFitMC[5],",",widthFitMC[6],",",widthFitMC[7],"]"
-    else:
-        print "massFitMC  = ", massFitMC
-        print "widthFitMC = ", widthFitMC
+        widthFitMC_dict = {'Zee': fitResult[0].width, 'Zee_extraMu': fitResult[1].width, 'Zee_extraEl': fitResult[2].width, 'Zee_EBEB': fitResult[3].width, 'Zee_EBEE': fitResult[4].width, 'Zee_EEEE': fitResult[5].width, 'Zmumu': fitResult[6].width, 'Zmumu_extraMu': fitResult[7].width, 'Zmumu_extraEl': fitResult[8].width, 'Zmumu_MBMB': fitResult[9].width, 'Zmumu_MBME': fitResult[10].width, 'Zmumu_MEME': fitResult[11].width}
+
+
+    elif ZTree :
+
+        massFitMC_dict  = {'Zee': fitResult[0].mean, 'Zee_extraMu': 0, 'Zee_extraEl': 0, 'Zee_EBEB': fitResult[1].mean, 'Zee_EBEE': fitResult[2].mean, 'Zee_EEEE': fitResult[3].mean, 'Zmumu': fitResult[4].mean, 'Zmumu_extraMu': 0, 'Zmumu_extraEl': 0, 'Zmumu_MBMB': fitResult[5].mean, 'Zmumu_MBME': fitResult[6].mean, 'Zmumu_MEME': fitResult[7].mean }
+
+        widthFitMC_dict = {'Zee': fitResult[0].width, 'Zee_extraMu': 0, 'Zee_extraEl': 0, 'Zee_EBEB': fitResult[1].width, 'Zee_EBEE': fitResult[2].width, 'Zee_EEEE': fitResult[3].width, 'Zmumu': fitResult[4].width, 'Zmumu_extraMu': 0, 'Zmumu_extraEl': 0, 'Zmumu_MBMB': fitResult[5].width, 'Zmumu_MBME': fitResult[6].width, 'Zmumu_MEME': fitResult[7].width}
+
+
+    # ***********************************
+    # save result on output files
+    # save Z DCB mean result on file json
+    with open("out_ZDBCmean_MC_" + MCsample + "_" + period + "_" + treeText + ".json","w") as handle1 :
+        json.dump(massFitMC_dict, handle1)
+
+    print "Z DCB mean output written on file"
+
+
+    # save Z DCB width result on file json
+    with open("out_ZDBCwidth_MC_" + MCsample + "_" + period + "_" + treeText  + ".json","w") as handle2 :
+        json.dump(widthFitMC_dict, handle2)
+
+    print "Z DCB width output written on file"
+    #************************************
+    
+
+
+
+    
+    
+    
+    
+    
+    
