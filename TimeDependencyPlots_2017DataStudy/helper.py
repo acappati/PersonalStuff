@@ -4,7 +4,7 @@ ROOT.gROOT.SetBatch(True)
 from ROOT import TCanvas, TFile, TH1F, TF1, gSystem
 gSystem.Load('libRooFit')
 from ROOT import RooFit, RooRealVar, RooGaussian, RooDataSet, RooArgList, RooTreeData, RooDataHist, RooCBShape, RooNumConvPdf, RooFFTConvPdf, RooGlobalFunc
-from ROOT import RooCmdArg, RooArgSet, kFALSE, RooLinkedList, kBlue, kRed, kBlack, kOpenStar
+from ROOT import RooCmdArg, RooArgSet, kFALSE, RooLinkedList, kBlue, kRed, kBlack, kOpenStar, kWhite
 from ROOT import gStyle, TGraph, TGraphErrors, TMath, TMultiGraph, TLine, gPad, TGaxis, TLegend, TText
 from array import array
 from DoubleCB import DoubleCB
@@ -298,16 +298,24 @@ def SAME3VsLumi(g1, g2, g3, title, ptype, lineMC1, lineDATA1, lineMC2, lineDATA2
             # multigraph.SetMinimum(25000.)      
     printLumiPrelOut(canvas)
 
+    
     # Draw legend 
-    # if(DoInclusive):
-    #     legend = makeLegend(3)
-    #     legend.AddEntry(graph1,"inclusive","P")
-    # else :
-    #     legend = makeLegend(2)
-    # legend.AddEntry(graph2,"e^{+}e^{-}","P")
-    # legend.AddEntry(graph3,"#mu^{+}#mu^{-}","P")
-    # legend.Draw()
-    # canvas.Update()
+    legend = TLegend(0.93,0.84,0.99,0.93)
+    if(DoInclusive):
+        #legend.AddEntry(graph1,"inclusive","P")
+        legend.AddEntry(graph1,"BB","P")
+        legend.AddEntry(graph2,"BE","P")
+        legend.AddEntry(graph3,"EE","P")
+    else :
+        legend.AddEntry(graph2,"e^{+}e^{-}","P")
+        legend.AddEntry(graph3,"#mu^{+}#mu^{-}","P")
+    legend.SetFillColor(kWhite)
+    legend.SetLineColor(kBlack)
+    legend.SetTextFont(43)
+    legend.SetTextSize(20)
+    legend.Draw()
+    canvas.Update()
+
     
     # ****
     if(dataPeriod == "data2017"):
@@ -444,12 +452,18 @@ def SAME2VsLumi(g1, g2,title, ptype, dataPeriod):
         min(multigraph.GetHistogram().GetMinimum(),1.)
     printLumiPrelOut(canvas)
 
-    # Draw legend
-    # legend = makeLegend(2)
-    # legend.AddEntry(graph1,"e^{+}e^{-}","P")
-    # legend.AddEntry(graph2,"#mu^{+}#mu^{-}","P")
-    # legend.Draw()
-    # canvas.Update()
+    
+    # Draw legend 
+    legend = TLegend(0.93,0.84,0.99,0.93)
+    legend.AddEntry(graph1,"e^{+}e^{-}","P")
+    legend.AddEntry(graph2,"#mu^{+}#mu^{-}","P")
+    legend.SetFillColor(kWhite)
+    legend.SetLineColor(kBlack)
+    legend.SetTextFont(43)
+    legend.SetTextSize(20)
+    legend.Draw()
+    canvas.Update()
+
 
     # ****
     if(dataPeriod == "data2017"):
