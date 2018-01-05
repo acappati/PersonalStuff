@@ -4,8 +4,8 @@ ROOT.gROOT.SetBatch(True)
 from ROOT import TCanvas, TFile, TH1F, TF1, gSystem
 gSystem.Load('libRooFit')
 from ROOT import RooFit, RooRealVar, RooGaussian, RooDataSet, RooArgList, RooTreeData, RooDataHist, RooCBShape, RooNumConvPdf, RooFFTConvPdf, RooGlobalFunc
-from ROOT import RooCmdArg, RooArgSet, kFALSE, RooLinkedList, kBlue, kRed, kBlack, kOpenStar, kWhite
-from ROOT import gStyle, TGraph, TGraphErrors, TMath, TMultiGraph, TLine, gPad, TGaxis, TLegend, TText
+from ROOT import RooCmdArg, RooArgSet, kFALSE, RooLinkedList, kBlue, kRed, kBlack, kOpenStar, kWhite, kGray
+from ROOT import gStyle, TGraph, TGraphErrors, TMath, TMultiGraph, TLine, gPad, TGaxis, TLegend, TText, TLatex, TColor
 from array import array
 from DoubleCB import DoubleCB
 from CMSGraphics import makeCMSCanvas, makeLegend, printLumiPrelLeft, printLumiPrelOut, printLumiLeft, printLumiOut
@@ -317,6 +317,30 @@ def SAME3VsLumi(g1, g2, g3, title, ptype, lineMC1, lineDATA1, lineMC2, lineDATA2
     canvas.Update()
 
     
+    # Draw letters for data-taking periods
+    textLetters = TLatex()
+    textLetters.SetTextColor(kGray+1)
+    textLetters.SetTextSize(0.03)
+    if(ptype == "Zmass"):
+        textLetters.DrawLatex(2.,  gPad.GetUymin()+0.2,"B")
+        textLetters.DrawLatex(9.5, gPad.GetUymin()+0.2,"C")
+        textLetters.DrawLatex(16., gPad.GetUymin()+0.2,"D")
+        textLetters.DrawLatex(23., gPad.GetUymin()+0.2,"E")
+        textLetters.DrawLatex(36., gPad.GetUymin()+0.2,"F")
+    elif(ptype == "Zwidth"):
+        textLetters.DrawLatex(2.,  gPad.GetUymin()+0.3,"B")
+        textLetters.DrawLatex(9.5, gPad.GetUymin()+0.3,"C")
+        textLetters.DrawLatex(16., gPad.GetUymin()+0.3,"D")
+        textLetters.DrawLatex(23., gPad.GetUymin()+0.3,"E")
+        textLetters.DrawLatex(36., gPad.GetUymin()+0.3,"F")
+    elif(ptype == "Zmult") :
+        textLetters.DrawLatex(2.,  100000,"B")
+        textLetters.DrawLatex(9.5, 100000,"C")
+        textLetters.DrawLatex(16., 100000,"D")
+        textLetters.DrawLatex(23., 100000,"E")
+        textLetters.DrawLatex(36., 100000,"F")
+
+    
     # ****
     if(dataPeriod == "data2017"):
         # draw vertical lines that divide different data taking periods
@@ -464,6 +488,17 @@ def SAME2VsLumi(g1, g2,title, ptype, dataPeriod):
     legend.Draw()
     canvas.Update()
 
+    
+    # Draw letters for data-taking periods
+    textLetters = TLatex()
+    textLetters.SetTextColor(kGray+1)
+    textLetters.SetTextSize(0.03)
+    textLetters.DrawLatex(2.,  0.8*gPad.GetUymax(),"B")
+    textLetters.DrawLatex(9.5, 0.8*gPad.GetUymax(),"C")
+    textLetters.DrawLatex(16., 0.8*gPad.GetUymax(),"D")
+    textLetters.DrawLatex(23., 0.8*gPad.GetUymax(),"E")
+    textLetters.DrawLatex(36., 0.8*gPad.GetUymax(),"F")
+    
 
     # ****
     if(dataPeriod == "data2017"):
@@ -528,15 +563,6 @@ def SAME2VsLumi(g1, g2,title, ptype, dataPeriod):
         lineG.Draw()       
     # ****
     
-
-
-
-    # add letter for different periods #FIXME
-    # textB   = TText(10., 10., "B")
-    # textB.SetTextColor(20)
-    # textB.SetTextFont(62)
-    # textB.SetTextSize(40)
-    # textB.Draw()
 
     canvas.SaveAs(title + ".root")
     canvas.SaveAs(title + ".pdf")
