@@ -292,7 +292,7 @@ def SAME3VsLumi(g1, g2, g3, title, ptype, lineMC1, lineDATA1, lineMC2, lineDATA2
     elif(ptype == "Zmult"):
         multigraph.GetYaxis().SetTitle("#Z / fb^{-1}")
         if(not DoInclusive) :
-            multigraph.SetMaximum(max(multigraph.GetHistogram().GetMaximum(),60000.)) # set y axis minimum at 60000.
+            multigraph.SetMaximum(max(multigraph.GetHistogram().GetMaximum(),60000.)) # set y axis maximum at 60000.
             multigraph.SetMinimum(0.)     # set y axis minimum at 0. 
             # multigraph.SetMaximum(60000.)  #second type: vs 2016 plots 
             # multigraph.SetMinimum(25000.)      
