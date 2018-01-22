@@ -18,7 +18,7 @@ debug = False
 # 2017 data
 input = "LumiCalc_2017data.txt"
 out   = "SplittedBlocks_2017data_0p5_new.txt"
-eraBoundaries = [299329, 302029, 303434, 304826] #LAST runs of 2017B, 2017C, 2017D, 2017E 
+eraBoundaries = [299329, 302029, 303434, 304797] #LAST runs of 2017B, 2017C, 2017D, 2017E 
 
 
 print("---------------------------------------------------------------------------------------------------")
