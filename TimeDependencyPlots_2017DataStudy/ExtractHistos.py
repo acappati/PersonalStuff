@@ -19,8 +19,8 @@ from ROOT import TFile, TH1F
 
 # data tree options 
 ZZTree   = False
-CRZLTree = True
-ZTree    = False
+CRZLTree = False
+ZTree    = True
 
 # data periods options
 # period = "data2016"
@@ -34,7 +34,7 @@ if(period == "data2016"):
     saveAs   = "2016data_0p5_reduced"
 
 elif(period == "data2017"):
-    data     = TFile.Open("/data3/Higgs/171206_Data2017/AllData/ZZ4lAnalysis.root")
+    data     = TFile.Open("/data3/Higgs/180122/AllData/ZZ4lAnalysis.root")
     inputTXT = "JSON_calc/SplittedBlocks_2017data_0p5_new.txt"
     saveAs   = "2017data_0p5_reduced"
 

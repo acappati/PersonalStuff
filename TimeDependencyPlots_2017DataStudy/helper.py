@@ -425,17 +425,17 @@ def SAME3VsLumi(g1, g2, g3, title, ptype, lineMC1, lineDATA1, lineMC2, lineDATA2
         lineB.SetLineStyle(2)
         lineB.Draw()    
         
-        lineC = TLine(14.58, down, 14.58, up) # Run2017C up to 14.58 fb-1
+        lineC = TLine(14.55, down, 14.55, up) # Run2017C up to 14.58 fb-1
         lineC.SetLineColor(kBlack)
         lineC.SetLineStyle(2)
         lineC.Draw()
         
-        lineD = TLine(18.902, down, 18.902, up) # Run2017D up to 18.902 fb-1
+        lineD = TLine(18.869, down, 18.869, up) # Run2017D up to 18.902 fb-1
         lineD.SetLineColor(kBlack)
         lineD.SetLineStyle(2)
         lineD.Draw()
         
-        lineE = TLine(28.29, down, 28.29, up) # Run2017E up to 28.29 fb-1
+        lineE = TLine(28.294, down, 28.294, up) # Run2017E up to 28.29 fb-1
         lineE.SetLineColor(kBlack)
         lineE.SetLineStyle(2)
         lineE.Draw()
@@ -585,17 +585,17 @@ def SAME2VsLumi(g1, g2,title, ptype, dataPeriod):
         lineB.SetLineStyle(2)
         lineB.Draw()
         
-        lineC = TLine(14.58, down, 14.58, up) # Run2017C up to 14.58 fb-1
+        lineC = TLine(14.55, down, 14.55, up) # Run2017C up to 14.58 fb-1
         lineC.SetLineColor(kBlack)
         lineC.SetLineStyle(2)
         lineC.Draw()
         
-        lineD = TLine(18.902, down, 18.902, up) # Run2017D up to 18.902 fb-1
+        lineD = TLine(18.869, down, 18.869, up) # Run2017D up to 18.902 fb-1
         lineD.SetLineColor(kBlack)
         lineD.SetLineStyle(2)
         lineD.Draw()
         
-        lineE = TLine(28.29, down, 28.29, up) # Run2017E up to 28.29 fb-1
+        lineE = TLine(28.294, down, 28.294, up) # Run2017E up to 28.29 fb-1
         lineE.SetLineColor(kBlack)
         lineE.SetLineStyle(2)
         lineE.Draw()
