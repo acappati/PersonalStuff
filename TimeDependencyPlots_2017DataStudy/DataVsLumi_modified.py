@@ -17,7 +17,7 @@
 import json
 import ROOT, helper, math
 ROOT.gROOT.SetBatch(True)
-from helper import DoSimpleFit, DoRooFit, ReadJSON, FillHisto, Result, GraphVsLumi, ZMultVsLumi, MeanRMSVsLumi, Ratio, SAME3VsLumi, SAME2VsLumi, TwoFileSAME3VsLumi,TwoFileSAME2VsLumi, PlotNpv
+from helper import DoSimpleFit, DoDCBunbinnedFit, DoRooFit, ReadJSON, FillHisto, Result, GraphVsLumi, ZMultVsLumi, MeanRMSVsLumi, Ratio, SAME3VsLumi, SAME2VsLumi, TwoFileSAME3VsLumi,TwoFileSAME2VsLumi, PlotNpv
 from ROOT import TFile, TH1F, TCanvas, gSystem, TLegend
 from ROOT import kBlue, kRed, kBlack, kWhite
 
@@ -228,22 +228,42 @@ for j in range(0,len(HistoList_ISOSIPMax_Ele_inclusive)) :
 
 
 
-# DCB fit for ZPlots
-Data2017_result2         = DoSimpleFit(ZMass_F1_ele_hist,         recorded, ZZTree, outDir_fit, period + "_Z_ele",         fitMC, fitDATA) # Z->e, full acceptance
-Data2017_result2_EBEB    = DoSimpleFit(ZMass_F1_ele_hist_EBEB,    recorded, ZZTree, outDir_fit, period + "_Z_ele_EBEB",    fitMC, fitDATA) # Z->e, BB
-Data2017_result2_EBEE    = DoSimpleFit(ZMass_F1_ele_hist_EBEE,    recorded, ZZTree, outDir_fit, period + "_Z_ele_EBEE",    fitMC, fitDATA) # Z->e, BE
-Data2017_result2_EEEE    = DoSimpleFit(ZMass_F1_ele_hist_EEEE,    recorded, ZZTree, outDir_fit, period + "_Z_ele_EEEE",    fitMC, fitDATA) # Z->e, EE
-if not ZTree :
-    Data2017_result2_extraMu = DoSimpleFit(ZMass_F1_ele_hist_extraMu, recorded, ZZTree, outDir_fit, period + "_Z_ele_extraMu", fitMC, fitDATA) # Z->e, extra mu
-    Data2017_result2_extraEl = DoSimpleFit(ZMass_F1_ele_hist_extraEl, recorded, ZZTree, outDir_fit, period + "_Z_ele_extraEl", fitMC, fitDATA) # Z->e, extra e
+# DCB fit for ZPlots,
 
-Data2017_result3         = DoSimpleFit(ZMass_F1_mu_hist,          recorded, ZZTree, outDir_fit, period + "_Z_mu",          fitMC, fitDATA) # Z->mu, full acceptance
-Data2017_result3_MBMB    = DoSimpleFit(ZMass_F1_mu_hist_MBMB,     recorded, ZZTree, outDir_fit, period + "_Z_mu_MBMB",     fitMC, fitDATA) # Z->mu, BB
-Data2017_result3_MBME    = DoSimpleFit(ZMass_F1_mu_hist_MBME,     recorded, ZZTree, outDir_fit, period + "_Z_mu_MBME",     fitMC, fitDATA) # Z->mu, BE
-Data2017_result3_MEME    = DoSimpleFit(ZMass_F1_mu_hist_MEME,     recorded, ZZTree, outDir_fit, period + "_Z_mu_MEME",     fitMC, fitDATA) # Z->mu, EE
+#binned fit
+# Data2017_result2         = DoSimpleFit(ZMass_F1_ele_hist,         recorded, ZZTree, outDir_fit, period + "_Z_ele",         fitMC, fitDATA) # Z->e, full acceptance
+# Data2017_result2_EBEB    = DoSimpleFit(ZMass_F1_ele_hist_EBEB,    recorded, ZZTree, outDir_fit, period + "_Z_ele_EBEB",    fitMC, fitDATA) # Z->e, BB
+# Data2017_result2_EBEE    = DoSimpleFit(ZMass_F1_ele_hist_EBEE,    recorded, ZZTree, outDir_fit, period + "_Z_ele_EBEE",    fitMC, fitDATA) # Z->e, BE
+# Data2017_result2_EEEE    = DoSimpleFit(ZMass_F1_ele_hist_EEEE,    recorded, ZZTree, outDir_fit, period + "_Z_ele_EEEE",    fitMC, fitDATA) # Z->e, EE
+# if not ZTree :
+#     Data2017_result2_extraMu = DoSimpleFit(ZMass_F1_ele_hist_extraMu, recorded, ZZTree, outDir_fit, period + "_Z_ele_extraMu", fitMC, fitDATA) # Z->e, extra mu
+#     Data2017_result2_extraEl = DoSimpleFit(ZMass_F1_ele_hist_extraEl, recorded, ZZTree, outDir_fit, period + "_Z_ele_extraEl", fitMC, fitDATA) # Z->e, extra e
+
+# Data2017_result3         = DoSimpleFit(ZMass_F1_mu_hist,          recorded, ZZTree, outDir_fit, period + "_Z_mu",          fitMC, fitDATA) # Z->mu, full acceptance
+# Data2017_result3_MBMB    = DoSimpleFit(ZMass_F1_mu_hist_MBMB,     recorded, ZZTree, outDir_fit, period + "_Z_mu_MBMB",     fitMC, fitDATA) # Z->mu, BB
+# Data2017_result3_MBME    = DoSimpleFit(ZMass_F1_mu_hist_MBME,     recorded, ZZTree, outDir_fit, period + "_Z_mu_MBME",     fitMC, fitDATA) # Z->mu, BE
+# Data2017_result3_MEME    = DoSimpleFit(ZMass_F1_mu_hist_MEME,     recorded, ZZTree, outDir_fit, period + "_Z_mu_MEME",     fitMC, fitDATA) # Z->mu, EE
+# if not ZTree :
+#     Data2017_result3_extraMu = DoSimpleFit(ZMass_F1_mu_hist_extraMu,  recorded, ZZTree, outDir_fit, period + "_Z_mu_extraMu",  fitMC, fitDATA) # Z->mu, extra mu
+#     Data2017_result3_extraEl = DoSimpleFit(ZMass_F1_mu_hist_extraEl,  recorded, ZZTree, outDir_fit, period + "_Z_mu_extraEl",  fitMC, fitDATA) # Z->mu, extra e
+
+# unbinned fit
+Data2017_result2         = DoDCBunbinnedFit(ZMass_F1_ele_hist,         recorded, ZZTree, outDir_fit, period + "_Z_ele",         fitMC, fitDATA) # Z->e, full acceptance
+Data2017_result2_EBEB    = DoDCBunbinnedFit(ZMass_F1_ele_hist_EBEB,    recorded, ZZTree, outDir_fit, period + "_Z_ele_EBEB",    fitMC, fitDATA) # Z->e, BB
+Data2017_result2_EBEE    = DoDCBunbinnedFit(ZMass_F1_ele_hist_EBEE,    recorded, ZZTree, outDir_fit, period + "_Z_ele_EBEE",    fitMC, fitDATA) # Z->e, BE
+Data2017_result2_EEEE    = DoDCBunbinnedFit(ZMass_F1_ele_hist_EEEE,    recorded, ZZTree, outDir_fit, period + "_Z_ele_EEEE",    fitMC, fitDATA) # Z->e, EE
 if not ZTree :
-    Data2017_result3_extraMu = DoSimpleFit(ZMass_F1_mu_hist_extraMu,  recorded, ZZTree, outDir_fit, period + "_Z_mu_extraMu",  fitMC, fitDATA) # Z->mu, extra mu
-    Data2017_result3_extraEl = DoSimpleFit(ZMass_F1_mu_hist_extraEl,  recorded, ZZTree, outDir_fit, period + "_Z_mu_extraEl",  fitMC, fitDATA) # Z->mu, extra e
+    Data2017_result2_extraMu = DoDCBunbinnedFit(ZMass_F1_ele_hist_extraMu, recorded, ZZTree, outDir_fit, period + "_Z_ele_extraMu", fitMC, fitDATA) # Z->e, extra mu
+    Data2017_result2_extraEl = DoDCBunbinnedFit(ZMass_F1_ele_hist_extraEl, recorded, ZZTree, outDir_fit, period + "_Z_ele_extraEl", fitMC, fitDATA) # Z->e, extra e
+
+Data2017_result3         = DoDCBunbinnedFit(ZMass_F1_mu_hist,          recorded, ZZTree, outDir_fit, period + "_Z_mu",          fitMC, fitDATA) # Z->mu, full acceptance
+Data2017_result3_MBMB    = DoDCBunbinnedFit(ZMass_F1_mu_hist_MBMB,     recorded, ZZTree, outDir_fit, period + "_Z_mu_MBMB",     fitMC, fitDATA) # Z->mu, BB
+Data2017_result3_MBME    = DoDCBunbinnedFit(ZMass_F1_mu_hist_MBME,     recorded, ZZTree, outDir_fit, period + "_Z_mu_MBME",     fitMC, fitDATA) # Z->mu, BE
+Data2017_result3_MEME    = DoDCBunbinnedFit(ZMass_F1_mu_hist_MEME,     recorded, ZZTree, outDir_fit, period + "_Z_mu_MEME",     fitMC, fitDATA) # Z->mu, EE
+if not ZTree :
+    Data2017_result3_extraMu = DoDCBunbinnedFit(ZMass_F1_mu_hist_extraMu,  recorded, ZZTree, outDir_fit, period + "_Z_mu_extraMu",  fitMC, fitDATA) # Z->mu, extra mu
+    Data2017_result3_extraEl = DoDCBunbinnedFit(ZMass_F1_mu_hist_extraEl,  recorded, ZZTree, outDir_fit, period + "_Z_mu_extraEl",  fitMC, fitDATA) # Z->mu, extra e
+
 
 
 

@@ -65,6 +65,7 @@ def GraphVsLumi(result, outputDir, title):
     can2.SaveAs(str(outputDir) + "/"+ title +"_width.png")
     return graph1, graph2;
 
+
 def ZMultVsLumi(histo, recorded, outputDir, title):
     #gSystem.Exec("mkdir -p ZPlots")
     can1 = makeCMSCanvas(str(random.random()),"mult vs lumi ",900,700)
@@ -92,6 +93,7 @@ def ZMultVsLumi(histo, recorded, outputDir, title):
     can1.SaveAs(str(outputDir) + "/Z_multiplicity_"+title+".png")
     return graph1;
 
+
 def Ratio(histo1,histo2, recorded, title):
     #gSystem.Exec("mkdir -p ZPlots")
     can1 = makeCMSCanvas(str(random.random()),"mult vs lumi ",900,700)
@@ -118,6 +120,7 @@ def Ratio(histo1,histo2, recorded, title):
     can1.SaveAs("ZPlots/Z_ratio_"+title+".pdf")
     can1.SaveAs("ZPlots/Z_ratio_"+title+".png")
     return;
+
 
 def MeanRMSVsLumi(histo, recorded, outputDir, title):
     can1 = makeCMSCanvas(str(random.random()),"mean vs lumi ",900,700)
@@ -162,6 +165,7 @@ def MeanRMSVsLumi(histo, recorded, outputDir, title):
     
     return graph1,graph2;
 
+
 def DoSimpleFit(histo, lumi, ZZtree, outputDir, title, fitMC, fitDATA):  #fitMC = true for fitting MC in FitMC.py, fitDATA = true for fitting data in FitDATA.py
     
     can = []
@@ -203,7 +207,7 @@ def DoSimpleFit(histo, lumi, ZZtree, outputDir, title, fitMC, fitDATA):  #fitMC 
 
         # do the fit 
         can[i].cd()        
-        histo[i].Fit(Z1_fitFunction)
+        histo[i].Fit(Z1_fitFunction) # do the fit
         histo[i].Draw("E")
         gStyle.SetOptFit()
         mass = Z1_fitFunction.GetParameters()[0]
@@ -226,6 +230,75 @@ def DoSimpleFit(histo, lumi, ZZtree, outputDir, title, fitMC, fitDATA):  #fitMC 
             
                 
     return result;
+
+
+
+def DoDCBunbinnedFit(histo, lumi, ZZtree, outputDir, title, fitMC, fitDATA):  #fitMC = true for fitting MC in FitMC.py, fitDATA = true for fitting data in FitDATA.py
+
+    # create canvas list
+    can = []
+    datahist = []
+    massplot = []
+    result = []
+    for i in range(0,len(histo)):
+        canv = makeCMSCanvas(str(random.random())+str(i),"Fit result "+str(i),900,700)
+        can.append(canv)
+
+    # variable
+    if "ele" in title:
+      x1 = RooRealVar("x1","m_{e^{+}e^{-}}",60,120)
+    if "mu" in title:
+      x1 = RooRealVar("x1","m_{#mu^{+}#mu^{-}}",60,120)
+
+    # define fit function (DCB)
+    meanDCB      = RooRealVar("mean_{DCB}",    "mean of DCB",   60.,120. )
+    sigmaDCB     = RooRealVar("#sigma_{DCB}",  "width of DCB",  0., 6.   )
+    alphaDCB     = RooRealVar("#alpha_{DCB}",  "alpha of DCB",  0., 100. )
+    nDCB         = RooRealVar("n_{DCB}",       "n of DCB",      0., 10.  )
+    alpha2DCB    = RooRealVar("#alpha2_{DCB}", "alpha2 of DCB", 0., 100. )
+    n2DCB        = RooRealVar("n2_{DCB}",      "n2 of DCB",     0., 10.  )
+    DCB_function = RooDoubleCB("DCB_function", "DCB PDF", x1, meanDCB, sigmaDCB, alphaDCB, nDCB, alpha2DCB, n2DCB)
+
+
+    # do the fit and plot
+    for i in range(0,len(histo)):
+         
+        datahist[i] = RooDataHist("data","data",RooArgList(x1),RooFit.Import(histo))
+        DCB_function.fitTo(datahist[i],ROOT.RooFit.Extended(1)) #do the fit
+
+        massplot[i] = x1.frame()
+        datahist[i].plotOn(massplot[i])
+        DCB_function.plotOn(massplot[i])
+        DCB_function.paramOn(massplot[i], RooFit.Layout(0.65,0.99,0.9))
+
+        can[i].cd()
+        gStyle.SetOptFit()
+        massplot[i].Draw()
+        
+       
+
+        mass      = meanDCB.getVal()
+        width     = sigmaDCB.getVal()
+        mass_err  = 0. #to check
+        width_err = 0. #to check
+        result.append(Result(mass,width,lumi[i],mass_err,width_err))
+        print ("Mass: " +str(mass) + " Width: " + str(width))
+        printLumiPrelOut(can[i])
+ 
+        if(fitMC) :
+            can[i].SaveAs(str(outputDir) + "/"+ str(title[i]) +"_fit.pdf")
+            can[i].SaveAs(str(outputDir) + "/"+ str(title[i]) +"_fit.png")
+        elif(fitDATA) :
+            can[i].SaveAs(str(outputDir) + "/"+ str(title[i]) +"_fit.pdf")
+            can[i].SaveAs(str(outputDir) + "/"+ str(title[i]) +"_fit.png")
+        else :
+            can[i].SaveAs(str(outputDir) + "/"+ title +"_fit_"+str(i)+".pdf")
+            can[i].SaveAs(str(outputDir) + "/"+ title +"_fit_"+str(i)+".png")
+            
+                
+    return result;
+
+    
 
 def DoLandauFit(histo, lumi, ZZtree, title):
     #gSystem.Exec("mkdir -p FitResults")
@@ -292,7 +365,7 @@ def SAME3VsLumi(g1, g2, g3, title, ptype, lineMC1, lineDATA1, lineMC2, lineDATA2
     elif(ptype == "Zmult"):
         multigraph.GetYaxis().SetTitle("#Z / fb^{-1}")
         if(not DoInclusive) :
-            multigraph.SetMaximum(max(multigraph.GetHistogram().GetMaximum(),60000.)) # set y axis maximum at 60000.
+            multigraph.SetMaximum(max(multigraph.GetHistogram().GetMaximum(),60000.)) # set y axis minimum at 60000.
             multigraph.SetMinimum(0.)     # set y axis minimum at 0. 
             # multigraph.SetMaximum(60000.)  #second type: vs 2016 plots 
             # multigraph.SetMinimum(25000.)      
@@ -448,6 +521,7 @@ def SAME3VsLumi(g1, g2, g3, title, ptype, lineMC1, lineDATA1, lineMC2, lineDATA2
     canvas.SaveAs(title + ".png")
     return;
 
+
 def SAME2VsLumi(g1, g2,title, ptype, dataPeriod):
     canvas = makeCMSCanvas(str(random.random()),"canvas",900,700)
     canvas.cd()
@@ -569,6 +643,7 @@ def SAME2VsLumi(g1, g2,title, ptype, dataPeriod):
     canvas.SaveAs(title + ".png")
     return;
 
+
 def TwoFileSAME3VsLumi(F1graph1, F1graph2, F1graph3, F2graph1, F2graph2, F2graph3, title, type, DoInclusive):
     canvas = makeCMSCanvas(str(random.random()),"canvas",900,700)
     canvas.cd()
@@ -675,6 +750,7 @@ def TwoFileSAME3VsLumi(F1graph1, F1graph2, F1graph3, F2graph1, F2graph2, F2graph
     canvas.SaveAs(title + ".png")
     return;
 
+
 def TwoFileSAME2VsLumi(F1graph1, F1graph2, F2graph1, F2graph2, title, type):
     canvas = makeCMSCanvas(str(random.random()),"canvas",900,700)
     canvas.cd()
@@ -742,6 +818,7 @@ def TwoFileSAME2VsLumi(F1graph1, F1graph2, F2graph1, F2graph2, title, type):
     canvas.SaveAs(title + ".png")
     return;
 
+
 def ReadJSON(inputTXT, RunNum_B, LumiNum_B, RunNum_E, LumiNum_E, delivered):
     with open(inputTXT, "r") as Inp:
         print("Opening " + inputTXT + ".")
@@ -753,6 +830,7 @@ def ReadJSON(inputTXT, RunNum_B, LumiNum_B, RunNum_E, LumiNum_E, delivered):
             LumiNum_E.append(cleared_line[3])
             delivered.append((cleared_line[4]))
     return;
+
 
 def PlotNpv(inputTXT, lumiInp):
     canvas = makeCMSCanvas(str(random.random()),"Npv",900,700)
@@ -824,11 +902,13 @@ def PlotNpv(inputTXT, lumiInp):
     canvas.SaveAs("Npv.pdf")
     return;
 
+
 def FillHisto(histoZ1Mass, tree):
     for event in tree:
         histoZ1Mass.Fill(event.Z1Mass)
         print(str(event.RunNumber) + " " + str(event.LumiNumber))
     return;
+
 
 def DoCBFit(histo, ZZtree, title, p):
     canv = makeCMSCanvas(str(random.random()),"Fit result ",900,700)
@@ -863,6 +943,7 @@ def DoCBFit(histo, ZZtree, title, p):
     canv.SaveAs("DataVsMC/FitResults/"+title+"_fit.pdf")
     canv.SaveAs("DataVsMC/FitResults/"+title+"_fit.png")
     return Z1_fitFunction.GetParameters()[0], Z1_fitFunction.GetParError(0);
+
 
 def DoRooFit(histo, title):
     can = makeCMSCanvas(str(random.random()),"Fit result ",900,700)
