@@ -29,7 +29,8 @@
 # ****************
 # Golden Json 2017 data 
 # ****************
-JSON_path=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/PromptReco/Cert_294927-305636_13TeV_PromptReco_Collisions17_JSON.txt # Nov 10, 2017; 35.88/fb
+#JSON_path=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/PromptReco/Cert_294927-305636_13TeV_PromptReco_Collisions17_JSON.txt # Nov 10, 2017; 35.88/fb
+JSON_path=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/Final/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt # Dec 15, 2017; 41.86/fb
 
 
 JSON_localName=GoldenJSON_2017data.txt
