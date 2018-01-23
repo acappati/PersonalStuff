@@ -15,7 +15,7 @@
 import json
 import ROOT, helper, math
 from ROOT import TFile, TH1, TH1F, TCanvas, gSystem
-from helper import DoSimpleFit, Result
+from helper import DoSimpleFit, Result, DoDCBunbinnedFit
 
 
 # *****************************
@@ -23,12 +23,12 @@ from helper import DoSimpleFit, Result
 # fit options 
 fitMC      = False  #true for fitting MC in FitMC.py 
 fitDATA    = True   #true for fitting DATA in FitDATA.py 
-redoHistos = True
+redoHistos = False
 
 # data tree options 
 ZZTree   = False
-CRZLTree = True
-ZTree    = False
+CRZLTree = False
+ZTree    = True
 
 # data periods options
 # period = "data2016"
@@ -53,8 +53,8 @@ if(period == "data2016"):
         print ("Error: wrong option!")
 
 elif(period == "data2017"):
-    data = TFile.Open("/data3/Higgs/171206_Data2017/AllData/ZZ4lAnalysis.root") #2017 data
-    lumi = 41.96   # fb-1
+    data = TFile.Open("/data3/Higgs/180122/AllData/ZZ4lAnalysis.root") #2017 data
+    lumi = 41.86   # fb-1
     if(ZZTree):
         tree      = data.Get("ZZTree/candTree")
         treeText  = "ZZTree"
@@ -216,6 +216,7 @@ luminosityList = [ lumi for i in range(len(histogramList))]
 
 #do the fit 
 fitResult = DoSimpleFit(histogramList, luminosityList, ZZTree, outputDir, histTitleList, fitMC, fitDATA)
+#fitResult = DoDCBunbinnedFit(histogramList, luminosityList, ZZTree, outputDir, histTitleList, fitMC, fitDATA) #to be fixed!
 
 print "Fit done!!"
 

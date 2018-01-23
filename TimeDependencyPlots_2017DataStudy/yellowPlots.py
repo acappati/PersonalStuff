@@ -27,14 +27,14 @@ from ROOT import kBlue, kRed, kBlack, kWhite
 
 # data tree options 
 ZZTree   = False
-CRZLTree = True
-ZTree    = False
+CRZLTree = False
+ZTree    = True
 
 # data periods options
 # period = "data2016"
 period = "data2017"
 # *****************************
-lumiText = '41.96 fb^{-1}'
+lumiText = '41.86 fb^{-1}'
 #******************************
 
 
@@ -105,7 +105,7 @@ ZMass_DATA.append(histoDATA_input.Get('ZMass_mu_MEME'))          #ZMass , Z->mum
 if(period == "data2016"):
     histoMC_DY_input = TFile.Open("histoMC_DYJets_data2016_" + str(treeText) + ".root")
 elif(period == "data2017"):
-    histoMC_DY_input = TFile.Open("histoMC_DYJets_data2017_" + str(treeText) + "_2017PU.root")
+    histoMC_DY_input = TFile.Open("histoMC_DYJets_data2017_" + str(treeText) + ".root")
 else: 
     print "Wrong period!"
 print 'Reading file', histoMC_DY_input.GetName(),'...'
@@ -133,7 +133,7 @@ ZMass_MC_DY.append(histoMC_DY_input.Get('ZMass_mu_MEME'))          #ZMass , Z->m
 if(period == "data2016"):
     histoMC_TTJets_input = TFile.Open("histoMC_TTJets_data2016_" + str(treeText) +".root")
 elif(period == "data2017"):
-    histoMC_TTJets_input = TFile.Open("histoMC_TTJets_data2017_" + str(treeText) +"_2017PU.root")
+    histoMC_TTJets_input = TFile.Open("histoMC_TTJets_data2017_" + str(treeText) +".root")
 else: 
     print "Wrong period!"
 print 'Reading file', histoMC_TTJets_input.GetName(),'...'

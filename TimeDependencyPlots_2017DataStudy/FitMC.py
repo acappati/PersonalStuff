@@ -24,12 +24,12 @@ from helper import DoSimpleFit, Result
 fitMC       = True    #true for fitting MC in FitMC.py 
 fitDATA     = False   #true for fitting DATA in FitDATA.py 
 redoHistos  = True
-applyPU2017 = True    # always true for 2017 data
+applyPU2017 = False    # was true for prompt-reco 2017 data 
 
 # data tree options 
 ZZTree   = False
-CRZLTree = True
-ZTree    = False
+CRZLTree = False
+ZTree    = True
 
 # data periods options
 # period = "data2016"
@@ -44,13 +44,13 @@ MCsample = "DYJets"
 if(period == "data2016"):
     lumi = 35.9     # fb-1
 elif(period == "data2017"):
-    lumi = 41.96    # fb-1
+    lumi = 41.86    # fb-1
 
 #input file
 if(MCsample == "DYJets"):
-    inputTree = TFile.Open("/data3/Higgs/170907_2016/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets
+    inputTree = TFile.Open("/data3/Higgs/180122/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets
 elif(MCsample == "TTJets"):
-    inputTree = TFile.Open("/data3/Higgs/170907_2016/TTJets_DiLept/ZZ4lAnalysis.root")  #TTJets
+    inputTree = TFile.Open("/data3/Higgs/170907_2016/TTJets_DiLept/ZZ4lAnalysis.root")  #TTJets (still 2016 MC)
 else:
     print ("Error: wrong MC sample!")
 
@@ -75,10 +75,7 @@ else:
 
 
 #create output directory 
-if(applyPU2017):
-    outputDir = "FitResults_MC_" + str(MCsample) + "_" + str(period) + "_" + str(treeText) + "_2017PU"
-else:
-    outputDir = "FitResults_MC_" + str(MCsample) + "_" + str(period) + "_" + str(treeText) 
+outputDir = "FitResults_MC_" + str(MCsample) + "_" + str(period) + "_" + str(treeText) 
 gSystem.Exec("mkdir -p " + outputDir)
 print "Output directories created!"
 
@@ -190,10 +187,7 @@ if(redoHistos) :
 
     #save histograms in a root file 
     print "saving histograms to histo MC ..."
-    if(applyPU2017):
-        histoMC = TFile.Open("histoMC_" + MCsample + "_" + period + "_" + treeText + "_2017PU.root", "RECREATE")
-    else: 
-        histoMC = TFile.Open("histoMC_" + MCsample + "_" + period + "_" + treeText + ".root", "RECREATE")
+    histoMC = TFile.Open("histoMC_" + MCsample + "_" + period + "_" + treeText + ".root", "RECREATE")
     histoMC.cd()
     ZMass_ele_hist.Write()   
     if not ZTree :      
@@ -214,10 +208,7 @@ if(redoHistos) :
 
 
 #read histo from histoMC.root
-if(applyPU2017):
-    histoMC_input = TFile.Open("histoMC_" + MCsample + "_" + period + "_" + treeText + "_2017PU.root")
-else:
-    histoMC_input = TFile.Open("histoMC_" + MCsample + "_" + period + "_" + treeText + ".root")
+histoMC_input = TFile.Open("histoMC_" + MCsample + "_" + period + "_" + treeText + ".root")
 print 'Reading file', histoMC_input.GetName(),'...'
 
 histogramList = []

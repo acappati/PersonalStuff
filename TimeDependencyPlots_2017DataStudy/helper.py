@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import ROOT, array, DoubleCB, CMSGraphics, random, copy
 ROOT.gROOT.SetBatch(True)
 from ROOT import TCanvas, TFile, TH1F, TF1, gSystem
@@ -232,7 +233,7 @@ def DoSimpleFit(histo, lumi, ZZtree, outputDir, title, fitMC, fitDATA):  #fitMC 
     return result;
 
 
-
+#to be fixed!
 def DoDCBunbinnedFit(histo, lumi, ZZtree, outputDir, title, fitMC, fitDATA):  #fitMC = true for fitting MC in FitMC.py, fitDATA = true for fitting data in FitDATA.py
 
     # create canvas list
@@ -246,9 +247,9 @@ def DoDCBunbinnedFit(histo, lumi, ZZtree, outputDir, title, fitMC, fitDATA):  #f
 
     # variable
     if "ele" in title:
-      x1 = RooRealVar("x1","m_{e^{+}e^{-}}",60,120)
+      x1_zmass = RooRealVar("x1_zmass","m_{e^{+}e^{-}}",60,120)
     if "mu" in title:
-      x1 = RooRealVar("x1","m_{#mu^{+}#mu^{-}}",60,120)
+      x1_zmass = RooRealVar("x1_zmass","m_{#mu^{+}#mu^{-}}",60,120)
 
     # define fit function (DCB)
     meanDCB      = RooRealVar("mean_{DCB}",    "mean of DCB",   60.,120. )
@@ -257,16 +258,16 @@ def DoDCBunbinnedFit(histo, lumi, ZZtree, outputDir, title, fitMC, fitDATA):  #f
     nDCB         = RooRealVar("n_{DCB}",       "n of DCB",      0., 10.  )
     alpha2DCB    = RooRealVar("#alpha2_{DCB}", "alpha2 of DCB", 0., 100. )
     n2DCB        = RooRealVar("n2_{DCB}",      "n2 of DCB",     0., 10.  )
-    DCB_function = RooDoubleCB("DCB_function", "DCB PDF", x1, meanDCB, sigmaDCB, alphaDCB, nDCB, alpha2DCB, n2DCB)
+    DCB_function = DoubleCB( x1_zmass, meanDCB, sigmaDCB, alphaDCB, nDCB, alpha2DCB, n2DCB)
 
 
     # do the fit and plot
     for i in range(0,len(histo)):
          
-        datahist[i] = RooDataHist("data","data",RooArgList(x1),RooFit.Import(histo))
+        datahist[i] = RooDataHist("data","data",RooArgList(x1_zmass),RooFit.Import(histo))
         DCB_function.fitTo(datahist[i],ROOT.RooFit.Extended(1)) #do the fit
 
-        massplot[i] = x1.frame()
+        massplot[i] = x1_zmass.frame()
         datahist[i].plotOn(massplot[i])
         DCB_function.plotOn(massplot[i])
         DCB_function.paramOn(massplot[i], RooFit.Layout(0.65,0.99,0.9))
