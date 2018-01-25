@@ -25,7 +25,7 @@ relExtraDY = 1.2
 
 extraOverCmsTextSize  = 0.76
 
-lumi_13TeV = "41.96 fb^{-1}" #2017 data
+lumi_13TeV = "41.86 fb^{-1}" #2017 data
 #lumi_13TeV = "35.9 fb^{-1}" #2016 data
 lumi_8TeV  = "19.7 fb^{-1}"
 lumi_7TeV  = "5.1 fb^{-1}"
