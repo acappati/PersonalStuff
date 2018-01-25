@@ -151,7 +151,7 @@ else :
                 'maxSIP_mu_InMuonBarrel',
                 'maxSIP_mu_InMuonEndcap']
     
-#canvas = []
+
                                    
 # *** do the plots ***
 for i in range(len(nameList)) :
