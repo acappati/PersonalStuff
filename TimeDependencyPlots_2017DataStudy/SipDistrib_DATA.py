@@ -2,7 +2,7 @@
 
 # *******************
 # usage: 
-#    python IsoSipDistrib_DATA.py
+#    python SipDistrib_DATA.py
 #
 # *******************
 

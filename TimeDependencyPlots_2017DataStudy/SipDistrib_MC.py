@@ -2,7 +2,7 @@
 
 # *******************
 # usage: 
-#    python IsoSipDistrib_MC.py
+#    python SipDistrib_MC.py
 #
 # *******************
 
