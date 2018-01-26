@@ -18,9 +18,10 @@ from helper import DoSimpleFit, Result, DoDCBunbinnedFit
 redoHistos = True
 
 # data tree options 
-ZZTree   = True
-CRZLTree = False
-ZTree    = False
+ZZTree    = False
+CRZLLTree = True
+CRZLTree  = False
+ZTree     = False
 
 # data periods options
 # period = "data2016"
@@ -36,6 +37,9 @@ if(period == "data2016"):
     if(ZZTree):
         tree      = data.Get("ZZTree/candTree")
         treeText  = "ZZTree"
+    elif(CRZLLTree):
+        tree      = data.Get("CRZLLTree/candTree")
+        treeText  = "CRZLLTree"
     elif(CRZLTree):
         tree      = data.Get("CRZLTree/candTree")
         treeText  = "CRZLTree"
@@ -51,6 +55,9 @@ elif(period == "data2017"):
     if(ZZTree):
         tree      = data.Get("ZZTree/candTree")
         treeText  = "ZZTree"
+    elif(CRZLLTree):
+        tree      = data.Get("CRZLLTree/candTree")
+        treeText  = "CRZLLTree"
     elif(CRZLTree):
         tree      = data.Get("CRZLTree/candTree")
         treeText  = "CRZLTree"

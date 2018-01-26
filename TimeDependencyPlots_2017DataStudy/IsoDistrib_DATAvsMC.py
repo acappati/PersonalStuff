@@ -18,9 +18,10 @@ from ROOT import kBlue, kRed, kBlack, kWhite, kAzure, kOrange
 # Declare all the variables
 
 # data tree options 
-ZZTree   = False
-CRZLTree = True
-ZTree    = False
+ZZTree    = False
+CRZLLTree = False
+CRZLTree  = False
+ZTree     = True
 
 # data periods options
 # period = "data2016"
@@ -30,9 +31,10 @@ lumiText = '41.86 fb^{-1}'
 #******************************
 
 
-if(ZZTree):     treeText  = "ZZTree"
-elif(CRZLTree): treeText  = "CRZLTree"
-elif(ZTree):    treeText  = "ZTree"
+if(ZZTree):      treeText  = "ZZTree"
+elif(CRZLLTree): treeText  = "CRZLLTree"
+elif(CRZLTree):  treeText  = "CRZLTree"
+elif(ZTree):     treeText  = "ZTree"
 else: print ("Error: wrong option!")
 
 #******************************
