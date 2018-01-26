@@ -72,7 +72,7 @@ IsoDATA.append(histoDATA_input.Get('ISO max mu'))
 IsoDATA.append(histoDATA_input.Get('ISO max mu in Muon Barrel'))
 IsoDATA.append(histoDATA_input.Get('ISO max mu in Muon Endcap'))
 
-if CRZLTree :
+if not ZTree :
     IsoDATA.append(histoDATA_input.Get('ISO extraEl'))
     IsoDATA.append(histoDATA_input.Get('ISO extraEl in ECAL Barrel'))
     IsoDATA.append(histoDATA_input.Get('ISO extraEl in ECAL Endcap'))
@@ -107,7 +107,7 @@ IsoMC.append(histoMC_input.Get('ISO max mu'))
 IsoMC.append(histoMC_input.Get('ISO max mu in Muon Barrel'))
 IsoMC.append(histoMC_input.Get('ISO max mu in Muon Endcap'))
 
-if CRZLTree :
+if not ZTree :
     IsoMC.append(histoMC_input.Get('ISO extraEl'))
     IsoMC.append(histoMC_input.Get('ISO extraEl in ECAL Barrel'))
     IsoMC.append(histoMC_input.Get('ISO extraEl in ECAL Endcap'))
@@ -118,7 +118,21 @@ if CRZLTree :
 
 
 
-if CRZLTree :
+if ZTree :
+    nameList = ['ISO_leading_ele',
+                'ISO_leading_ele_InECALbarrel',
+                'ISO_leading_ele_InECALendcap',
+                'maxISO_ele',
+                'maxISO_ele_InECALbarrel',
+                'maxISO_ele_InECALendcap',
+                'ISO_leading_mu',
+                'ISO_leading_mu_InMuonBarrel',
+                'ISO_leading_mu_InMuonEndcap',
+                'maxISO_mu',
+                'maxISO_mu_InMuonBarrel',
+                'maxISO_mu_InMuonEndcap']
+
+else :
     nameList = ['ISO_leading_ele',
                 'ISO_leading_ele_InECALbarrel',
                 'ISO_leading_ele_InECALendcap',
@@ -137,21 +151,8 @@ if CRZLTree :
                 'ISO_extraMu',
                 'ISO_extraMu_InMuonBarrel',
                 'ISO_extraMu_InMuonEndcap']
-else : 
-    nameList = ['ISO_leading_ele',
-                'ISO_leading_ele_InECALbarrel',
-                'ISO_leading_ele_InECALendcap',
-                'maxISO_ele',
-                'maxISO_ele_InECALbarrel',
-                'maxISO_ele_InECALendcap',
-                'ISO_leading_mu',
-                'ISO_leading_mu_InMuonBarrel',
-                'ISO_leading_mu_InMuonEndcap',
-                'maxISO_mu',
-                'maxISO_mu_InMuonBarrel',
-                'maxISO_mu_InMuonEndcap']
     
-#canvas = []
+
                                    
 # *** do the plots ***
 for i in range(len(nameList)) :

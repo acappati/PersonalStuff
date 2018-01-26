@@ -72,7 +72,7 @@ SipDATA.append(histoDATA_input.Get('SIP max mu'))
 SipDATA.append(histoDATA_input.Get('SIP max mu in Muon Barrel'))
 SipDATA.append(histoDATA_input.Get('SIP max mu in Muon Endcap'))
 
-if CRZLTree :
+if not ZTree :
     SipDATA.append(histoDATA_input.Get('SIP extraEl'))
     SipDATA.append(histoDATA_input.Get('SIP extraEl in ECAL Barrel'))
     SipDATA.append(histoDATA_input.Get('SIP extraEl in ECAL Endcap'))
@@ -107,7 +107,7 @@ SipMC.append(histoMC_input.Get('SIP max mu'))
 SipMC.append(histoMC_input.Get('SIP max mu in Muon Barrel'))
 SipMC.append(histoMC_input.Get('SIP max mu in Muon Endcap'))
 
-if CRZLTree :
+if not ZTree :
     SipMC.append(histoMC_input.Get('SIP extraEl'))
     SipMC.append(histoMC_input.Get('SIP extraEl in ECAL Barrel'))
     SipMC.append(histoMC_input.Get('SIP extraEl in ECAL Endcap'))
@@ -118,7 +118,21 @@ if CRZLTree :
 
 
 
-if CRZLTree :
+if ZTree :
+    nameList = ['SIP_leading_ele',
+                'SIP_leading_ele_InECALbarrel',
+                'SIP_leading_ele_InECALendcap',
+                'maxSIP_ele',
+                'maxSIP_ele_InECALbarrel',
+                'maxSIP_ele_InECALendcap',
+                'SIP_leading_mu',
+                'SIP_leading_mu_InMuonBarrel',
+                'SIP_leading_mu_InMuonEndcap',
+                'maxSIP_mu',
+                'maxSIP_mu_InMuonBarrel',
+                'maxSIP_mu_InMuonEndcap']
+
+else : 
     nameList = ['SIP_leading_ele',
                 'SIP_leading_ele_InECALbarrel',
                 'SIP_leading_ele_InECALendcap',
@@ -137,20 +151,7 @@ if CRZLTree :
                 'SIP_extraMu',
                 'SIP_extraMu_InMuonBarrel',
                 'SIP_extraMu_InMuonEndcap']
-else : 
-    nameList = ['SIP_leading_ele',
-                'SIP_leading_ele_InECALbarrel',
-                'SIP_leading_ele_InECALendcap',
-                'maxSIP_ele',
-                'maxSIP_ele_InECALbarrel',
-                'maxSIP_ele_InECALendcap',
-                'SIP_leading_mu',
-                'SIP_leading_mu_InMuonBarrel',
-                'SIP_leading_mu_InMuonEndcap',
-                'maxSIP_mu',
-                'maxSIP_mu_InMuonBarrel',
-                'maxSIP_mu_InMuonEndcap']
-    
+        
 
                                    
 # *** do the plots ***

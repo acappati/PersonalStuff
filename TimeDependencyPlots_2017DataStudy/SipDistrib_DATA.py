@@ -88,7 +88,7 @@ if(redoHistos) :
     Z_mu_max_SIP_hist_MB = TH1F('SIP max mu in Muon Barrel', 'SIP max mu in Muon Barrel', 100, 0, 10) 
     Z_mu_max_SIP_hist_ME = TH1F('SIP max mu in Muon Endcap', 'SIP max mu in Muon Endcap', 100, 0, 10) 
    
-    if CRZLTree :
+    if not ZTree :
         Z_ExtraEl_SIP_hist    = TH1F('SIP extraEl'               , 'SIP extraEl'               , 100, 0, 10)
         Z_ExtraEl_SIP_hist_EB = TH1F('SIP extraEl in ECAL Barrel', 'SIP extraEl in ECAL Barrel', 100, 0, 10)
         Z_ExtraEl_SIP_hist_EE = TH1F('SIP extraEl in ECAL Endcap', 'SIP extraEl in ECAL Endcap', 100, 0, 10)
@@ -106,7 +106,11 @@ if(redoHistos) :
     # read TTree 
     print "reading tree", data.GetName(),treeText,tree.GetName()  ,"..."
     for event in tree:
-        if ( event.ZZsel < 0 ) : continue # skip events that do not pass the trigger 
+        if ZTree :
+            if ( event.Zsel < 0 ) : continue # skip events that do not pass the trigger 
+        else : 
+            if ( event.ZZsel < 0 ) : continue # skip events that do not pass the trigger 
+
         
         # Z->ee 
         if(int(math.fabs(event.LepLepId[0])) == 11 ) :
@@ -184,7 +188,7 @@ if(redoHistos) :
 
         
         # extra lepton
-        if CRZLTree :
+        if not ZTree :
                 
                 if(int(math.fabs(event.LepLepId[2])) == 11 ) :
 
@@ -229,7 +233,7 @@ if(redoHistos) :
     Z_mu_max_SIP_hist_MB.Write()
     Z_mu_max_SIP_hist_ME.Write()
                                 
-    if CRZLTree :               
+    if not ZTree :               
         Z_ExtraEl_SIP_hist.Write()
         Z_ExtraEl_SIP_hist_EB.Write()
         Z_ExtraEl_SIP_hist_EE.Write()
