@@ -19,15 +19,18 @@ from ROOT import kBlue, kRed, kBlack, kWhite, kAzure, kOrange
 
 # data tree options 
 ZZTree    = False
-CRZLLTree = False
+CRZLLTree = True
 CRZLTree  = False
-ZTree     = True
+ZTree     = False
 
 # data periods options
 # period = "data2016"
 period = "data2017"
 # *****************************
-lumiText = '41.86 fb^{-1}'
+if period == "data2016" :
+    lumiText = '35.9 fb^{-1}'
+if period == "data2017" :
+    lumiText = '41.86 fb^{-1}'
 #******************************
 
 

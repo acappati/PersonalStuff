@@ -36,7 +36,25 @@ elif(period == "data2017"):
 
 
 #input file (DY MC)
-if(period == "data2017"):
+if(period == "data2016"):
+    inputTree = TFile.Open("/data3/Higgs/170222/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC
+    if(ZZTree):
+        tree      = inputTree.Get("ZZTree/candTree")
+        treeText  = "ZZTree"
+    elif(CRZLLTree):
+        tree      = inputTree.Get("CRZLLTree/candTree")
+        treeText  = "CRZLLTree"
+    elif(CRZLTree):
+        tree      = inputTree.Get("CRZLTree/candTree")
+        treeText  = "CRZLTree"
+    elif(ZTree):
+        tree      = inputTree.Get("ZTree/candTree")
+        treeText  = "ZTree"
+    else:
+        print ("Error: wrong option!")
+
+
+elif(period == "data2017"):
     inputTree = TFile.Open("/data3/Higgs/180122/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC
     if(ZZTree):
         tree      = inputTree.Get("ZZTree/candTree")
@@ -52,6 +70,7 @@ if(period == "data2017"):
         treeText  = "ZTree"
     else:
         print ("Error: wrong option!")
+
 else: 
     print ("Error: choose a period!")
 
