@@ -20,6 +20,26 @@
 
 Then you can use:
 
--  python yellowPlots.py           to plot Data vs MC histos 
+-  python yellowPlots.py           to plot Data vs MC histos (DATA/MC comparison on the Z peak)
+
+
+************************
+To compare Iso DATA/MC distributions:
+
+   -   python IsoDistrib_DATA.py 
+   -   python IsoDistrib_MC.py
+   -   python IsoDistrib_DATAvsMC.py 
+
+To compare SIP DATA/MC distributions:
+ 
+   -   python SipDistrib_DATA.py 
+   -   python SipDistrib_MC.py 
+   -   python SipDistrib_DATAvsMC.py
+
+To compare LepBDT DATA/MC distributions:
+
+   -   python LepBDTdistrib_DATA.py 
+   -   python LepBDTdistrib_MC.py 
+   -   python LepBDTdistrib_DATAvsMC.py 
 
 ************************	
