@@ -2,7 +2,7 @@
 
 # *******************
 # usage: 
-#    python jetsMetDistrib_DATA.py
+#    python jetsMetDistrib_DATAvsMC.py
 #
 # *******************
 
