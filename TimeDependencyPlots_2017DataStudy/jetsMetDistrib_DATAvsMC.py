@@ -61,8 +61,8 @@ if(period == "data2016"):
         print ("Error: wrong option!")
 
 elif(period == "data2017"):
-    inputDATAtree = TFile.Open("/data3/Higgs/180122/AllData/ZZ4lAnalysis.root") #2017 data  
-    inputMCDYtree = TFile.Open("/data3/Higgs/180122/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC
+    inputDATAtree = TFile.Open("/data3/Higgs/180209/AllData/ZZ4lAnalysis.root") #2017 data (rereco json 2/2/2018)   
+    inputMCDYtree = TFile.Open("/data3/Higgs/180209/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC (rereco json 2/2/2018)
     lumi     = 41.37   # fb-1
     lumiText = '41.37 fb^{-1}'
     if(ZZTree):
@@ -94,49 +94,96 @@ if(redoDATAHistos) :
 
     TH1.SetDefaultSumw2() # set sumw2 = true fro all the histograms created from now on
 
-    # define data histograms 
-    nCleanedJets_hist                   = TH1F('nCleanedJets',                   'nCleanedJets',                   30, 0, 30) 
-    nCleanedJetsPt30_hist               = TH1F('nCleanedJetsPt30',               'nCleanedJetsPt30',               15, 0, 15) 
-    nCleanedJetsPt30BTagged_hist        = TH1F('nCleanedJetsPt30BTagged',        'nCleanedJetsPt30BTagged',        5,  0, 5)
-    nCleanedJetsPt30BTagged_bTagSF_hist = TH1F('nCleanedJetsPt30BTagged_bTagSF', 'nCleanedJetsPt30BTagged_bTagSF', 5,  0, 5)
+    # define data histograms Z->ee
 
-    JetPt_hist               = TH1F('JetPt_inclusive',           'JetPt_inclusive',           120, 0, 1200)
-    JetPt_hist_1stJet        = TH1F('JetPt_leadingJet',          'JetPt_leadingJet',          120, 0, 1200)
-    JetPt_hist_2ndjet        = TH1F('JetPt_subLeadingJet',       'JetPt_subLeadingJet',       120, 0, 1200)
-    JetPt_hist_1stJet_fwdeta = TH1F('JetPt_leadingJet_fwdeta',   'JetPt_leadingJet_fwdeta',   120, 0, 1200)
-    JetPt_hist_2ndjet_fwdeta = TH1F('JetPt_subLeadingJet_fwdeta','JetPt_subLeadingJet_fwdeta',120, 0, 1200)
+    # nCleanedJets_hist_ele                   = TH1F('nCleanedJets_ele',                   'nCleanedJets_ele',                   30, 0, 30) 
+    nCleanedJetsPt30_hist_ele               = TH1F('nCleanedJetsPt30_ele',               'nCleanedJetsPt30_ele',               15, 0, 15) 
+    # nCleanedJetsPt30BTagged_hist_ele        = TH1F('nCleanedJetsPt30BTagged_ele',        'nCleanedJetsPt30BTagged_ele',        5,  0, 5)
+    # nCleanedJetsPt30BTagged_bTagSF_hist_ele = TH1F('nCleanedJetsPt30BTagged_bTagSF_ele', 'nCleanedJetsPt30BTagged_bTagSF_ele', 5,  0, 5)
 
-    JetEta_hist               = TH1F('JetEta_inclusive',           'JetEta_inclusive',           50, -5, 5)
-    JetEta_hist_1stjet        = TH1F('JetEta_leadingJet',          'JetEta_leadingJet',          50, -5, 5)
-    JetEta_hist_2ndjet        = TH1F('JetEta_subLeadingJet',       'JetEta_subLeadingJet',       50, -5, 5)
-    JetEta_hist_1stjet_fwdeta = TH1F('JetEta_leadingJet_fwdeta',   'JetEta_leadingJet_fwdeta',   50, -5, 5)
-    JetEta_hist_2ndjet_fwdeta = TH1F('JetEta_subLeadingJet_fwdeta','JetEta_subLeadingJet_fwdeta',50, -5, 5)
+    JetPt_hist_ele               = TH1F('JetPt_inclusive_ele',           'JetPt_inclusive_ele',           120, 0, 1200)
+    JetPt_hist_1stJet_ele        = TH1F('JetPt_leadingJet_ele',          'JetPt_leadingJet_ele',          120, 0, 1200)
+    JetPt_hist_2ndjet_ele        = TH1F('JetPt_subLeadingJet_ele',       'JetPt_subLeadingJet_ele',       120, 0, 1200)
+    JetPt_hist_1stJet_fwdeta_ele = TH1F('JetPt_leadingJet_fwdeta_ele',   'JetPt_leadingJet_fwdeta_ele',   120, 0, 1200)
+    JetPt_hist_2ndjet_fwdeta_ele = TH1F('JetPt_subLeadingJet_fwdeta_ele','JetPt_subLeadingJet_fwdeta_ele',120, 0, 1200)
 
-    JetPhi_hist               = TH1F('JetPhi_inclusive',           'JetPhi_inclusive',           33, -3.3, 3.3)
-    JetPhi_hist_1stjet        = TH1F('JetPhi_leadingJet',          'JetPhi_leadingJet',          33, -3.3, 3.3) 
-    JetPhi_hist_2ndjet        = TH1F('JetPhi_subLeadingJet',       'JetPhi_subLeadingJet',       33, -3.3, 3.3) 
-    JetPhi_hist_1stjet_fwdeta = TH1F('JetPhi_leadingJet_fwdeta',   'JetPhi_leadingJet_fwdeta',   33, -3.3, 3.3) 
-    JetPhi_hist_2ndjet_fwdeta = TH1F('JetPhi_subLeadingJet_fwdeta','JetPhi_subLeadingJet_fwdeta',33, -3.3, 3.3) 
+    JetEta_hist_ele               = TH1F('JetEta_inclusive_ele',           'JetEta_inclusive_ele',           50, -5, 5)
+    JetEta_hist_1stjet_ele        = TH1F('JetEta_leadingJet_ele',          'JetEta_leadingJet_ele',          50, -5, 5)
+    JetEta_hist_2ndjet_ele        = TH1F('JetEta_subLeadingJet_ele',       'JetEta_subLeadingJet_ele',       50, -5, 5)
+    JetEta_hist_1stjet_fwdeta_ele = TH1F('JetEta_leadingJet_fwdeta_ele',   'JetEta_leadingJet_fwdeta_ele',   50, -5, 5)
+    JetEta_hist_2ndjet_fwdeta_ele = TH1F('JetEta_subLeadingJet_fwdeta_ele','JetEta_subLeadingJet_fwdeta_ele',50, -5, 5)
 
-    JetBTagger_hist               = TH1F('JetBTagger_inclusive',           'JetBTagger_inclusive',           20, -11, 2)
-    JetBTagger_hist_1stjet        = TH1F('JetBTagger_leadingJet',          'JetBTagger_leadingJet',          20, -11, 2)
-    JetBTagger_hist_2ndjet        = TH1F('JetBTagger_subLeadingJet',       'JetBTagger_subLeadingJet',       20, -11, 2)
-    JetBTagger_hist_1stjet_fwdeta = TH1F('JetBTagger_leadingJet_fwdeta',   'JetBTagger_leadingJet_fwdeta',   20, -11, 2)
-    JetBTagger_hist_2ndjet_fwdeta = TH1F('JetBTagger_subLeadingJet_fwdeta','JetBTagger_subLeadingJet_fwdeta',20, -11, 2)
+    JetPhi_hist_ele               = TH1F('JetPhi_inclusive_ele',           'JetPhi_inclusive_ele',           33, -3.3, 3.3)
+    JetPhi_hist_1stjet_ele        = TH1F('JetPhi_leadingJet_ele',          'JetPhi_leadingJet_ele',          33, -3.3, 3.3) 
+    JetPhi_hist_2ndjet_ele        = TH1F('JetPhi_subLeadingJet_ele',       'JetPhi_subLeadingJet_ele',       33, -3.3, 3.3) 
+    JetPhi_hist_1stjet_fwdeta_ele = TH1F('JetPhi_leadingJet_fwdeta_ele',   'JetPhi_leadingJet_fwdeta_ele',   33, -3.3, 3.3) 
+    JetPhi_hist_2ndjet_fwdeta_ele = TH1F('JetPhi_subLeadingJet_fwdeta_ele','JetPhi_subLeadingJet_fwdeta_ele',33, -3.3, 3.3) 
 
-    JetIsBtagged_hist               = TH1F('JetIsBtagged_inclusive',           'JetIsBtagged_inclusive',           11, 0, 1.1)
-    JetIsBtagged_hist_1stjet        = TH1F('JetIsBtagged_leadingJet',          'JetIsBtagged_leadingJet',          11, 0, 1.1)
-    JetIsBtagged_hist_2ndjet        = TH1F('JetIsBtagged_subLeadingJet',       'JetIsBtagged_subLeadingJet',       11, 0, 1.1)
-    JetIsBtagged_hist_1stjet_fwdeta = TH1F('JetIsBtagged_leadingJet_fwdeta',   'JetIsBtagged_leadingJet_fwdeta',   11, 0, 1.1)
-    JetIsBtagged_hist_2ndjet_fwdeta = TH1F('JetIsBtagged_subLeadingJet_fwdeta','JetIsBtagged_subLeadingJet_fwdeta',11, 0, 1.1)
+    JetBTagger_hist_ele               = TH1F('JetBTagger_inclusive_ele',           'JetBTagger_inclusive_ele',           20, -11, 2)
+    JetBTagger_hist_1stjet_ele        = TH1F('JetBTagger_leadingJet_ele',          'JetBTagger_leadingJet_ele',          20, -11, 2)
+    JetBTagger_hist_2ndjet_ele        = TH1F('JetBTagger_subLeadingJet_ele',       'JetBTagger_subLeadingJet_ele',       20, -11, 2)
+    JetBTagger_hist_1stjet_fwdeta_ele = TH1F('JetBTagger_leadingJet_fwdeta_ele',   'JetBTagger_leadingJet_fwdeta_ele',   20, -11, 2)
+    JetBTagger_hist_2ndjet_fwdeta_ele = TH1F('JetBTagger_subLeadingJet_fwdeta_ele','JetBTagger_subLeadingJet_fwdeta_ele',20, -11, 2)
+
+    JetIsBtagged_hist_ele               = TH1F('JetIsBtagged_inclusive_ele',           'JetIsBtagged_inclusive_ele',           11, 0, 1.1)
+    JetIsBtagged_hist_1stjet_ele        = TH1F('JetIsBtagged_leadingJet_ele',          'JetIsBtagged_leadingJet_ele',          11, 0, 1.1)
+    JetIsBtagged_hist_2ndjet_ele        = TH1F('JetIsBtagged_subLeadingJet_ele',       'JetIsBtagged_subLeadingJet_ele',       11, 0, 1.1)
+    JetIsBtagged_hist_1stjet_fwdeta_ele = TH1F('JetIsBtagged_leadingJet_fwdeta_ele',   'JetIsBtagged_leadingJet_fwdeta_ele',   11, 0, 1.1)
+    JetIsBtagged_hist_2ndjet_fwdeta_ele = TH1F('JetIsBtagged_subLeadingJet_fwdeta_ele','JetIsBtagged_subLeadingJet_fwdeta_ele',11, 0, 1.1)
     
-    JetIsBtaggedWithSF_hist               = TH1F('JetIsBtaggedWithSF_inclusive',           'JetIsBtaggedWithSF_inclusive',           11, 0, 1.1)
-    JetIsBtaggedWithSF_hist_1stjet        = TH1F('JetIsBtaggedWithSF_leadingJet',          'JetIsBtaggedWithSF_leadingJet',          11, 0, 1.1)
-    JetIsBtaggedWithSF_hist_2ndjet        = TH1F('JetIsBtaggedWithSF_subLeadingJet',       'JetIsBtaggedWithSF_subLeadingJet',       11, 0, 1.1) 
-    JetIsBtaggedWithSF_hist_1stjet_fwdeta = TH1F('JetIsBtaggedWithSF_leadingJet_fwdeta',   'JetIsBtaggedWithSF_leadingJet_fwdeta',   11, 0, 1.1)
-    JetIsBtaggedWithSF_hist_2ndjet_fwdeta = TH1F('JetIsBtaggedWithSF_subLeadingJet_fwdeta','JetIsBtaggedWithSF_subLeadingJet_fwdeta',11, 0, 1.1)
+    JetIsBtaggedWithSF_hist_ele               = TH1F('JetIsBtaggedWithSF_inclusive_ele',           'JetIsBtaggedWithSF_inclusive_ele',           11, 0, 1.1)
+    JetIsBtaggedWithSF_hist_1stjet_ele        = TH1F('JetIsBtaggedWithSF_leadingJet_ele',          'JetIsBtaggedWithSF_leadingJet_ele',          11, 0, 1.1)
+    JetIsBtaggedWithSF_hist_2ndjet_ele        = TH1F('JetIsBtaggedWithSF_subLeadingJet_ele',       'JetIsBtaggedWithSF_subLeadingJet_ele',       11, 0, 1.1) 
+    JetIsBtaggedWithSF_hist_1stjet_fwdeta_ele = TH1F('JetIsBtaggedWithSF_leadingJet_fwdeta_ele',   'JetIsBtaggedWithSF_leadingJet_fwdeta_ele',   11, 0, 1.1)
+    JetIsBtaggedWithSF_hist_2ndjet_fwdeta_ele = TH1F('JetIsBtaggedWithSF_subLeadingJet_fwdeta_ele','JetIsBtaggedWithSF_subLeadingJet_fwdeta_ele',11, 0, 1.1)
 
-    PFMET_hist = TH1F('PFMET','PFMET',250,0,250)
+    PFMET_hist_ele = TH1F('PFMET_ele','PFMET_ele',125,0,250)
+
+
+    # define data histograms Z->mumu
+
+    # nCleanedJets_hist_mu                   = TH1F('nCleanedJets_mu',                   'nCleanedJets_mu',                   30, 0, 30) 
+    nCleanedJetsPt30_hist_mu               = TH1F('nCleanedJetsPt30_mu',               'nCleanedJetsPt30_mu',               15, 0, 15) 
+    # nCleanedJetsPt30BTagged_hist_mu        = TH1F('nCleanedJetsPt30BTagged_mu',        'nCleanedJetsPt30BTagged_mu',        5,  0, 5)
+    # nCleanedJetsPt30BTagged_bTagSF_hist_mu = TH1F('nCleanedJetsPt30BTagged_bTagSF_mu', 'nCleanedJetsPt30BTagged_bTagSF_mu', 5,  0, 5)
+
+    JetPt_hist_mu               = TH1F('JetPt_inclusive_mu',           'JetPt_inclusive_mu',           120, 0, 1200)
+    JetPt_hist_1stJet_mu        = TH1F('JetPt_leadingJet_mu',          'JetPt_leadingJet_mu',          120, 0, 1200)
+    JetPt_hist_2ndjet_mu        = TH1F('JetPt_subLeadingJet_mu',       'JetPt_subLeadingJet_mu',       120, 0, 1200)
+    JetPt_hist_1stJet_fwdeta_mu = TH1F('JetPt_leadingJet_fwdeta_mu',   'JetPt_leadingJet_fwdeta_mu',   120, 0, 1200)
+    JetPt_hist_2ndjet_fwdeta_mu = TH1F('JetPt_subLeadingJet_fwdeta_mu','JetPt_subLeadingJet_fwdeta_mu',120, 0, 1200)
+
+    JetEta_hist_mu               = TH1F('JetEta_inclusive_mu',           'JetEta_inclusive_mu',           50, -5, 5)
+    JetEta_hist_1stjet_mu        = TH1F('JetEta_leadingJet_mu',          'JetEta_leadingJet_mu',          50, -5, 5)
+    JetEta_hist_2ndjet_mu        = TH1F('JetEta_subLeadingJet_mu',       'JetEta_subLeadingJet_mu',       50, -5, 5)
+    JetEta_hist_1stjet_fwdeta_mu = TH1F('JetEta_leadingJet_fwdeta_mu',   'JetEta_leadingJet_fwdeta_mu',   50, -5, 5)
+    JetEta_hist_2ndjet_fwdeta_mu = TH1F('JetEta_subLeadingJet_fwdeta_mu','JetEta_subLeadingJet_fwdeta_mu',50, -5, 5)
+
+    JetPhi_hist_mu               = TH1F('JetPhi_inclusive_mu',           'JetPhi_inclusive_mu',           33, -3.3, 3.3)
+    JetPhi_hist_1stjet_mu        = TH1F('JetPhi_leadingJet_mu',          'JetPhi_leadingJet_mu',          33, -3.3, 3.3) 
+    JetPhi_hist_2ndjet_mu        = TH1F('JetPhi_subLeadingJet_mu',       'JetPhi_subLeadingJet_mu',       33, -3.3, 3.3) 
+    JetPhi_hist_1stjet_fwdeta_mu = TH1F('JetPhi_leadingJet_fwdeta_mu',   'JetPhi_leadingJet_fwdeta_mu',   33, -3.3, 3.3) 
+    JetPhi_hist_2ndjet_fwdeta_mu = TH1F('JetPhi_subLeadingJet_fwdeta_mu','JetPhi_subLeadingJet_fwdeta_mu',33, -3.3, 3.3) 
+
+    JetBTagger_hist_mu               = TH1F('JetBTagger_inclusive_mu',           'JetBTagger_inclusive_mu',           20, -11, 2)
+    JetBTagger_hist_1stjet_mu        = TH1F('JetBTagger_leadingJet_mu',          'JetBTagger_leadingJet_mu',          20, -11, 2)
+    JetBTagger_hist_2ndjet_mu        = TH1F('JetBTagger_subLeadingJet_mu',       'JetBTagger_subLeadingJet_mu',       20, -11, 2)
+    JetBTagger_hist_1stjet_fwdeta_mu = TH1F('JetBTagger_leadingJet_fwdeta_mu',   'JetBTagger_leadingJet_fwdeta_mu',   20, -11, 2)
+    JetBTagger_hist_2ndjet_fwdeta_mu = TH1F('JetBTagger_subLeadingJet_fwdeta_mu','JetBTagger_subLeadingJet_fwdeta_mu',20, -11, 2)
+
+    JetIsBtagged_hist_mu               = TH1F('JetIsBtagged_inclusive_mu',           'JetIsBtagged_inclusive_mu',           11, 0, 1.1)
+    JetIsBtagged_hist_1stjet_mu        = TH1F('JetIsBtagged_leadingJet_mu',          'JetIsBtagged_leadingJet_mu',          11, 0, 1.1)
+    JetIsBtagged_hist_2ndjet_mu        = TH1F('JetIsBtagged_subLeadingJet_mu',       'JetIsBtagged_subLeadingJet_mu',       11, 0, 1.1)
+    JetIsBtagged_hist_1stjet_fwdeta_mu = TH1F('JetIsBtagged_leadingJet_fwdeta_mu',   'JetIsBtagged_leadingJet_fwdeta_mu',   11, 0, 1.1)
+    JetIsBtagged_hist_2ndjet_fwdeta_mu = TH1F('JetIsBtagged_subLeadingJet_fwdeta_mu','JetIsBtagged_subLeadingJet_fwdeta_mu',11, 0, 1.1)
+    
+    JetIsBtaggedWithSF_hist_mu               = TH1F('JetIsBtaggedWithSF_inclusive_mu',           'JetIsBtaggedWithSF_inclusive_mu',           11, 0, 1.1)
+    JetIsBtaggedWithSF_hist_1stjet_mu        = TH1F('JetIsBtaggedWithSF_leadingJet_mu',          'JetIsBtaggedWithSF_leadingJet_mu',          11, 0, 1.1)
+    JetIsBtaggedWithSF_hist_2ndjet_mu        = TH1F('JetIsBtaggedWithSF_subLeadingJet_mu',       'JetIsBtaggedWithSF_subLeadingJet_mu',       11, 0, 1.1) 
+    JetIsBtaggedWithSF_hist_1stjet_fwdeta_mu = TH1F('JetIsBtaggedWithSF_leadingJet_fwdeta_mu',   'JetIsBtaggedWithSF_leadingJet_fwdeta_mu',   11, 0, 1.1)
+    JetIsBtaggedWithSF_hist_2ndjet_fwdeta_mu = TH1F('JetIsBtaggedWithSF_subLeadingJet_fwdeta_mu','JetIsBtaggedWithSF_subLeadingJet_fwdeta_mu',11, 0, 1.1)
+
+    PFMET_hist_mu = TH1F('PFMET_mu','PFMET_mu',125,0,250)
 
     
 
@@ -149,66 +196,134 @@ if(redoDATAHistos) :
             if ( event.ZZsel < 0 ) : continue # skip events that do not pass the trigger
   
 
-        nCleanedJets_hist.Fill(event.nCleanedJets)
-        nCleanedJetsPt30_hist.Fill(event.nCleanedJetsPt30)
-        nCleanedJetsPt30BTagged_hist.Fill(event.nCleanedJetsPt30BTagged)
-        nCleanedJetsPt30BTagged_bTagSF_hist.Fill(event.nCleanedJetsPt30BTagged_bTagSF)
-        
-        for i in range(len(event.JetPt)) :
-            JetPt_hist.Fill(event.JetPt[i])
-                  
-        for i in range(len(event.JetEta)) :  
-            JetEta_hist.Fill(event.JetEta[i])
-                                        
-        for i in range(len(event.JetPhi)) :
-            JetPhi_hist.Fill(event.JetPhi[i])
-          
-        for i in range(len(event.JetBTagger)) :
-            JetBTagger_hist.Fill(event.JetBTagger[i])
-                                        
-        for i in range(len(event.JetIsBtagged)) :
-            JetIsBtagged_hist.Fill(event.JetIsBtagged[i])
-        
-        for i in range(len(event.JetIsBtaggedWithSF)) :                
-            JetIsBtaggedWithSF_hist.Fill(event.JetIsBtaggedWithSF[i])     
-        
+        # Z->ee histos
+        if(int(math.fabs(event.LepLepId[0])) == 11 ):
 
-        if event.nCleanedJets > 0 :
-            JetPt_hist_1stJet.Fill(event.JetPt[0])
-            JetEta_hist_1stjet.Fill(event.JetEta[0])
-            JetPhi_hist_1stjet.Fill(event.JetPhi[0])
-            JetBTagger_hist_1stjet.Fill(event.JetBTagger[0])
-            JetIsBtagged_hist_1stjet.Fill(event.JetIsBtagged[0])
-            JetIsBtaggedWithSF_hist_1stjet.Fill(event.JetIsBtaggedWithSF[0])
-
-            if math.fabs(event.JetEta[0]) > 3.0 : 
-                JetPt_hist_1stJet_fwdeta.Fill(event.JetPt[0])
-                JetEta_hist_1stjet_fwdeta.Fill(event.JetEta[0])
-                JetPhi_hist_1stjet_fwdeta.Fill(event.JetPhi[0])
-                JetBTagger_hist_1stjet_fwdeta.Fill(event.JetBTagger[0])
-                JetIsBtagged_hist_1stjet_fwdeta.Fill(event.JetIsBtagged[0])
-                JetIsBtaggedWithSF_hist_1stjet_fwdeta.Fill(event.JetIsBtaggedWithSF[0])
-        
-        
-            if event.nCleanedJets > 1 :
-                JetPt_hist_2ndjet.Fill(event.JetPt[1])
-                JetEta_hist_2ndjet.Fill(event.JetEta[1])
-                JetPhi_hist_2ndjet.Fill(event.JetPhi[1])
-                JetBTagger_hist_2ndjet.Fill(event.JetBTagger[1])
-                JetIsBtagged_hist_2ndjet.Fill(event.JetIsBtagged[1])
-                JetIsBtaggedWithSF_hist_2ndjet.Fill(event.JetIsBtaggedWithSF[1])
-
-                if math.fabs(event.JetEta[1]) > 3.0 : 
-                    JetPt_hist_2ndjet_fwdeta.Fill(event.JetPt[1])
-                    JetEta_hist_2ndjet_fwdeta.Fill(event.JetEta[1])
-                    JetPhi_hist_2ndjet_fwdeta.Fill(event.JetPhi[1])
-                    JetBTagger_hist_2ndjet_fwdeta.Fill(event.JetBTagger[1])
-                    JetIsBtagged_hist_2ndjet_fwdeta.Fill(event.JetIsBtagged[1])
-                    JetIsBtaggedWithSF_hist_2ndjet_fwdeta.Fill(event.JetIsBtaggedWithSF[1])
-                    
+            # nCleanedJets_hist_ele.Fill(event.nCleanedJets)
+            nCleanedJetsPt30_hist_ele.Fill(event.nCleanedJetsPt30)
+            # nCleanedJetsPt30BTagged_hist_ele.Fill(event.nCleanedJetsPt30BTagged)
+            # nCleanedJetsPt30BTagged_bTagSF_hist_ele.Fill(event.nCleanedJetsPt30BTagged_bTagSF)
             
+            for i in range(len(event.JetPt)) :
+                JetPt_hist_ele.Fill(event.JetPt[i])
+                      
+            for i in range(len(event.JetEta)) :  
+                JetEta_hist_ele.Fill(event.JetEta[i])
+                                            
+            for i in range(len(event.JetPhi)) :
+                JetPhi_hist_ele.Fill(event.JetPhi[i])
+            
+            if event.nCleanedJetsPt30 > 0 :
+                for i in range(len(event.JetBTagger)) :
+                    JetBTagger_hist_ele.Fill(event.JetBTagger[i])
+                                            
+            for i in range(len(event.JetIsBtagged)) :
+                JetIsBtagged_hist_ele.Fill(event.JetIsBtagged[i])
+            
+            for i in range(len(event.JetIsBtaggedWithSF)) :                
+                JetIsBtaggedWithSF_hist_ele.Fill(event.JetIsBtaggedWithSF[i])     
+            
+            
+            if event.nCleanedJetsPt30 > 0 :
+                JetPt_hist_1stJet_ele.Fill(event.JetPt[0])
+                JetEta_hist_1stjet_ele.Fill(event.JetEta[0])
+                JetPhi_hist_1stjet_ele.Fill(event.JetPhi[0])
+                JetBTagger_hist_1stjet_ele.Fill(event.JetBTagger[0])
+                JetIsBtagged_hist_1stjet_ele.Fill(event.JetIsBtagged[0])
+                JetIsBtaggedWithSF_hist_1stjet_ele.Fill(event.JetIsBtaggedWithSF[0])
+            
+                if math.fabs(event.JetEta[0]) > 3.0 : 
+                    JetPt_hist_1stJet_fwdeta_ele.Fill(event.JetPt[0])
+                    JetEta_hist_1stjet_fwdeta_ele.Fill(event.JetEta[0])
+                    JetPhi_hist_1stjet_fwdeta_ele.Fill(event.JetPhi[0])
+                    JetBTagger_hist_1stjet_fwdeta_ele.Fill(event.JetBTagger[0])
+                    JetIsBtagged_hist_1stjet_fwdeta_ele.Fill(event.JetIsBtagged[0])
+                    JetIsBtaggedWithSF_hist_1stjet_fwdeta_ele.Fill(event.JetIsBtaggedWithSF[0])
+            
+            
+                if event.nCleanedJetsPt30 > 1 :
+                    JetPt_hist_2ndjet_ele.Fill(event.JetPt[1])
+                    JetEta_hist_2ndjet_ele.Fill(event.JetEta[1])
+                    JetPhi_hist_2ndjet_ele.Fill(event.JetPhi[1])
+                    JetBTagger_hist_2ndjet_ele.Fill(event.JetBTagger[1])
+                    JetIsBtagged_hist_2ndjet_ele.Fill(event.JetIsBtagged[1])
+                    JetIsBtaggedWithSF_hist_2ndjet_ele.Fill(event.JetIsBtaggedWithSF[1])
+            
+                    if math.fabs(event.JetEta[1]) > 3.0 : 
+                        JetPt_hist_2ndjet_fwdeta_ele.Fill(event.JetPt[1])
+                        JetEta_hist_2ndjet_fwdeta_ele.Fill(event.JetEta[1])
+                        JetPhi_hist_2ndjet_fwdeta_ele.Fill(event.JetPhi[1])
+                        JetBTagger_hist_2ndjet_fwdeta_ele.Fill(event.JetBTagger[1])
+                        JetIsBtagged_hist_2ndjet_fwdeta_ele.Fill(event.JetIsBtagged[1])
+                        JetIsBtaggedWithSF_hist_2ndjet_fwdeta_ele.Fill(event.JetIsBtaggedWithSF[1])
+                        
+            
+            PFMET_hist_ele.Fill(event.PFMET)
 
-        PFMET_hist.Fill(event.PFMET)
+
+        # Z->mumu histos
+        if(int(math.fabs(event.LepLepId[0])) == 13 ):
+
+            # nCleanedJets_hist_mu.Fill(event.nCleanedJets)
+            nCleanedJetsPt30_hist_mu.Fill(event.nCleanedJetsPt30)
+            # nCleanedJetsPt30BTagged_hist_mu.Fill(event.nCleanedJetsPt30BTagged)
+            # nCleanedJetsPt30BTagged_bTagSF_hist_mu.Fill(event.nCleanedJetsPt30BTagged_bTagSF)
+            
+            for i in range(len(event.JetPt)) :
+                JetPt_hist_mu.Fill(event.JetPt[i])
+                      
+            for i in range(len(event.JetEta)) :  
+                JetEta_hist_mu.Fill(event.JetEta[i])
+                                            
+            for i in range(len(event.JetPhi)) :
+                JetPhi_hist_mu.Fill(event.JetPhi[i])
+            
+            if event.nCleanedJetsPt30 > 0 :
+                for i in range(len(event.JetBTagger)) :
+                    JetBTagger_hist_mu.Fill(event.JetBTagger[i])
+                                            
+            for i in range(len(event.JetIsBtagged)) :
+                JetIsBtagged_hist_mu.Fill(event.JetIsBtagged[i])
+            
+            for i in range(len(event.JetIsBtaggedWithSF)) :                
+                JetIsBtaggedWithSF_hist_mu.Fill(event.JetIsBtaggedWithSF[i])     
+            
+            
+            if event.nCleanedJetsPt30 > 0 :
+                JetPt_hist_1stJet_mu.Fill(event.JetPt[0])
+                JetEta_hist_1stjet_mu.Fill(event.JetEta[0])
+                JetPhi_hist_1stjet_mu.Fill(event.JetPhi[0])
+                JetBTagger_hist_1stjet_mu.Fill(event.JetBTagger[0])
+                JetIsBtagged_hist_1stjet_mu.Fill(event.JetIsBtagged[0])
+                JetIsBtaggedWithSF_hist_1stjet_mu.Fill(event.JetIsBtaggedWithSF[0])
+            
+                if math.fabs(event.JetEta[0]) > 3.0 : 
+                    JetPt_hist_1stJet_fwdeta_mu.Fill(event.JetPt[0])
+                    JetEta_hist_1stjet_fwdeta_mu.Fill(event.JetEta[0])
+                    JetPhi_hist_1stjet_fwdeta_mu.Fill(event.JetPhi[0])
+                    JetBTagger_hist_1stjet_fwdeta_mu.Fill(event.JetBTagger[0])
+                    JetIsBtagged_hist_1stjet_fwdeta_mu.Fill(event.JetIsBtagged[0])
+                    JetIsBtaggedWithSF_hist_1stjet_fwdeta_mu.Fill(event.JetIsBtaggedWithSF[0])
+            
+            
+                if event.nCleanedJetsPt30 > 1 :
+                    JetPt_hist_2ndjet_mu.Fill(event.JetPt[1])
+                    JetEta_hist_2ndjet_mu.Fill(event.JetEta[1])
+                    JetPhi_hist_2ndjet_mu.Fill(event.JetPhi[1])
+                    JetBTagger_hist_2ndjet_mu.Fill(event.JetBTagger[1])
+                    JetIsBtagged_hist_2ndjet_mu.Fill(event.JetIsBtagged[1])
+                    JetIsBtaggedWithSF_hist_2ndjet_mu.Fill(event.JetIsBtaggedWithSF[1])
+            
+                    if math.fabs(event.JetEta[1]) > 3.0 : 
+                        JetPt_hist_2ndjet_fwdeta_mu.Fill(event.JetPt[1])
+                        JetEta_hist_2ndjet_fwdeta_mu.Fill(event.JetEta[1])
+                        JetPhi_hist_2ndjet_fwdeta_mu.Fill(event.JetPhi[1])
+                        JetBTagger_hist_2ndjet_fwdeta_mu.Fill(event.JetBTagger[1])
+                        JetIsBtagged_hist_2ndjet_fwdeta_mu.Fill(event.JetIsBtagged[1])
+                        JetIsBtaggedWithSF_hist_2ndjet_fwdeta_mu.Fill(event.JetIsBtaggedWithSF[1])
+                        
+            
+            PFMET_hist_mu.Fill(event.PFMET)
 
         
     #save histograms in a root file 
@@ -216,49 +331,94 @@ if(redoDATAHistos) :
     outFile_DATA = TFile.Open("jetsMetDistrib_DATA_"+ period + "_" + treeText +".root", "RECREATE")
     outFile_DATA.cd()
 
+    # Zee histos
+    # nCleanedJets_hist_ele.Write()
+    nCleanedJetsPt30_hist_ele.Write()
+    # nCleanedJetsPt30BTagged_hist_ele.Write()
+    # nCleanedJetsPt30BTagged_bTagSF_hist_ele.Write()
     
-    nCleanedJets_hist.Write()
-    nCleanedJetsPt30_hist.Write()
-    nCleanedJetsPt30BTagged_hist.Write()
-    nCleanedJetsPt30BTagged_bTagSF_hist.Write()
-    
-    JetPt_hist.Write()
-    JetPt_hist_1stJet.Write()
-    JetPt_hist_2ndjet.Write()
-    JetPt_hist_1stJet_fwdeta.Write()
-    JetPt_hist_2ndjet_fwdeta.Write()
+    JetPt_hist_ele.Write()
+    JetPt_hist_1stJet_ele.Write()
+    JetPt_hist_2ndjet_ele.Write()
+    JetPt_hist_1stJet_fwdeta_ele.Write()
+    JetPt_hist_2ndjet_fwdeta_ele.Write()
      
-    JetEta_hist.Write()
-    JetEta_hist_1stjet.Write()
-    JetEta_hist_2ndjet.Write()
-    JetEta_hist_1stjet_fwdeta.Write()
-    JetEta_hist_2ndjet_fwdeta.Write()
+    JetEta_hist_ele.Write()
+    JetEta_hist_1stjet_ele.Write()
+    JetEta_hist_2ndjet_ele.Write()
+    JetEta_hist_1stjet_fwdeta_ele.Write()
+    JetEta_hist_2ndjet_fwdeta_ele.Write()
                             
-    JetPhi_hist.Write()
-    JetPhi_hist_1stjet.Write()
-    JetPhi_hist_2ndjet.Write()
-    JetPhi_hist_1stjet_fwdeta.Write()
-    JetPhi_hist_2ndjet_fwdeta.Write()
+    JetPhi_hist_ele.Write()
+    JetPhi_hist_1stjet_ele.Write()
+    JetPhi_hist_2ndjet_ele.Write()
+    JetPhi_hist_1stjet_fwdeta_ele.Write()
+    JetPhi_hist_2ndjet_fwdeta_ele.Write()
                             
-    JetBTagger_hist.Write()
-    JetBTagger_hist_1stjet.Write()
-    JetBTagger_hist_2ndjet.Write()
-    JetBTagger_hist_1stjet_fwdeta.Write()
-    JetBTagger_hist_2ndjet_fwdeta.Write()
+    JetBTagger_hist_ele.Write()
+    JetBTagger_hist_1stjet_ele.Write()
+    JetBTagger_hist_2ndjet_ele.Write()
+    JetBTagger_hist_1stjet_fwdeta_ele.Write()
+    JetBTagger_hist_2ndjet_fwdeta_ele.Write()
                             
-    JetIsBtagged_hist.Write()
-    JetIsBtagged_hist_1stjet.Write()
-    JetIsBtagged_hist_2ndjet.Write()
-    JetIsBtagged_hist_1stjet_fwdeta.Write()
-    JetIsBtagged_hist_2ndjet_fwdeta.Write()
+    JetIsBtagged_hist_ele.Write()
+    JetIsBtagged_hist_1stjet_ele.Write()
+    JetIsBtagged_hist_2ndjet_ele.Write()
+    JetIsBtagged_hist_1stjet_fwdeta_ele.Write()
+    JetIsBtagged_hist_2ndjet_fwdeta_ele.Write()
                             
-    JetIsBtaggedWithSF_hist.Write()   
-    JetIsBtaggedWithSF_hist_1stjet.Write()
-    JetIsBtaggedWithSF_hist_2ndjet.Write()
-    JetIsBtaggedWithSF_hist_1stjet_fwdeta.Write()
-    JetIsBtaggedWithSF_hist_2ndjet_fwdeta.Write()
+    JetIsBtaggedWithSF_hist_ele.Write()   
+    JetIsBtaggedWithSF_hist_1stjet_ele.Write()
+    JetIsBtaggedWithSF_hist_2ndjet_ele.Write()
+    JetIsBtaggedWithSF_hist_1stjet_fwdeta_ele.Write()
+    JetIsBtaggedWithSF_hist_2ndjet_fwdeta_ele.Write()
 
-    PFMET_hist.Write()
+    PFMET_hist_ele.Write()
+
+    # Zmumu histos
+    # nCleanedJets_hist_mu.Write()
+    nCleanedJetsPt30_hist_mu.Write()
+    # nCleanedJetsPt30BTagged_hist_mu.Write()
+    # nCleanedJetsPt30BTagged_bTagSF_hist_mu.Write()
+    
+    JetPt_hist_mu.Write()
+    JetPt_hist_1stJet_mu.Write()
+    JetPt_hist_2ndjet_mu.Write()
+    JetPt_hist_1stJet_fwdeta_mu.Write()
+    JetPt_hist_2ndjet_fwdeta_mu.Write()
+     
+    JetEta_hist_mu.Write()
+    JetEta_hist_1stjet_mu.Write()
+    JetEta_hist_2ndjet_mu.Write()
+    JetEta_hist_1stjet_fwdeta_mu.Write()
+    JetEta_hist_2ndjet_fwdeta_mu.Write()
+                            
+    JetPhi_hist_mu.Write()
+    JetPhi_hist_1stjet_mu.Write()
+    JetPhi_hist_2ndjet_mu.Write()
+    JetPhi_hist_1stjet_fwdeta_mu.Write()
+    JetPhi_hist_2ndjet_fwdeta_mu.Write()
+                            
+    JetBTagger_hist_mu.Write()
+    JetBTagger_hist_1stjet_mu.Write()
+    JetBTagger_hist_2ndjet_mu.Write()
+    JetBTagger_hist_1stjet_fwdeta_mu.Write()
+    JetBTagger_hist_2ndjet_fwdeta_mu.Write()
+                            
+    JetIsBtagged_hist_mu.Write()
+    JetIsBtagged_hist_1stjet_mu.Write()
+    JetIsBtagged_hist_2ndjet_mu.Write()
+    JetIsBtagged_hist_1stjet_fwdeta_mu.Write()
+    JetIsBtagged_hist_2ndjet_fwdeta_mu.Write()
+                            
+    JetIsBtaggedWithSF_hist_mu.Write()   
+    JetIsBtaggedWithSF_hist_1stjet_mu.Write()
+    JetIsBtaggedWithSF_hist_2ndjet_mu.Write()
+    JetIsBtaggedWithSF_hist_1stjet_fwdeta_mu.Write()
+    JetIsBtaggedWithSF_hist_2ndjet_fwdeta_mu.Write()
+
+    PFMET_hist_mu.Write()
+
 
     outFile_DATA.Close()
     print "DATA histo file created!"
@@ -271,49 +431,98 @@ if(redoMCDYHistos) :
 
     TH1.SetDefaultSumw2() # set sumw2 = true fro all the histograms created from now on
 
-    # define data histograms 
-    nCleanedJets_hist_MC_DY                   = TH1F('nCleanedJets_MC_DY',                   'nCleanedJets_MC_DY',                   30, 0, 30) 
-    nCleanedJetsPt30_hist_MC_DY               = TH1F('nCleanedJetsPt30_MC_DY',               'nCleanedJetsPt30_MC_DY',               15, 0, 15) 
-    nCleanedJetsPt30BTagged_hist_MC_DY        = TH1F('nCleanedJetsPt30BTagged_MC_DY',        'nCleanedJetsPt30BTagged_MC_DY',        5,  0, 5)
-    nCleanedJetsPt30BTagged_bTagSF_hist_MC_DY = TH1F('nCleanedJetsPt30BTagged_bTagSF_MC_DY', 'nCleanedJetsPt30BTagged_bTagSF_MC_DY', 5,  0, 5)
+    # define data histograms Z->ee
 
-    JetPt_hist_MC_DY               = TH1F('JetPt_inclusive_MC_DY',           'JetPt_inclusive_MC_DY',           120, 0, 1200)
-    JetPt_hist_1stJet_MC_DY        = TH1F('JetPt_leadingJet_MC_DY',          'JetPt_leadingJet_MC_DY',          120, 0, 1200)
-    JetPt_hist_2ndjet_MC_DY        = TH1F('JetPt_subLeadingJet_MC_DY',       'JetPt_subLeadingJet_MC_DY',       120, 0, 1200)
-    JetPt_hist_1stJet_fwdeta_MC_DY = TH1F('JetPt_leadingJet_fwdeta_MC_DY',   'JetPt_leadingJet_fwdeta_MC_DY',   120, 0, 1200)
-    JetPt_hist_2ndjet_fwdeta_MC_DY = TH1F('JetPt_subLeadingJet_fwdeta_MC_DY','JetPt_subLeadingJet_fwdeta_MC_DY',120, 0, 1200)
+    # nCleanedJets_hist_MC_DY_ele                   = TH1F('nCleanedJets_MC_DY_ele',                   'nCleanedJets_MC_DY_ele',                   30, 0, 30) 
+    nCleanedJetsPt30_hist_MC_DY_ele               = TH1F('nCleanedJetsPt30_MC_DY_ele',               'nCleanedJetsPt30_MC_DY_ele',               15, 0, 15) 
+    # nCleanedJetsPt30BTagged_hist_MC_DY_ele        = TH1F('nCleanedJetsPt30BTagged_MC_DY_ele',        'nCleanedJetsPt30BTagged_MC_DY_ele',        5,  0, 5)
+    # nCleanedJetsPt30BTagged_bTagSF_hist_MC_DY_ele = TH1F('nCleanedJetsPt30BTagged_bTagSF_MC_DY_ele', 'nCleanedJetsPt30BTagged_bTagSF_MC_DY_ele', 5,  0, 5)
 
-    JetEta_hist_MC_DY               = TH1F('JetEta_inclusive_MC_DY',           'JetEta_inclusive_MC_DY',           50, -5, 5)
-    JetEta_hist_1stjet_MC_DY        = TH1F('JetEta_leadingJet_MC_DY',          'JetEta_leadingJet_MC_DY',          50, -5, 5)
-    JetEta_hist_2ndjet_MC_DY        = TH1F('JetEta_subLeadingJet_MC_DY',       'JetEta_subLeadingJet_MC_DY',       50, -5, 5)
-    JetEta_hist_1stjet_fwdeta_MC_DY = TH1F('JetEta_leadingJet_fwdeta_MC_DY',   'JetEta_leadingJet_fwdeta_MC_DY',   50, -5, 5)
-    JetEta_hist_2ndjet_fwdeta_MC_DY = TH1F('JetEta_subLeadingJet_fwdeta_MC_DY','JetEta_subLeadingJet_fwdeta_MC_DY',50, -5, 5)
+    JetPt_hist_MC_DY_ele               = TH1F('JetPt_inclusive_MC_DY_ele',           'JetPt_inclusive_MC_DY_ele',           120, 0, 1200)
+    JetPt_hist_1stJet_MC_DY_ele        = TH1F('JetPt_leadingJet_MC_DY_ele',          'JetPt_leadingJet_MC_DY_ele',          120, 0, 1200)
+    JetPt_hist_2ndjet_MC_DY_ele        = TH1F('JetPt_subLeadingJet_MC_DY_ele',       'JetPt_subLeadingJet_MC_DY_ele',       120, 0, 1200)
+    JetPt_hist_1stJet_fwdeta_MC_DY_ele = TH1F('JetPt_leadingJet_fwdeta_MC_DY_ele',   'JetPt_leadingJet_fwdeta_MC_DY_ele',   120, 0, 1200)
+    JetPt_hist_2ndjet_fwdeta_MC_DY_ele = TH1F('JetPt_subLeadingJet_fwdeta_MC_DY_ele','JetPt_subLeadingJet_fwdeta_MC_DY_ele',120, 0, 1200)
 
-    JetPhi_hist_MC_DY               = TH1F('JetPhi_inclusive_MC_DY',           'JetPhi_inclusive_MC_DY',           33, -3.3, 3.3)
-    JetPhi_hist_1stjet_MC_DY        = TH1F('JetPhi_leadingJet_MC_DY',          'JetPhi_leadingJet_MC_DY',          33, -3.3, 3.3) 
-    JetPhi_hist_2ndjet_MC_DY        = TH1F('JetPhi_subLeadingJet_MC_DY',       'JetPhi_subLeadingJet_MC_DY',       33, -3.3, 3.3) 
-    JetPhi_hist_1stjet_fwdeta_MC_DY = TH1F('JetPhi_leadingJet_fwdeta_MC_DY',   'JetPhi_leadingJet_fwdeta_MC_DY',   33, -3.3, 3.3) 
-    JetPhi_hist_2ndjet_fwdeta_MC_DY = TH1F('JetPhi_subLeadingJet_fwdeta_MC_DY','JetPhi_subLeadingJet_fwdeta_MC_DY',33, -3.3, 3.3) 
+    JetEta_hist_MC_DY_ele               = TH1F('JetEta_inclusive_MC_DY_ele',           'JetEta_inclusive_MC_DY_ele',           50, -5, 5)
+    JetEta_hist_1stjet_MC_DY_ele        = TH1F('JetEta_leadingJet_MC_DY_ele',          'JetEta_leadingJet_MC_DY_ele',          50, -5, 5)
+    JetEta_hist_2ndjet_MC_DY_ele        = TH1F('JetEta_subLeadingJet_MC_DY_ele',       'JetEta_subLeadingJet_MC_DY_ele',       50, -5, 5)
+    JetEta_hist_1stjet_fwdeta_MC_DY_ele = TH1F('JetEta_leadingJet_fwdeta_MC_DY_ele',   'JetEta_leadingJet_fwdeta_MC_DY_ele',   50, -5, 5)
+    JetEta_hist_2ndjet_fwdeta_MC_DY_ele = TH1F('JetEta_subLeadingJet_fwdeta_MC_DY_ele','JetEta_subLeadingJet_fwdeta_MC_DY_ele',50, -5, 5)
 
-    JetBTagger_hist_MC_DY               = TH1F('JetBTagger_inclusive_MC_DY',           'JetBTagger_inclusive_MC_DY',           20, -11, 2)
-    JetBTagger_hist_1stjet_MC_DY        = TH1F('JetBTagger_leadingJet_MC_DY',          'JetBTagger_leadingJet_MC_DY',          20, -11, 2)
-    JetBTagger_hist_2ndjet_MC_DY        = TH1F('JetBTagger_subLeadingJet_MC_DY',       'JetBTagger_subLeadingJet_MC_DY',       20, -11, 2)
-    JetBTagger_hist_1stjet_fwdeta_MC_DY = TH1F('JetBTagger_leadingJet_fwdeta_MC_DY',   'JetBTagger_leadingJet_fwdeta_MC_DY',   20, -11, 2)
-    JetBTagger_hist_2ndjet_fwdeta_MC_DY = TH1F('JetBTagger_subLeadingJet_fwdeta_MC_DY','JetBTagger_subLeadingJet_fwdeta_MC_DY',20, -11, 2)
+    JetPhi_hist_MC_DY_ele               = TH1F('JetPhi_inclusive_MC_DY_ele',           'JetPhi_inclusive_MC_DY_ele',           33, -3.3, 3.3)
+    JetPhi_hist_1stjet_MC_DY_ele        = TH1F('JetPhi_leadingJet_MC_DY_ele',          'JetPhi_leadingJet_MC_DY_ele',          33, -3.3, 3.3) 
+    JetPhi_hist_2ndjet_MC_DY_ele        = TH1F('JetPhi_subLeadingJet_MC_DY_ele',       'JetPhi_subLeadingJet_MC_DY_ele',       33, -3.3, 3.3) 
+    JetPhi_hist_1stjet_fwdeta_MC_DY_ele = TH1F('JetPhi_leadingJet_fwdeta_MC_DY_ele',   'JetPhi_leadingJet_fwdeta_MC_DY_ele',   33, -3.3, 3.3) 
+    JetPhi_hist_2ndjet_fwdeta_MC_DY_ele = TH1F('JetPhi_subLeadingJet_fwdeta_MC_DY_ele','JetPhi_subLeadingJet_fwdeta_MC_DY_ele',33, -3.3, 3.3) 
 
-    JetIsBtagged_hist_MC_DY               = TH1F('JetIsBtagged_inclusive_MC_DY',           'JetIsBtagged_inclusive_MC_DY',           11, 0, 1.1)
-    JetIsBtagged_hist_1stjet_MC_DY        = TH1F('JetIsBtagged_leadingJet_MC_DY',          'JetIsBtagged_leadingJet_MC_DY',          11, 0, 1.1)
-    JetIsBtagged_hist_2ndjet_MC_DY        = TH1F('JetIsBtagged_subLeadingJet_MC_DY',       'JetIsBtagged_subLeadingJet_MC_DY',       11, 0, 1.1)
-    JetIsBtagged_hist_1stjet_fwdeta_MC_DY = TH1F('JetIsBtagged_leadingJet_fwdeta_MC_DY',   'JetIsBtagged_leadingJet_fwdeta_MC_DY',   11, 0, 1.1)
-    JetIsBtagged_hist_2ndjet_fwdeta_MC_DY = TH1F('JetIsBtagged_subLeadingJet_fwdeta_MC_DY','JetIsBtagged_subLeadingJet_fwdeta_MC_DY',11, 0, 1.1)
+    JetBTagger_hist_MC_DY_ele               = TH1F('JetBTagger_inclusive_MC_DY_ele',           'JetBTagger_inclusive_MC_DY_ele',           20, -11, 2)
+    JetBTagger_hist_1stjet_MC_DY_ele        = TH1F('JetBTagger_leadingJet_MC_DY_ele',          'JetBTagger_leadingJet_MC_DY_ele',          20, -11, 2)
+    JetBTagger_hist_2ndjet_MC_DY_ele        = TH1F('JetBTagger_subLeadingJet_MC_DY_ele',       'JetBTagger_subLeadingJet_MC_DY_ele',       20, -11, 2)
+    JetBTagger_hist_1stjet_fwdeta_MC_DY_ele = TH1F('JetBTagger_leadingJet_fwdeta_MC_DY_ele',   'JetBTagger_leadingJet_fwdeta_MC_DY_ele',   20, -11, 2)
+    JetBTagger_hist_2ndjet_fwdeta_MC_DY_ele = TH1F('JetBTagger_subLeadingJet_fwdeta_MC_DY_ele','JetBTagger_subLeadingJet_fwdeta_MC_DY_ele',20, -11, 2)
+
+    JetIsBtagged_hist_MC_DY_ele               = TH1F('JetIsBtagged_inclusive_MC_DY_ele',           'JetIsBtagged_inclusive_MC_DY_ele',           11, 0, 1.1)
+    JetIsBtagged_hist_1stjet_MC_DY_ele        = TH1F('JetIsBtagged_leadingJet_MC_DY_ele',          'JetIsBtagged_leadingJet_MC_DY_ele',          11, 0, 1.1)
+    JetIsBtagged_hist_2ndjet_MC_DY_ele        = TH1F('JetIsBtagged_subLeadingJet_MC_DY_ele',       'JetIsBtagged_subLeadingJet_MC_DY_ele',       11, 0, 1.1)
+    JetIsBtagged_hist_1stjet_fwdeta_MC_DY_ele = TH1F('JetIsBtagged_leadingJet_fwdeta_MC_DY_ele',   'JetIsBtagged_leadingJet_fwdeta_MC_DY_ele',   11, 0, 1.1)
+    JetIsBtagged_hist_2ndjet_fwdeta_MC_DY_ele = TH1F('JetIsBtagged_subLeadingJet_fwdeta_MC_DY_ele','JetIsBtagged_subLeadingJet_fwdeta_MC_DY_ele',11, 0, 1.1)
     
-    JetIsBtaggedWithSF_hist_MC_DY               = TH1F('JetIsBtaggedWithSF_inclusive_MC_DY',           'JetIsBtaggedWithSF_inclusive_MC_DY',           11, 0, 1.1)
-    JetIsBtaggedWithSF_hist_1stjet_MC_DY        = TH1F('JetIsBtaggedWithSF_leadingJet_MC_DY',          'JetIsBtaggedWithSF_leadingJet_MC_DY',          11, 0, 1.1)
-    JetIsBtaggedWithSF_hist_2ndjet_MC_DY        = TH1F('JetIsBtaggedWithSF_subLeadingJet_MC_DY',       'JetIsBtaggedWithSF_subLeadingJet_MC_DY',       11, 0, 1.1) 
-    JetIsBtaggedWithSF_hist_1stjet_fwdeta_MC_DY = TH1F('JetIsBtaggedWithSF_leadingJet_fwdeta_MC_DY',   'JetIsBtaggedWithSF_leadingJet_fwdeta_MC_DY',   11, 0, 1.1)
-    JetIsBtaggedWithSF_hist_2ndjet_fwdeta_MC_DY = TH1F('JetIsBtaggedWithSF_subLeadingJet_fwdeta_MC_DY','JetIsBtaggedWithSF_subLeadingJet_fwdeta_MC_DY',11, 0, 1.1)
+    JetIsBtaggedWithSF_hist_MC_DY_ele               = TH1F('JetIsBtaggedWithSF_inclusive_MC_DY_ele',           'JetIsBtaggedWithSF_inclusive_MC_DY_ele',           11, 0, 1.1)
+    JetIsBtaggedWithSF_hist_1stjet_MC_DY_ele        = TH1F('JetIsBtaggedWithSF_leadingJet_MC_DY_ele',          'JetIsBtaggedWithSF_leadingJet_MC_DY_ele',          11, 0, 1.1)
+    JetIsBtaggedWithSF_hist_2ndjet_MC_DY_ele        = TH1F('JetIsBtaggedWithSF_subLeadingJet_MC_DY_ele',       'JetIsBtaggedWithSF_subLeadingJet_MC_DY_ele',       11, 0, 1.1) 
+    JetIsBtaggedWithSF_hist_1stjet_fwdeta_MC_DY_ele = TH1F('JetIsBtaggedWithSF_leadingJet_fwdeta_MC_DY_ele',   'JetIsBtaggedWithSF_leadingJet_fwdeta_MC_DY_ele',   11, 0, 1.1)
+    JetIsBtaggedWithSF_hist_2ndjet_fwdeta_MC_DY_ele = TH1F('JetIsBtaggedWithSF_subLeadingJet_fwdeta_MC_DY_ele','JetIsBtaggedWithSF_subLeadingJet_fwdeta_MC_DY_ele',11, 0, 1.1)
 
-    PFMET_hist_MC_DY = TH1F('PFMET_MC_DY','PFMET_MC_DY',250,0,250)
+    PFMET_hist_MC_DY_ele = TH1F('PFMET_MC_DY_ele','PFMET_MC_DY_ele',125,0,250)
+
+
+    # define data histograms Z->mumu
+
+    # nCleanedJets_hist_MC_DY_mu                   = TH1F('nCleanedJets_MC_DY_mu',                   'nCleanedJets_MC_DY_mu',                   30, 0, 30) 
+    nCleanedJetsPt30_hist_MC_DY_mu               = TH1F('nCleanedJetsPt30_MC_DY_mu',               'nCleanedJetsPt30_MC_DY_mu',               15, 0, 15) 
+    # nCleanedJetsPt30BTagged_hist_MC_DY_mu        = TH1F('nCleanedJetsPt30BTagged_MC_DY_mu',        'nCleanedJetsPt30BTagged_MC_DY_mu',        5,  0, 5)
+    # nCleanedJetsPt30BTagged_bTagSF_hist_MC_DY_mu = TH1F('nCleanedJetsPt30BTagged_bTagSF_MC_DY_mu', 'nCleanedJetsPt30BTagged_bTagSF_MC_DY_mu', 5,  0, 5)
+
+    JetPt_hist_MC_DY_mu               = TH1F('JetPt_inclusive_MC_DY_mu',           'JetPt_inclusive_MC_DY_mu',           120, 0, 1200)
+    JetPt_hist_1stJet_MC_DY_mu        = TH1F('JetPt_leadingJet_MC_DY_mu',          'JetPt_leadingJet_MC_DY_mu',          120, 0, 1200)
+    JetPt_hist_2ndjet_MC_DY_mu        = TH1F('JetPt_subLeadingJet_MC_DY_mu',       'JetPt_subLeadingJet_MC_DY_mu',       120, 0, 1200)
+    JetPt_hist_1stJet_fwdeta_MC_DY_mu = TH1F('JetPt_leadingJet_fwdeta_MC_DY_mu',   'JetPt_leadingJet_fwdeta_MC_DY_mu',   120, 0, 1200)
+    JetPt_hist_2ndjet_fwdeta_MC_DY_mu = TH1F('JetPt_subLeadingJet_fwdeta_MC_DY_mu','JetPt_subLeadingJet_fwdeta_MC_DY_mu',120, 0, 1200)
+
+    JetEta_hist_MC_DY_mu               = TH1F('JetEta_inclusive_MC_DY_mu',           'JetEta_inclusive_MC_DY_mu',           50, -5, 5)
+    JetEta_hist_1stjet_MC_DY_mu        = TH1F('JetEta_leadingJet_MC_DY_mu',          'JetEta_leadingJet_MC_DY_mu',          50, -5, 5)
+    JetEta_hist_2ndjet_MC_DY_mu        = TH1F('JetEta_subLeadingJet_MC_DY_mu',       'JetEta_subLeadingJet_MC_DY_mu',       50, -5, 5)
+    JetEta_hist_1stjet_fwdeta_MC_DY_mu = TH1F('JetEta_leadingJet_fwdeta_MC_DY_mu',   'JetEta_leadingJet_fwdeta_MC_DY_mu',   50, -5, 5)
+    JetEta_hist_2ndjet_fwdeta_MC_DY_mu = TH1F('JetEta_subLeadingJet_fwdeta_MC_DY_mu','JetEta_subLeadingJet_fwdeta_MC_DY_mu',50, -5, 5)
+
+    JetPhi_hist_MC_DY_mu               = TH1F('JetPhi_inclusive_MC_DY_mu',           'JetPhi_inclusive_MC_DY_mu',           33, -3.3, 3.3)
+    JetPhi_hist_1stjet_MC_DY_mu        = TH1F('JetPhi_leadingJet_MC_DY_mu',          'JetPhi_leadingJet_MC_DY_mu',          33, -3.3, 3.3) 
+    JetPhi_hist_2ndjet_MC_DY_mu        = TH1F('JetPhi_subLeadingJet_MC_DY_mu',       'JetPhi_subLeadingJet_MC_DY_mu',       33, -3.3, 3.3) 
+    JetPhi_hist_1stjet_fwdeta_MC_DY_mu = TH1F('JetPhi_leadingJet_fwdeta_MC_DY_mu',   'JetPhi_leadingJet_fwdeta_MC_DY_mu',   33, -3.3, 3.3) 
+    JetPhi_hist_2ndjet_fwdeta_MC_DY_mu = TH1F('JetPhi_subLeadingJet_fwdeta_MC_DY_mu','JetPhi_subLeadingJet_fwdeta_MC_DY_mu',33, -3.3, 3.3) 
+
+    JetBTagger_hist_MC_DY_mu               = TH1F('JetBTagger_inclusive_MC_DY_mu',           'JetBTagger_inclusive_MC_DY_mu',           20, -11, 2)
+    JetBTagger_hist_1stjet_MC_DY_mu        = TH1F('JetBTagger_leadingJet_MC_DY_mu',          'JetBTagger_leadingJet_MC_DY_mu',          20, -11, 2)
+    JetBTagger_hist_2ndjet_MC_DY_mu        = TH1F('JetBTagger_subLeadingJet_MC_DY_mu',       'JetBTagger_subLeadingJet_MC_DY_mu',       20, -11, 2)
+    JetBTagger_hist_1stjet_fwdeta_MC_DY_mu = TH1F('JetBTagger_leadingJet_fwdeta_MC_DY_mu',   'JetBTagger_leadingJet_fwdeta_MC_DY_mu',   20, -11, 2)
+    JetBTagger_hist_2ndjet_fwdeta_MC_DY_mu = TH1F('JetBTagger_subLeadingJet_fwdeta_MC_DY_mu','JetBTagger_subLeadingJet_fwdeta_MC_DY_mu',20, -11, 2)
+
+    JetIsBtagged_hist_MC_DY_mu               = TH1F('JetIsBtagged_inclusive_MC_DY_mu',           'JetIsBtagged_inclusive_MC_DY_mu',           11, 0, 1.1)
+    JetIsBtagged_hist_1stjet_MC_DY_mu        = TH1F('JetIsBtagged_leadingJet_MC_DY_mu',          'JetIsBtagged_leadingJet_MC_DY_mu',          11, 0, 1.1)
+    JetIsBtagged_hist_2ndjet_MC_DY_mu        = TH1F('JetIsBtagged_subLeadingJet_MC_DY_mu',       'JetIsBtagged_subLeadingJet_MC_DY_mu',       11, 0, 1.1)
+    JetIsBtagged_hist_1stjet_fwdeta_MC_DY_mu = TH1F('JetIsBtagged_leadingJet_fwdeta_MC_DY_mu',   'JetIsBtagged_leadingJet_fwdeta_MC_DY_mu',   11, 0, 1.1)
+    JetIsBtagged_hist_2ndjet_fwdeta_MC_DY_mu = TH1F('JetIsBtagged_subLeadingJet_fwdeta_MC_DY_mu','JetIsBtagged_subLeadingJet_fwdeta_MC_DY_mu',11, 0, 1.1)
+    
+    JetIsBtaggedWithSF_hist_MC_DY_mu               = TH1F('JetIsBtaggedWithSF_inclusive_MC_DY_mu',           'JetIsBtaggedWithSF_inclusive_MC_DY_mu',           11, 0, 1.1)
+    JetIsBtaggedWithSF_hist_1stjet_MC_DY_mu        = TH1F('JetIsBtaggedWithSF_leadingJet_MC_DY_mu',          'JetIsBtaggedWithSF_leadingJet_MC_DY_mu',          11, 0, 1.1)
+    JetIsBtaggedWithSF_hist_2ndjet_MC_DY_mu        = TH1F('JetIsBtaggedWithSF_subLeadingJet_MC_DY_mu',       'JetIsBtaggedWithSF_subLeadingJet_MC_DY_mu',       11, 0, 1.1) 
+    JetIsBtaggedWithSF_hist_1stjet_fwdeta_MC_DY_mu = TH1F('JetIsBtaggedWithSF_leadingJet_fwdeta_MC_DY_mu',   'JetIsBtaggedWithSF_leadingJet_fwdeta_MC_DY_mu',   11, 0, 1.1)
+    JetIsBtaggedWithSF_hist_2ndjet_fwdeta_MC_DY_mu = TH1F('JetIsBtaggedWithSF_subLeadingJet_fwdeta_MC_DY_mu','JetIsBtaggedWithSF_subLeadingJet_fwdeta_MC_DY_mu',11, 0, 1.1)
+
+    PFMET_hist_MC_DY_mu = TH1F('PFMET_MC_DY_mu','PFMET_MC_DY_mu',125,0,250)
+
+
 
 
     # get partial event weight
@@ -334,66 +543,138 @@ if(redoMCDYHistos) :
         weight = partialSampleWeight*event.xsec*event.overallEventWeight
 
 
-        nCleanedJets_hist_MC_DY.Fill(event.nCleanedJets,weight)
-        nCleanedJetsPt30_hist_MC_DY.Fill(event.nCleanedJetsPt30,weight)
-        nCleanedJetsPt30BTagged_hist_MC_DY.Fill(event.nCleanedJetsPt30BTagged,weight)
-        nCleanedJetsPt30BTagged_bTagSF_hist_MC_DY.Fill(event.nCleanedJetsPt30BTagged_bTagSF,weight)
-        
-        for i in range(len(event.JetPt)) :
-            JetPt_hist_MC_DY.Fill(event.JetPt[i],weight)
-                  
-        for i in range(len(event.JetEta)) :  
-            JetEta_hist_MC_DY.Fill(event.JetEta[i],weight)
-                                        
-        for i in range(len(event.JetPhi)) :
-            JetPhi_hist_MC_DY.Fill(event.JetPhi[i],weight)
-          
-        for i in range(len(event.JetBTagger)) :
-            JetBTagger_hist_MC_DY.Fill(event.JetBTagger[i],weight)
-                                        
-        for i in range(len(event.JetIsBtagged)) :
-            JetIsBtagged_hist_MC_DY.Fill(event.JetIsBtagged[i],weight)
-        
-        for i in range(len(event.JetIsBtaggedWithSF)) :                
-            JetIsBtaggedWithSF_hist_MC_DY.Fill(event.JetIsBtaggedWithSF[i],weight)     
-        
+        # Z->ee histos
+        if(int(math.fabs(event.LepLepId[0])) == 11 ):
 
-        if event.nCleanedJets > 0 :
-            JetPt_hist_1stJet_MC_DY.Fill(event.JetPt[0],weight)
-            JetEta_hist_1stjet_MC_DY.Fill(event.JetEta[0],weight)
-            JetPhi_hist_1stjet_MC_DY.Fill(event.JetPhi[0],weight)
-            JetBTagger_hist_1stjet_MC_DY.Fill(event.JetBTagger[0],weight)
-            JetIsBtagged_hist_1stjet_MC_DY.Fill(event.JetIsBtagged[0],weight)
-            JetIsBtaggedWithSF_hist_1stjet_MC_DY.Fill(event.JetIsBtaggedWithSF[0],weight)
-
-            if math.fabs(event.JetEta[0]) > 3.0 : 
-                JetPt_hist_1stJet_fwdeta_MC_DY.Fill(event.JetPt[0],weight)
-                JetEta_hist_1stjet_fwdeta_MC_DY.Fill(event.JetEta[0],weight)
-                JetPhi_hist_1stjet_fwdeta_MC_DY.Fill(event.JetPhi[0],weight)
-                JetBTagger_hist_1stjet_fwdeta_MC_DY.Fill(event.JetBTagger[0],weight)
-                JetIsBtagged_hist_1stjet_fwdeta_MC_DY.Fill(event.JetIsBtagged[0],weight)
-                JetIsBtaggedWithSF_hist_1stjet_fwdeta_MC_DY.Fill(event.JetIsBtaggedWithSF[0],weight)
-        
-        
-            if event.nCleanedJets > 1 :
-                JetPt_hist_2ndjet_MC_DY.Fill(event.JetPt[1],weight)
-                JetEta_hist_2ndjet_MC_DY.Fill(event.JetEta[1],weight)
-                JetPhi_hist_2ndjet_MC_DY.Fill(event.JetPhi[1],weight)
-                JetBTagger_hist_2ndjet_MC_DY.Fill(event.JetBTagger[1],weight)
-                JetIsBtagged_hist_2ndjet_MC_DY.Fill(event.JetIsBtagged[1],weight)
-                JetIsBtaggedWithSF_hist_2ndjet_MC_DY.Fill(event.JetIsBtaggedWithSF[1],weight)
-
-                if math.fabs(event.JetEta[1]) > 3.0 : 
-                    JetPt_hist_2ndjet_fwdeta_MC_DY.Fill(event.JetPt[1],weight)
-                    JetEta_hist_2ndjet_fwdeta_MC_DY.Fill(event.JetEta[1],weight)
-                    JetPhi_hist_2ndjet_fwdeta_MC_DY.Fill(event.JetPhi[1],weight)
-                    JetBTagger_hist_2ndjet_fwdeta_MC_DY.Fill(event.JetBTagger[1],weight)
-                    JetIsBtagged_hist_2ndjet_fwdeta_MC_DY.Fill(event.JetIsBtagged[1],weight)
-                    JetIsBtaggedWithSF_hist_2ndjet_fwdeta_MC_DY.Fill(event.JetIsBtaggedWithSF[1],weight)
-                    
+            # nCleanedJets_hist_MC_DY_ele.Fill(event.nCleanedJets,weight)
+            nCleanedJetsPt30_hist_MC_DY_ele.Fill(event.nCleanedJetsPt30,weight)
+            # nCleanedJetsPt30BTagged_hist_MC_DY_ele.Fill(event.nCleanedJetsPt30BTagged,weight)
+            # nCleanedJetsPt30BTagged_bTagSF_hist_MC_DY_ele.Fill(event.nCleanedJetsPt30BTagged_bTagSF,weight)
             
+            for i in range(len(event.JetPt)) :
+                JetPt_hist_MC_DY_ele.Fill(event.JetPt[i],weight)
+                      
+            for i in range(len(event.JetEta)) :  
+                JetEta_hist_MC_DY_ele.Fill(event.JetEta[i],weight)
+                                            
+            for i in range(len(event.JetPhi)) :
+                JetPhi_hist_MC_DY_ele.Fill(event.JetPhi[i],weight)
+              
+            if event.nCleanedJetsPt30 > 0 :
+                for i in range(len(event.JetBTagger)) :
+                    JetBTagger_hist_MC_DY_ele.Fill(event.JetBTagger[i],weight)
+                                            
+            for i in range(len(event.JetIsBtagged)) :
+                JetIsBtagged_hist_MC_DY_ele.Fill(event.JetIsBtagged[i],weight)
+            
+            for i in range(len(event.JetIsBtaggedWithSF)) :                
+                JetIsBtaggedWithSF_hist_MC_DY_ele.Fill(event.JetIsBtaggedWithSF[i],weight)     
+            
+            
+            if event.nCleanedJetsPt30 > 0 :
+                JetPt_hist_1stJet_MC_DY_ele.Fill(event.JetPt[0],weight)
+                JetEta_hist_1stjet_MC_DY_ele.Fill(event.JetEta[0],weight)
+                JetPhi_hist_1stjet_MC_DY_ele.Fill(event.JetPhi[0],weight)
+                JetBTagger_hist_1stjet_MC_DY_ele.Fill(event.JetBTagger[0],weight)
+                JetIsBtagged_hist_1stjet_MC_DY_ele.Fill(event.JetIsBtagged[0],weight)
+                JetIsBtaggedWithSF_hist_1stjet_MC_DY_ele.Fill(event.JetIsBtaggedWithSF[0],weight)
+            
+                if math.fabs(event.JetEta[0]) > 3.0 : 
+                    JetPt_hist_1stJet_fwdeta_MC_DY_ele.Fill(event.JetPt[0],weight)
+                    JetEta_hist_1stjet_fwdeta_MC_DY_ele.Fill(event.JetEta[0],weight)
+                    JetPhi_hist_1stjet_fwdeta_MC_DY_ele.Fill(event.JetPhi[0],weight)
+                    JetBTagger_hist_1stjet_fwdeta_MC_DY_ele.Fill(event.JetBTagger[0],weight)
+                    JetIsBtagged_hist_1stjet_fwdeta_MC_DY_ele.Fill(event.JetIsBtagged[0],weight)
+                    JetIsBtaggedWithSF_hist_1stjet_fwdeta_MC_DY_ele.Fill(event.JetIsBtaggedWithSF[0],weight)
+            
+            
+                if event.nCleanedJetsPt30 > 1 :
+                    JetPt_hist_2ndjet_MC_DY_ele.Fill(event.JetPt[1],weight)
+                    JetEta_hist_2ndjet_MC_DY_ele.Fill(event.JetEta[1],weight)
+                    JetPhi_hist_2ndjet_MC_DY_ele.Fill(event.JetPhi[1],weight)
+                    JetBTagger_hist_2ndjet_MC_DY_ele.Fill(event.JetBTagger[1],weight)
+                    JetIsBtagged_hist_2ndjet_MC_DY_ele.Fill(event.JetIsBtagged[1],weight)
+                    JetIsBtaggedWithSF_hist_2ndjet_MC_DY_ele.Fill(event.JetIsBtaggedWithSF[1],weight)
+            
+                    if math.fabs(event.JetEta[1]) > 3.0 : 
+                        JetPt_hist_2ndjet_fwdeta_MC_DY_ele.Fill(event.JetPt[1],weight)
+                        JetEta_hist_2ndjet_fwdeta_MC_DY_ele.Fill(event.JetEta[1],weight)
+                        JetPhi_hist_2ndjet_fwdeta_MC_DY_ele.Fill(event.JetPhi[1],weight)
+                        JetBTagger_hist_2ndjet_fwdeta_MC_DY_ele.Fill(event.JetBTagger[1],weight)
+                        JetIsBtagged_hist_2ndjet_fwdeta_MC_DY_ele.Fill(event.JetIsBtagged[1],weight)
+                        JetIsBtaggedWithSF_hist_2ndjet_fwdeta_MC_DY_ele.Fill(event.JetIsBtaggedWithSF[1],weight)
+                        
+            
+            PFMET_hist_MC_DY_ele.Fill(event.PFMET,weight)
 
-        PFMET_hist_MC_DY.Fill(event.PFMET,weight)
+
+
+        # Z->mumu histos
+        if(int(math.fabs(event.LepLepId[0])) == 13 ):
+
+            # nCleanedJets_hist_MC_DY_mu.Fill(event.nCleanedJets,weight)
+            nCleanedJetsPt30_hist_MC_DY_mu.Fill(event.nCleanedJetsPt30,weight)
+            # nCleanedJetsPt30BTagged_hist_MC_DY_mu.Fill(event.nCleanedJetsPt30BTagged,weight)
+            # nCleanedJetsPt30BTagged_bTagSF_hist_MC_DY_mu.Fill(event.nCleanedJetsPt30BTagged_bTagSF,weight)
+            
+            for i in range(len(event.JetPt)) :
+                JetPt_hist_MC_DY_mu.Fill(event.JetPt[i],weight)
+                      
+            for i in range(len(event.JetEta)) :  
+                JetEta_hist_MC_DY_mu.Fill(event.JetEta[i],weight)
+                                            
+            for i in range(len(event.JetPhi)) :
+                JetPhi_hist_MC_DY_mu.Fill(event.JetPhi[i],weight)
+              
+            if event.nCleanedJetsPt30 > 0 :
+                for i in range(len(event.JetBTagger)) :
+                    JetBTagger_hist_MC_DY_mu.Fill(event.JetBTagger[i],weight)
+                                            
+            for i in range(len(event.JetIsBtagged)) :
+                JetIsBtagged_hist_MC_DY_mu.Fill(event.JetIsBtagged[i],weight)
+            
+            for i in range(len(event.JetIsBtaggedWithSF)) :                
+                JetIsBtaggedWithSF_hist_MC_DY_mu.Fill(event.JetIsBtaggedWithSF[i],weight)     
+            
+            
+            if event.nCleanedJetsPt30 > 0 :
+                JetPt_hist_1stJet_MC_DY_mu.Fill(event.JetPt[0],weight)
+                JetEta_hist_1stjet_MC_DY_mu.Fill(event.JetEta[0],weight)
+                JetPhi_hist_1stjet_MC_DY_mu.Fill(event.JetPhi[0],weight)
+                JetBTagger_hist_1stjet_MC_DY_mu.Fill(event.JetBTagger[0],weight)
+                JetIsBtagged_hist_1stjet_MC_DY_mu.Fill(event.JetIsBtagged[0],weight)
+                JetIsBtaggedWithSF_hist_1stjet_MC_DY_mu.Fill(event.JetIsBtaggedWithSF[0],weight)
+            
+                if math.fabs(event.JetEta[0]) > 3.0 : 
+                    JetPt_hist_1stJet_fwdeta_MC_DY_mu.Fill(event.JetPt[0],weight)
+                    JetEta_hist_1stjet_fwdeta_MC_DY_mu.Fill(event.JetEta[0],weight)
+                    JetPhi_hist_1stjet_fwdeta_MC_DY_mu.Fill(event.JetPhi[0],weight)
+                    JetBTagger_hist_1stjet_fwdeta_MC_DY_mu.Fill(event.JetBTagger[0],weight)
+                    JetIsBtagged_hist_1stjet_fwdeta_MC_DY_mu.Fill(event.JetIsBtagged[0],weight)
+                    JetIsBtaggedWithSF_hist_1stjet_fwdeta_MC_DY_mu.Fill(event.JetIsBtaggedWithSF[0],weight)
+            
+            
+                if event.nCleanedJetsPt30 > 1 :
+                    JetPt_hist_2ndjet_MC_DY_mu.Fill(event.JetPt[1],weight)
+                    JetEta_hist_2ndjet_MC_DY_mu.Fill(event.JetEta[1],weight)
+                    JetPhi_hist_2ndjet_MC_DY_mu.Fill(event.JetPhi[1],weight)
+                    JetBTagger_hist_2ndjet_MC_DY_mu.Fill(event.JetBTagger[1],weight)
+                    JetIsBtagged_hist_2ndjet_MC_DY_mu.Fill(event.JetIsBtagged[1],weight)
+                    JetIsBtaggedWithSF_hist_2ndjet_MC_DY_mu.Fill(event.JetIsBtaggedWithSF[1],weight)
+            
+                    if math.fabs(event.JetEta[1]) > 3.0 : 
+                        JetPt_hist_2ndjet_fwdeta_MC_DY_mu.Fill(event.JetPt[1],weight)
+                        JetEta_hist_2ndjet_fwdeta_MC_DY_mu.Fill(event.JetEta[1],weight)
+                        JetPhi_hist_2ndjet_fwdeta_MC_DY_mu.Fill(event.JetPhi[1],weight)
+                        JetBTagger_hist_2ndjet_fwdeta_MC_DY_mu.Fill(event.JetBTagger[1],weight)
+                        JetIsBtagged_hist_2ndjet_fwdeta_MC_DY_mu.Fill(event.JetIsBtagged[1],weight)
+                        JetIsBtaggedWithSF_hist_2ndjet_fwdeta_MC_DY_mu.Fill(event.JetIsBtaggedWithSF[1],weight)
+                        
+            
+            PFMET_hist_MC_DY_mu.Fill(event.PFMET,weight)
+
+
+    
 
         
     #save histograms in a root file 
@@ -401,49 +682,95 @@ if(redoMCDYHistos) :
     outFile_MCDY = TFile.Open("jetsMetDistrib_MC_DY_"+ period + "_" + treeText +".root", "RECREATE")
     outFile_MCDY.cd()
 
+    # Zee histos
+    # nCleanedJets_hist_MC_DY_ele.Write()
+    nCleanedJetsPt30_hist_MC_DY_ele.Write()
+    # nCleanedJetsPt30BTagged_hist_MC_DY_ele.Write()
+    # nCleanedJetsPt30BTagged_bTagSF_hist_MC_DY_ele.Write()
     
-    nCleanedJets_hist_MC_DY.Write()
-    nCleanedJetsPt30_hist_MC_DY.Write()
-    nCleanedJetsPt30BTagged_hist_MC_DY.Write()
-    nCleanedJetsPt30BTagged_bTagSF_hist_MC_DY.Write()
-    
-    JetPt_hist_MC_DY.Write()
-    JetPt_hist_1stJet_MC_DY.Write()
-    JetPt_hist_2ndjet_MC_DY.Write()
-    JetPt_hist_1stJet_fwdeta_MC_DY.Write()
-    JetPt_hist_2ndjet_fwdeta_MC_DY.Write()
+    JetPt_hist_MC_DY_ele.Write()
+    JetPt_hist_1stJet_MC_DY_ele.Write()
+    JetPt_hist_2ndjet_MC_DY_ele.Write()
+    JetPt_hist_1stJet_fwdeta_MC_DY_ele.Write()
+    JetPt_hist_2ndjet_fwdeta_MC_DY_ele.Write()
                             
-    JetEta_hist_MC_DY.Write()
-    JetEta_hist_1stjet_MC_DY.Write()
-    JetEta_hist_2ndjet_MC_DY.Write()
-    JetEta_hist_1stjet_fwdeta_MC_DY.Write()
-    JetEta_hist_2ndjet_fwdeta_MC_DY.Write()
+    JetEta_hist_MC_DY_ele.Write()
+    JetEta_hist_1stjet_MC_DY_ele.Write()
+    JetEta_hist_2ndjet_MC_DY_ele.Write()
+    JetEta_hist_1stjet_fwdeta_MC_DY_ele.Write()
+    JetEta_hist_2ndjet_fwdeta_MC_DY_ele.Write()
                             
-    JetPhi_hist_MC_DY.Write()
-    JetPhi_hist_1stjet_MC_DY.Write()
-    JetPhi_hist_2ndjet_MC_DY.Write()
-    JetPhi_hist_1stjet_fwdeta_MC_DY.Write()
-    JetPhi_hist_2ndjet_fwdeta_MC_DY.Write()
+    JetPhi_hist_MC_DY_ele.Write()
+    JetPhi_hist_1stjet_MC_DY_ele.Write()
+    JetPhi_hist_2ndjet_MC_DY_ele.Write()
+    JetPhi_hist_1stjet_fwdeta_MC_DY_ele.Write()
+    JetPhi_hist_2ndjet_fwdeta_MC_DY_ele.Write()
                             
-    JetBTagger_hist_MC_DY.Write()
-    JetBTagger_hist_1stjet_MC_DY.Write()
-    JetBTagger_hist_2ndjet_MC_DY.Write()
-    JetBTagger_hist_1stjet_fwdeta_MC_DY.Write()
-    JetBTagger_hist_2ndjet_fwdeta_MC_DY.Write()
+    JetBTagger_hist_MC_DY_ele.Write()
+    JetBTagger_hist_1stjet_MC_DY_ele.Write()
+    JetBTagger_hist_2ndjet_MC_DY_ele.Write()
+    JetBTagger_hist_1stjet_fwdeta_MC_DY_ele.Write()
+    JetBTagger_hist_2ndjet_fwdeta_MC_DY_ele.Write()
                             
-    JetIsBtagged_hist_MC_DY.Write()
-    JetIsBtagged_hist_1stjet_MC_DY.Write()
-    JetIsBtagged_hist_2ndjet_MC_DY.Write()
-    JetIsBtagged_hist_1stjet_fwdeta_MC_DY.Write()
-    JetIsBtagged_hist_2ndjet_fwdeta_MC_DY.Write()
+    JetIsBtagged_hist_MC_DY_ele.Write()
+    JetIsBtagged_hist_1stjet_MC_DY_ele.Write()
+    JetIsBtagged_hist_2ndjet_MC_DY_ele.Write()
+    JetIsBtagged_hist_1stjet_fwdeta_MC_DY_ele.Write()
+    JetIsBtagged_hist_2ndjet_fwdeta_MC_DY_ele.Write()
                             
-    JetIsBtaggedWithSF_hist_MC_DY.Write()   
-    JetIsBtaggedWithSF_hist_1stjet_MC_DY.Write()
-    JetIsBtaggedWithSF_hist_2ndjet_MC_DY.Write()
-    JetIsBtaggedWithSF_hist_1stjet_fwdeta_MC_DY.Write()
-    JetIsBtaggedWithSF_hist_2ndjet_fwdeta_MC_DY.Write()
+    JetIsBtaggedWithSF_hist_MC_DY_ele.Write()   
+    JetIsBtaggedWithSF_hist_1stjet_MC_DY_ele.Write()
+    JetIsBtaggedWithSF_hist_2ndjet_MC_DY_ele.Write()
+    JetIsBtaggedWithSF_hist_1stjet_fwdeta_MC_DY_ele.Write()
+    JetIsBtaggedWithSF_hist_2ndjet_fwdeta_MC_DY_ele.Write()
 
-    PFMET_hist_MC_DY.Write()
+    PFMET_hist_MC_DY_ele.Write()
+
+    
+    # Zmumu histos
+    # nCleanedJets_hist_MC_DY_mu.Write()
+    nCleanedJetsPt30_hist_MC_DY_mu.Write()
+    # nCleanedJetsPt30BTagged_hist_MC_DY_mu.Write()
+    # nCleanedJetsPt30BTagged_bTagSF_hist_MC_DY_mu.Write()
+    
+    JetPt_hist_MC_DY_mu.Write()
+    JetPt_hist_1stJet_MC_DY_mu.Write()
+    JetPt_hist_2ndjet_MC_DY_mu.Write()
+    JetPt_hist_1stJet_fwdeta_MC_DY_mu.Write()
+    JetPt_hist_2ndjet_fwdeta_MC_DY_mu.Write()
+                            
+    JetEta_hist_MC_DY_mu.Write()
+    JetEta_hist_1stjet_MC_DY_mu.Write()
+    JetEta_hist_2ndjet_MC_DY_mu.Write()
+    JetEta_hist_1stjet_fwdeta_MC_DY_mu.Write()
+    JetEta_hist_2ndjet_fwdeta_MC_DY_mu.Write()
+                            
+    JetPhi_hist_MC_DY_mu.Write()
+    JetPhi_hist_1stjet_MC_DY_mu.Write()
+    JetPhi_hist_2ndjet_MC_DY_mu.Write()
+    JetPhi_hist_1stjet_fwdeta_MC_DY_mu.Write()
+    JetPhi_hist_2ndjet_fwdeta_MC_DY_mu.Write()
+                            
+    JetBTagger_hist_MC_DY_mu.Write()
+    JetBTagger_hist_1stjet_MC_DY_mu.Write()
+    JetBTagger_hist_2ndjet_MC_DY_mu.Write()
+    JetBTagger_hist_1stjet_fwdeta_MC_DY_mu.Write()
+    JetBTagger_hist_2ndjet_fwdeta_MC_DY_mu.Write()
+                            
+    JetIsBtagged_hist_MC_DY_mu.Write()
+    JetIsBtagged_hist_1stjet_MC_DY_mu.Write()
+    JetIsBtagged_hist_2ndjet_MC_DY_mu.Write()
+    JetIsBtagged_hist_1stjet_fwdeta_MC_DY_mu.Write()
+    JetIsBtagged_hist_2ndjet_fwdeta_MC_DY_mu.Write()
+                            
+    JetIsBtaggedWithSF_hist_MC_DY_mu.Write()   
+    JetIsBtaggedWithSF_hist_1stjet_MC_DY_mu.Write()
+    JetIsBtaggedWithSF_hist_2ndjet_MC_DY_mu.Write()
+    JetIsBtaggedWithSF_hist_1stjet_fwdeta_MC_DY_mu.Write()
+    JetIsBtaggedWithSF_hist_2ndjet_fwdeta_MC_DY_mu.Write()
+
+    PFMET_hist_MC_DY_mu.Write()
+
 
     outFile_MCDY.Close()
     print "MC DY histo file created!"
@@ -464,41 +791,77 @@ print 'Reading file', histoDATA_input.GetName(),'...'
 
 inDATA_list = []
 
-inDATA_list.append(histoDATA_input.Get('nCleanedJets'))
-inDATA_list.append(histoDATA_input.Get('nCleanedJetsPt30'))
-inDATA_list.append(histoDATA_input.Get('nCleanedJetsPt30BTagged'))
-inDATA_list.append(histoDATA_input.Get('nCleanedJetsPt30BTagged_bTagSF'))
-inDATA_list.append(histoDATA_input.Get('JetPt_inclusive'))
-inDATA_list.append(histoDATA_input.Get('JetPt_leadingJet'))
-inDATA_list.append(histoDATA_input.Get('JetPt_subLeadingJet'))
-inDATA_list.append(histoDATA_input.Get('JetPt_leadingJet_fwdeta'))
-inDATA_list.append(histoDATA_input.Get('JetPt_subLeadingJet_fwdeta'))
-inDATA_list.append(histoDATA_input.Get('JetEta_inclusive'))
-inDATA_list.append(histoDATA_input.Get('JetEta_leadingJet'))
-inDATA_list.append(histoDATA_input.Get('JetEta_subLeadingJet'))
-inDATA_list.append(histoDATA_input.Get('JetEta_leadingJet_fwdeta'))
-inDATA_list.append(histoDATA_input.Get('JetEta_subLeadingJet_fwdeta'))
-inDATA_list.append(histoDATA_input.Get('JetPhi_inclusive'))
-inDATA_list.append(histoDATA_input.Get('JetPhi_leadingJet'))
-inDATA_list.append(histoDATA_input.Get('JetPhi_subLeadingJet'))
-inDATA_list.append(histoDATA_input.Get('JetPhi_leadingJet_fwdeta'))
-inDATA_list.append(histoDATA_input.Get('JetPhi_subLeadingJet_fwdeta'))
-inDATA_list.append(histoDATA_input.Get('JetBTagger_inclusive'))
-inDATA_list.append(histoDATA_input.Get('JetBTagger_leadingJet'))
-inDATA_list.append(histoDATA_input.Get('JetBTagger_subLeadingJet'))
-inDATA_list.append(histoDATA_input.Get('JetBTagger_leadingJet_fwdeta'))
-inDATA_list.append(histoDATA_input.Get('JetBTagger_subLeadingJet_fwdeta'))
-inDATA_list.append(histoDATA_input.Get('JetIsBtagged_inclusive'))
-inDATA_list.append(histoDATA_input.Get('JetIsBtagged_leadingJet'))
-inDATA_list.append(histoDATA_input.Get('JetIsBtagged_subLeadingJet'))
-inDATA_list.append(histoDATA_input.Get('JetIsBtagged_leadingJet_fwdeta'))
-inDATA_list.append(histoDATA_input.Get('JetIsBtagged_subLeadingJet_fwdeta'))
-inDATA_list.append(histoDATA_input.Get('JetIsBtaggedWithSF_inclusive'))
-inDATA_list.append(histoDATA_input.Get('JetIsBtaggedWithSF_leadingJet'))
-inDATA_list.append(histoDATA_input.Get('JetIsBtaggedWithSF_subLeadingJet'))
-inDATA_list.append(histoDATA_input.Get('JetIsBtaggedWithSF_leadingJet_fwdeta'))
-inDATA_list.append(histoDATA_input.Get('JetIsBtaggedWithSF_subLeadingJet_fwdeta'))
-inDATA_list.append(histoDATA_input.Get('PFMET'))
+# inDATA_list.append(histoDATA_input.Get('nCleanedJets_ele'))
+inDATA_list.append(histoDATA_input.Get('nCleanedJetsPt30_ele'))
+# inDATA_list.append(histoDATA_input.Get('nCleanedJetsPt30BTagged_ele'))
+# inDATA_list.append(histoDATA_input.Get('nCleanedJetsPt30BTagged_bTagSF_ele'))
+inDATA_list.append(histoDATA_input.Get('JetPt_inclusive_ele'))
+inDATA_list.append(histoDATA_input.Get('JetPt_leadingJet_ele'))
+inDATA_list.append(histoDATA_input.Get('JetPt_subLeadingJet_ele'))
+inDATA_list.append(histoDATA_input.Get('JetPt_leadingJet_fwdeta_ele'))
+inDATA_list.append(histoDATA_input.Get('JetPt_subLeadingJet_fwdeta_ele'))
+inDATA_list.append(histoDATA_input.Get('JetEta_inclusive_ele'))
+inDATA_list.append(histoDATA_input.Get('JetEta_leadingJet_ele'))
+inDATA_list.append(histoDATA_input.Get('JetEta_subLeadingJet_ele'))
+inDATA_list.append(histoDATA_input.Get('JetEta_leadingJet_fwdeta_ele'))
+inDATA_list.append(histoDATA_input.Get('JetEta_subLeadingJet_fwdeta_ele'))
+inDATA_list.append(histoDATA_input.Get('JetPhi_inclusive_ele'))
+inDATA_list.append(histoDATA_input.Get('JetPhi_leadingJet_ele'))
+inDATA_list.append(histoDATA_input.Get('JetPhi_subLeadingJet_ele'))
+inDATA_list.append(histoDATA_input.Get('JetPhi_leadingJet_fwdeta_ele'))
+inDATA_list.append(histoDATA_input.Get('JetPhi_subLeadingJet_fwdeta_ele'))
+inDATA_list.append(histoDATA_input.Get('JetBTagger_inclusive_ele'))
+inDATA_list.append(histoDATA_input.Get('JetBTagger_leadingJet_ele'))
+inDATA_list.append(histoDATA_input.Get('JetBTagger_subLeadingJet_ele'))
+inDATA_list.append(histoDATA_input.Get('JetBTagger_leadingJet_fwdeta_ele'))
+inDATA_list.append(histoDATA_input.Get('JetBTagger_subLeadingJet_fwdeta_ele'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtagged_inclusive_ele'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtagged_leadingJet_ele'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtagged_subLeadingJet_ele'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtagged_leadingJet_fwdeta_ele'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtagged_subLeadingJet_fwdeta_ele'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtaggedWithSF_inclusive_ele'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtaggedWithSF_leadingJet_ele'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtaggedWithSF_subLeadingJet_ele'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtaggedWithSF_leadingJet_fwdeta_ele'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtaggedWithSF_subLeadingJet_fwdeta_ele'))
+inDATA_list.append(histoDATA_input.Get('PFMET_ele'))
+
+# inDATA_list.append(histoDATA_input.Get('nCleanedJets_mu'))
+inDATA_list.append(histoDATA_input.Get('nCleanedJetsPt30_mu'))
+# inDATA_list.append(histoDATA_input.Get('nCleanedJetsPt30BTagged_mu'))
+# inDATA_list.append(histoDATA_input.Get('nCleanedJetsPt30BTagged_bTagSF_mu'))
+inDATA_list.append(histoDATA_input.Get('JetPt_inclusive_mu'))
+inDATA_list.append(histoDATA_input.Get('JetPt_leadingJet_mu'))
+inDATA_list.append(histoDATA_input.Get('JetPt_subLeadingJet_mu'))
+inDATA_list.append(histoDATA_input.Get('JetPt_leadingJet_fwdeta_mu'))
+inDATA_list.append(histoDATA_input.Get('JetPt_subLeadingJet_fwdeta_mu'))
+inDATA_list.append(histoDATA_input.Get('JetEta_inclusive_mu'))
+inDATA_list.append(histoDATA_input.Get('JetEta_leadingJet_mu'))
+inDATA_list.append(histoDATA_input.Get('JetEta_subLeadingJet_mu'))
+inDATA_list.append(histoDATA_input.Get('JetEta_leadingJet_fwdeta_mu'))
+inDATA_list.append(histoDATA_input.Get('JetEta_subLeadingJet_fwdeta_mu'))
+inDATA_list.append(histoDATA_input.Get('JetPhi_inclusive_mu'))
+inDATA_list.append(histoDATA_input.Get('JetPhi_leadingJet_mu'))
+inDATA_list.append(histoDATA_input.Get('JetPhi_subLeadingJet_mu'))
+inDATA_list.append(histoDATA_input.Get('JetPhi_leadingJet_fwdeta_mu'))
+inDATA_list.append(histoDATA_input.Get('JetPhi_subLeadingJet_fwdeta_mu'))
+inDATA_list.append(histoDATA_input.Get('JetBTagger_inclusive_mu'))
+inDATA_list.append(histoDATA_input.Get('JetBTagger_leadingJet_mu'))
+inDATA_list.append(histoDATA_input.Get('JetBTagger_subLeadingJet_mu'))
+inDATA_list.append(histoDATA_input.Get('JetBTagger_leadingJet_fwdeta_mu'))
+inDATA_list.append(histoDATA_input.Get('JetBTagger_subLeadingJet_fwdeta_mu'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtagged_inclusive_mu'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtagged_leadingJet_mu'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtagged_subLeadingJet_mu'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtagged_leadingJet_fwdeta_mu'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtagged_subLeadingJet_fwdeta_mu'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtaggedWithSF_inclusive_mu'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtaggedWithSF_leadingJet_mu'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtaggedWithSF_subLeadingJet_mu'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtaggedWithSF_leadingJet_fwdeta_mu'))
+inDATA_list.append(histoDATA_input.Get('JetIsBtaggedWithSF_subLeadingJet_fwdeta_mu'))
+inDATA_list.append(histoDATA_input.Get('PFMET_mu'))
 
 
 # ****************************
@@ -508,41 +871,77 @@ print 'Reading file', histoMCDY_input.GetName(),'...'
 
 inMCDY_list = []
 
-inMCDY_list.append(histoMCDY_input.Get('nCleanedJets_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('nCleanedJetsPt30_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('nCleanedJetsPt30BTagged_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('nCleanedJetsPt30BTagged_bTagSF_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetPt_inclusive_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetPt_leadingJet_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetPt_subLeadingJet_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetPt_leadingJet_fwdeta_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetPt_subLeadingJet_fwdeta_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetEta_inclusive_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetEta_leadingJet_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetEta_subLeadingJet_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetEta_leadingJet_fwdeta_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetEta_subLeadingJet_fwdeta_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetPhi_inclusive_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetPhi_leadingJet_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetPhi_subLeadingJet_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetPhi_leadingJet_fwdeta_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetPhi_subLeadingJet_fwdeta_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetBTagger_inclusive_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetBTagger_leadingJet_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetBTagger_subLeadingJet_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetBTagger_leadingJet_fwdeta_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetBTagger_subLeadingJet_fwdeta_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetIsBtagged_inclusive_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetIsBtagged_leadingJet_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetIsBtagged_subLeadingJet_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetIsBtagged_leadingJet_fwdeta_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetIsBtagged_subLeadingJet_fwdeta_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetIsBtaggedWithSF_inclusive_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetIsBtaggedWithSF_leadingJet_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetIsBtaggedWithSF_subLeadingJet_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetIsBtaggedWithSF_leadingJet_fwdeta_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('JetIsBtaggedWithSF_subLeadingJet_fwdeta_MC_DY'))
-inMCDY_list.append(histoMCDY_input.Get('PFMET_MC_DY'))
+# inMCDY_list.append(histoMCDY_input.Get('nCleanedJets_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('nCleanedJetsPt30_MC_DY_ele'))
+# inMCDY_list.append(histoMCDY_input.Get('nCleanedJetsPt30BTagged_MC_DY_ele'))
+# inMCDY_list.append(histoMCDY_input.Get('nCleanedJetsPt30BTagged_bTagSF_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetPt_inclusive_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetPt_leadingJet_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetPt_subLeadingJet_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetPt_leadingJet_fwdeta_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetPt_subLeadingJet_fwdeta_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetEta_inclusive_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetEta_leadingJet_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetEta_subLeadingJet_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetEta_leadingJet_fwdeta_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetEta_subLeadingJet_fwdeta_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetPhi_inclusive_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetPhi_leadingJet_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetPhi_subLeadingJet_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetPhi_leadingJet_fwdeta_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetPhi_subLeadingJet_fwdeta_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetBTagger_inclusive_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetBTagger_leadingJet_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetBTagger_subLeadingJet_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetBTagger_leadingJet_fwdeta_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetBTagger_subLeadingJet_fwdeta_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtagged_inclusive_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtagged_leadingJet_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtagged_subLeadingJet_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtagged_leadingJet_fwdeta_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtagged_subLeadingJet_fwdeta_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtaggedWithSF_inclusive_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtaggedWithSF_leadingJet_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtaggedWithSF_subLeadingJet_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtaggedWithSF_leadingJet_fwdeta_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtaggedWithSF_subLeadingJet_fwdeta_MC_DY_ele'))
+inMCDY_list.append(histoMCDY_input.Get('PFMET_MC_DY_ele'))
+
+# inMCDY_list.append(histoMCDY_input.Get('nCleanedJets_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('nCleanedJetsPt30_MC_DY_mu'))
+# inMCDY_list.append(histoMCDY_input.Get('nCleanedJetsPt30BTagged_MC_DY_mu'))
+# inMCDY_list.append(histoMCDY_input.Get('nCleanedJetsPt30BTagged_bTagSF_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetPt_inclusive_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetPt_leadingJet_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetPt_subLeadingJet_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetPt_leadingJet_fwdeta_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetPt_subLeadingJet_fwdeta_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetEta_inclusive_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetEta_leadingJet_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetEta_subLeadingJet_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetEta_leadingJet_fwdeta_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetEta_subLeadingJet_fwdeta_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetPhi_inclusive_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetPhi_leadingJet_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetPhi_subLeadingJet_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetPhi_leadingJet_fwdeta_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetPhi_subLeadingJet_fwdeta_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetBTagger_inclusive_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetBTagger_leadingJet_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetBTagger_subLeadingJet_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetBTagger_leadingJet_fwdeta_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetBTagger_subLeadingJet_fwdeta_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtagged_inclusive_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtagged_leadingJet_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtagged_subLeadingJet_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtagged_leadingJet_fwdeta_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtagged_subLeadingJet_fwdeta_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtaggedWithSF_inclusive_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtaggedWithSF_leadingJet_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtaggedWithSF_subLeadingJet_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtaggedWithSF_leadingJet_fwdeta_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('JetIsBtaggedWithSF_subLeadingJet_fwdeta_MC_DY_mu'))
+inMCDY_list.append(histoMCDY_input.Get('PFMET_MC_DY_mu'))
 
        
 
