@@ -213,18 +213,19 @@ if(redoDATAHistos) :
             for i in range(len(event.JetPhi)) :
                 JetPhi_hist_ele.Fill(event.JetPhi[i])
             
+
             if event.nCleanedJetsPt30 > 0 :
+
                 for i in range(len(event.JetBTagger)) :
                     JetBTagger_hist_ele.Fill(event.JetBTagger[i])
                                             
-            for i in range(len(event.JetIsBtagged)) :
-                JetIsBtagged_hist_ele.Fill(event.JetIsBtagged[i])
+                for i in range(len(event.JetIsBtagged)) :
+                    JetIsBtagged_hist_ele.Fill(event.JetIsBtagged[i])
             
-            for i in range(len(event.JetIsBtaggedWithSF)) :                
-                JetIsBtaggedWithSF_hist_ele.Fill(event.JetIsBtaggedWithSF[i])     
+                for i in range(len(event.JetIsBtaggedWithSF)) :                
+                    JetIsBtaggedWithSF_hist_ele.Fill(event.JetIsBtaggedWithSF[i])     
             
             
-            if event.nCleanedJetsPt30 > 0 :
                 JetPt_hist_1stJet_ele.Fill(event.JetPt[0])
                 JetEta_hist_1stjet_ele.Fill(event.JetEta[0])
                 JetPhi_hist_1stjet_ele.Fill(event.JetPhi[0])
@@ -278,18 +279,19 @@ if(redoDATAHistos) :
             for i in range(len(event.JetPhi)) :
                 JetPhi_hist_mu.Fill(event.JetPhi[i])
             
+
             if event.nCleanedJetsPt30 > 0 :
+
                 for i in range(len(event.JetBTagger)) :
                     JetBTagger_hist_mu.Fill(event.JetBTagger[i])
                                             
-            for i in range(len(event.JetIsBtagged)) :
-                JetIsBtagged_hist_mu.Fill(event.JetIsBtagged[i])
+                for i in range(len(event.JetIsBtagged)) :
+                    JetIsBtagged_hist_mu.Fill(event.JetIsBtagged[i])
             
-            for i in range(len(event.JetIsBtaggedWithSF)) :                
-                JetIsBtaggedWithSF_hist_mu.Fill(event.JetIsBtaggedWithSF[i])     
+                for i in range(len(event.JetIsBtaggedWithSF)) :                
+                    JetIsBtaggedWithSF_hist_mu.Fill(event.JetIsBtaggedWithSF[i])     
             
             
-            if event.nCleanedJetsPt30 > 0 :
                 JetPt_hist_1stJet_mu.Fill(event.JetPt[0])
                 JetEta_hist_1stjet_mu.Fill(event.JetEta[0])
                 JetPhi_hist_1stjet_mu.Fill(event.JetPhi[0])
@@ -560,18 +562,19 @@ if(redoMCDYHistos) :
             for i in range(len(event.JetPhi)) :
                 JetPhi_hist_MC_DY_ele.Fill(event.JetPhi[i],weight)
               
+
             if event.nCleanedJetsPt30 > 0 :
+
                 for i in range(len(event.JetBTagger)) :
                     JetBTagger_hist_MC_DY_ele.Fill(event.JetBTagger[i],weight)
                                             
-            for i in range(len(event.JetIsBtagged)) :
-                JetIsBtagged_hist_MC_DY_ele.Fill(event.JetIsBtagged[i],weight)
+                for i in range(len(event.JetIsBtagged)) :
+                    JetIsBtagged_hist_MC_DY_ele.Fill(event.JetIsBtagged[i],weight)
             
-            for i in range(len(event.JetIsBtaggedWithSF)) :                
-                JetIsBtaggedWithSF_hist_MC_DY_ele.Fill(event.JetIsBtaggedWithSF[i],weight)     
+                for i in range(len(event.JetIsBtaggedWithSF)) :                
+                    JetIsBtaggedWithSF_hist_MC_DY_ele.Fill(event.JetIsBtaggedWithSF[i],weight)     
             
             
-            if event.nCleanedJetsPt30 > 0 :
                 JetPt_hist_1stJet_MC_DY_ele.Fill(event.JetPt[0],weight)
                 JetEta_hist_1stjet_MC_DY_ele.Fill(event.JetEta[0],weight)
                 JetPhi_hist_1stjet_MC_DY_ele.Fill(event.JetPhi[0],weight)
@@ -625,19 +628,20 @@ if(redoMCDYHistos) :
                                             
             for i in range(len(event.JetPhi)) :
                 JetPhi_hist_MC_DY_mu.Fill(event.JetPhi[i],weight)
+
               
             if event.nCleanedJetsPt30 > 0 :
+
                 for i in range(len(event.JetBTagger)) :
                     JetBTagger_hist_MC_DY_mu.Fill(event.JetBTagger[i],weight)
                                             
-            for i in range(len(event.JetIsBtagged)) :
-                JetIsBtagged_hist_MC_DY_mu.Fill(event.JetIsBtagged[i],weight)
+                for i in range(len(event.JetIsBtagged)) :
+                    JetIsBtagged_hist_MC_DY_mu.Fill(event.JetIsBtagged[i],weight)
             
-            for i in range(len(event.JetIsBtaggedWithSF)) :                
-                JetIsBtaggedWithSF_hist_MC_DY_mu.Fill(event.JetIsBtaggedWithSF[i],weight)     
+                for i in range(len(event.JetIsBtaggedWithSF)) :                
+                    JetIsBtaggedWithSF_hist_MC_DY_mu.Fill(event.JetIsBtaggedWithSF[i],weight)     
             
             
-            if event.nCleanedJetsPt30 > 0 :
                 JetPt_hist_1stJet_MC_DY_mu.Fill(event.JetPt[0],weight)
                 JetEta_hist_1stjet_MC_DY_mu.Fill(event.JetEta[0],weight)
                 JetPhi_hist_1stjet_MC_DY_mu.Fill(event.JetPhi[0],weight)
