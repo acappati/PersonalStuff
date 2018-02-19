@@ -19,8 +19,8 @@ redoHistos = True
 
 # data tree options 
 ZZTree   = False
-CRZLTree = True
-ZTree    = False
+CRZLTree = False
+ZTree    = True
 
 # data periods options
 # period = "data2016"
@@ -31,12 +31,12 @@ period = "data2017"
 if(period == "data2016"):
     lumi = 35.9     # fb-1
 elif(period == "data2017"):
-    lumi = 41.86    # fb-1
+    lumi = 41.37    # fb-1
 
 
 #input file (DY MC)
 if(period == "data2017"):
-    inputTree = TFile.Open("/data3/Higgs/180122/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC
+    inputTree = TFile.Open("/data3/Higgs/180218/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC
     if(ZZTree):
         tree      = inputTree.Get("ZZTree/candTree")
         treeText  = "ZZTree"
@@ -65,18 +65,18 @@ if(redoHistos) :
     Z_ele_1st_LepBDT_hist_EE = TH1F('LepBDT leading ele in ECAL Endcap', 'LepBDT leading ele in ECAL Endcap', 100, -1.1, 1.1)  
 
     # Z->mumu
-    Z_mu_1st_LepBDT_hist    = TH1F('LepBDT leading mu'               , 'LepBDT leading mu'               , 100, -1.1, 1.1) 
-    Z_mu_1st_LepBDT_hist_MB = TH1F('LepBDT leading mu in Muon Barrel', 'LepBDT leading mu in Muon Barrel', 100, -1.1, 1.1) 
-    Z_mu_1st_LepBDT_hist_ME = TH1F('LepBDT leading mu in Muon Endcap', 'LepBDT leading mu in Muon Endcap', 100, -1.1, 1.1) 
+    # Z_mu_1st_LepBDT_hist    = TH1F('LepBDT leading mu'               , 'LepBDT leading mu'               , 100, -1.1, 1.1) 
+    # Z_mu_1st_LepBDT_hist_MB = TH1F('LepBDT leading mu in Muon Barrel', 'LepBDT leading mu in Muon Barrel', 100, -1.1, 1.1) 
+    # Z_mu_1st_LepBDT_hist_ME = TH1F('LepBDT leading mu in Muon Endcap', 'LepBDT leading mu in Muon Endcap', 100, -1.1, 1.1) 
 
     if CRZLTree :
         Z_ExtraEl_LepBDT_hist    = TH1F('LepBDT extraEl'               , 'LepBDT extraEl'               , 100, -1.1, 1.1)
         Z_ExtraEl_LepBDT_hist_EB = TH1F('LepBDT extraEl in ECAL Barrel', 'LepBDT extraEl in ECAL Barrel', 100, -1.1, 1.1)
         Z_ExtraEl_LepBDT_hist_EE = TH1F('LepBDT extraEl in ECAL Endcap', 'LepBDT extraEl in ECAL Endcap', 100, -1.1, 1.1)
 
-        Z_ExtraMu_LepBDT_hist    = TH1F('LepBDT extraMu'               , 'LepBDT extraMu'               , 100, -1.1, 1.1)
-        Z_ExtraMu_LepBDT_hist_MB = TH1F('LepBDT extraMu in Muon Barrel', 'LepBDT extraMu in Muon Barrel', 100, -1.1, 1.1)
-        Z_ExtraMu_LepBDT_hist_ME = TH1F('LepBDT extraMu in Muon Endcap', 'LepBDT extraMu in Muon Endcap', 100, -1.1, 1.1) 
+        # Z_ExtraMu_LepBDT_hist    = TH1F('LepBDT extraMu'               , 'LepBDT extraMu'               , 100, -1.1, 1.1)
+        # Z_ExtraMu_LepBDT_hist_MB = TH1F('LepBDT extraMu in Muon Barrel', 'LepBDT extraMu in Muon Barrel', 100, -1.1, 1.1)
+        # Z_ExtraMu_LepBDT_hist_ME = TH1F('LepBDT extraMu in Muon Endcap', 'LepBDT extraMu in Muon Endcap', 100, -1.1, 1.1) 
     
     
 
@@ -89,7 +89,10 @@ if(redoHistos) :
     # read TTree 
     print "reading tree", inputTree.GetName(),treeText,tree.GetName()  ,"..."
     for event in tree:
-        if ( event.ZZsel < 0 ) : continue # skip events that do not pass the trigger 
+        if ZTree : 
+            if (event.Zsel < 0 ) : continue # skip events that do not pass the trigger
+        else : 
+            if ( event.ZZsel < 0 ) : continue # skip events that do not pass the trigger 
 
 
         weight = partialSampleWeight*event.xsec*event.overallEventWeight
@@ -116,23 +119,23 @@ if(redoHistos) :
           
 
         # Z->mumu
-        if(int(math.fabs(event.LepLepId[0])) == 13 ) :
+        # if(int(math.fabs(event.LepLepId[0])) == 13 ) :
             
-            if event.LepPt[0] >= event.LepPt[1] :
-                Z_mu_1st_LepBDT_hist.Fill(event.LepBDT[0], weight)
+        #     if event.LepPt[0] >= event.LepPt[1] :
+        #         Z_mu_1st_LepBDT_hist.Fill(event.LepBDT[0], weight)
 
-                if math.fabs(event.LepEta[0]) <= 1. :
-                    Z_mu_1st_LepBDT_hist_MB.Fill(event.LepBDT[0], weight)
-                else :
-                    Z_mu_1st_LepBDT_hist_ME.Fill(event.LepBDT[0], weight)
+        #         if math.fabs(event.LepEta[0]) <= 1. :
+        #             Z_mu_1st_LepBDT_hist_MB.Fill(event.LepBDT[0], weight)
+        #         else :
+        #             Z_mu_1st_LepBDT_hist_ME.Fill(event.LepBDT[0], weight)
 
-            else :
-                Z_mu_1st_LepBDT_hist.Fill(event.LepBDT[1], weight)
+        #     else :
+        #         Z_mu_1st_LepBDT_hist.Fill(event.LepBDT[1], weight)
 
-                if math.fabs(event.LepEta[1]) <= 1. :
-                    Z_mu_1st_LepBDT_hist_MB.Fill(event.LepBDT[1], weight)
-                else :
-                    Z_mu_1st_LepBDT_hist_ME.Fill(event.LepBDT[1], weight)
+        #         if math.fabs(event.LepEta[1]) <= 1. :
+        #             Z_mu_1st_LepBDT_hist_MB.Fill(event.LepBDT[1], weight)
+        #         else :
+        #             Z_mu_1st_LepBDT_hist_ME.Fill(event.LepBDT[1], weight)
 
             
         
@@ -148,17 +151,17 @@ if(redoHistos) :
                     else :
                         Z_ExtraEl_LepBDT_hist_EE.Fill(event.LepBDT[2], weight)
 
-                elif(int(math.fabs(event.LepLepId[2])) == 13 ) :
+                # elif(int(math.fabs(event.LepLepId[2])) == 13 ) :
                     
-                    Z_ExtraMu_LepBDT_hist.Fill(event.LepBDT[2], weight)
+                #     Z_ExtraMu_LepBDT_hist.Fill(event.LepBDT[2], weight)
 
-                    if math.fabs(event.LepEta[2]) <= 1. :
-                        Z_ExtraMu_LepBDT_hist_MB.Fill(event.LepBDT[2], weight)
-                    else :
-                        Z_ExtraMu_LepBDT_hist_ME.Fill(event.LepBDT[2], weight)
+                #     if math.fabs(event.LepEta[2]) <= 1. :
+                #         Z_ExtraMu_LepBDT_hist_MB.Fill(event.LepBDT[2], weight)
+                #     else :
+                #         Z_ExtraMu_LepBDT_hist_ME.Fill(event.LepBDT[2], weight)
 
-                else :
-                    print "Error: wrong particle ID!"
+                # else :
+                #     print "Error: wrong particle ID!"
 
 
     #save histograms in a root file 
@@ -170,9 +173,9 @@ if(redoHistos) :
     Z_ele_1st_LepBDT_hist_EB.Write()
     Z_ele_1st_LepBDT_hist_EE.Write()
                                                                                    
-    Z_mu_1st_LepBDT_hist.Write()
-    Z_mu_1st_LepBDT_hist_MB.Write()
-    Z_mu_1st_LepBDT_hist_ME.Write()
+    # Z_mu_1st_LepBDT_hist.Write()
+    # Z_mu_1st_LepBDT_hist_MB.Write()
+    # Z_mu_1st_LepBDT_hist_ME.Write()
                                 
                                 
     if CRZLTree :               
@@ -180,9 +183,9 @@ if(redoHistos) :
         Z_ExtraEl_LepBDT_hist_EB.Write()
         Z_ExtraEl_LepBDT_hist_EE.Write()
                                 
-        Z_ExtraMu_LepBDT_hist.Write()
-        Z_ExtraMu_LepBDT_hist_MB.Write()
-        Z_ExtraMu_LepBDT_hist_ME.Write()
+        # Z_ExtraMu_LepBDT_hist.Write()
+        # Z_ExtraMu_LepBDT_hist_MB.Write()
+        # Z_ExtraMu_LepBDT_hist_ME.Write()
 
 
     LepBDT_outFile.Close()

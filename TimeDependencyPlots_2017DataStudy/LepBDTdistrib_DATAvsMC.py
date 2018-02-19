@@ -19,14 +19,14 @@ from ROOT import kBlue, kRed, kBlack, kWhite, kAzure, kOrange, kMagenta
 
 # data tree options 
 ZZTree   = False
-CRZLTree = True
-ZTree    = False
+CRZLTree = False
+ZTree    = True
 
 # data periods options
 # period = "data2016"
 period = "data2017"
 # *****************************
-lumiText = '41.86 fb^{-1}'
+lumiText = '41.37 fb^{-1}'
 #******************************
 
 
@@ -60,18 +60,18 @@ LepBDTDATA.append(histoDATA_input.Get('LepBDT leading ele'))
 LepBDTDATA.append(histoDATA_input.Get('LepBDT leading ele in ECAL Barrel'))
 LepBDTDATA.append(histoDATA_input.Get('LepBDT leading ele in ECAL Endcap'))
 
-LepBDTDATA.append(histoDATA_input.Get('LepBDT leading mu'))
-LepBDTDATA.append(histoDATA_input.Get('LepBDT leading mu in Muon Barrel'))
-LepBDTDATA.append(histoDATA_input.Get('LepBDT leading mu in Muon Endcap'))
+# LepBDTDATA.append(histoDATA_input.Get('LepBDT leading mu'))
+# LepBDTDATA.append(histoDATA_input.Get('LepBDT leading mu in Muon Barrel'))
+# LepBDTDATA.append(histoDATA_input.Get('LepBDT leading mu in Muon Endcap'))
 
 if CRZLTree :
     LepBDTDATA.append(histoDATA_input.Get('LepBDT extraEl'))
     LepBDTDATA.append(histoDATA_input.Get('LepBDT extraEl in ECAL Barrel'))
     LepBDTDATA.append(histoDATA_input.Get('LepBDT extraEl in ECAL Endcap'))
 
-    LepBDTDATA.append(histoDATA_input.Get('LepBDT extraMu'))
-    LepBDTDATA.append(histoDATA_input.Get('LepBDT extraMu in Muon Barrel'))
-    LepBDTDATA.append(histoDATA_input.Get('LepBDT extraMu in Muon Endcap'))
+    # LepBDTDATA.append(histoDATA_input.Get('LepBDT extraMu'))
+    # LepBDTDATA.append(histoDATA_input.Get('LepBDT extraMu in Muon Barrel'))
+    # LepBDTDATA.append(histoDATA_input.Get('LepBDT extraMu in Muon Endcap'))
 
 
 
@@ -87,18 +87,18 @@ LepBDTMC.append(histoMC_input.Get('LepBDT leading ele'))
 LepBDTMC.append(histoMC_input.Get('LepBDT leading ele in ECAL Barrel'))
 LepBDTMC.append(histoMC_input.Get('LepBDT leading ele in ECAL Endcap'))
 
-LepBDTMC.append(histoMC_input.Get('LepBDT leading mu'))
-LepBDTMC.append(histoMC_input.Get('LepBDT leading mu in Muon Barrel'))
-LepBDTMC.append(histoMC_input.Get('LepBDT leading mu in Muon Endcap'))
+# LepBDTMC.append(histoMC_input.Get('LepBDT leading mu'))
+# LepBDTMC.append(histoMC_input.Get('LepBDT leading mu in Muon Barrel'))
+# LepBDTMC.append(histoMC_input.Get('LepBDT leading mu in Muon Endcap'))
 
 if CRZLTree :
     LepBDTMC.append(histoMC_input.Get('LepBDT extraEl'))
     LepBDTMC.append(histoMC_input.Get('LepBDT extraEl in ECAL Barrel'))
     LepBDTMC.append(histoMC_input.Get('LepBDT extraEl in ECAL Endcap'))
 
-    LepBDTMC.append(histoMC_input.Get('LepBDT extraMu'))
-    LepBDTMC.append(histoMC_input.Get('LepBDT extraMu in Muon Barrel'))
-    LepBDTMC.append(histoMC_input.Get('LepBDT extraMu in Muon Endcap'))
+    # LepBDTMC.append(histoMC_input.Get('LepBDT extraMu'))
+    # LepBDTMC.append(histoMC_input.Get('LepBDT extraMu in Muon Barrel'))
+    # LepBDTMC.append(histoMC_input.Get('LepBDT extraMu in Muon Endcap'))
 
 
 
@@ -106,22 +106,24 @@ if CRZLTree :
     nameList = ['LepBDT_leading_ele',
                 'LepBDT_leading_ele_InECALbarrel',
                 'LepBDT_leading_ele_InECALendcap',
-                'LepBDT_leading_mu',
-                'LepBDT_leading_mu_InMuonBarrel',
-                'LepBDT_leading_mu_InMuonEndcap',
+                # 'LepBDT_leading_mu',
+                # 'LepBDT_leading_mu_InMuonBarrel',
+                # 'LepBDT_leading_mu_InMuonEndcap',
                 'LepBDT_extraEl',
                 'LepBDT_extraEl_InECALbarrel',
                 'LepBDT_extraEl_InECALendcap',
-                'LepBDT_extraMu',
-                'LepBDT_extraMu_InMuonBarrel',
-                'LepBDT_extraMu_InMuonEndcap']
+                # 'LepBDT_extraMu',
+                # 'LepBDT_extraMu_InMuonBarrel',
+                # 'LepBDT_extraMu_InMuonEndcap'
+                ]
 else : 
     nameList = ['LepBDT_leading_ele',
                 'LepBDT_leading_ele_InECALbarrel',
                 'LepBDT_leading_ele_InECALendcap',
-                'LepBDT_leading_mu',
-                'LepBDT_leading_mu_InMuonBarrel',
-                'LepBDT_leading_mu_InMuonEndcap']
+                # 'LepBDT_leading_mu',
+                # 'LepBDT_leading_mu_InMuonBarrel',
+                # 'LepBDT_leading_mu_InMuonEndcap'
+                ]
     
 #canvas = []
                                    
@@ -171,9 +173,9 @@ for i in range(len(nameList)) :
 
 
     # legend
-    legend = TLegend(0.74,0.68,0.94,0.87)
+    legend = TLegend(0.24,0.68,0.38,0.82)
     legend.AddEntry(LepBDTDATA[i],"Data", "p")
-    legend.AddEntry(LepBDTMC[i],"Drell-Yan MC","f")
+    legend.AddEntry(LepBDTMC[i],"DY MC","f")
     legend.SetFillColor(kWhite)
     legend.SetLineColor(kBlack)
     legend.SetTextFont(43)
