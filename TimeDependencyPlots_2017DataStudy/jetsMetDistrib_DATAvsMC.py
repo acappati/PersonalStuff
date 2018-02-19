@@ -67,9 +67,9 @@ if(period == "data2016"):
         print ("Error: wrong option!")
 
 elif(period == "data2017"):
-    inputDATAtree    = TFile.Open("/data3/Higgs/180209/AllData/ZZ4lAnalysis.root")        #2017 data (rereco json 2/2/2018)   
-    inputMCDYtree    = TFile.Open("/data3/Higgs/180209/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC (rereco json 2/2/2018)
-    inputMCTTbartree = TFile.Open("/data3/Higgs/180218/TTTo2L2Nu/ZZ4lAnalysis.root")      #TTbarJets 2017 MC (rereco json 2/2/2018)
+    inputDATAtree    = TFile.Open("/data3/Higgs/180218/AllData/ZZ4lAnalysis.root")        #2017 data (rereco json 18/2/2018)   
+    inputMCDYtree    = TFile.Open("/data3/Higgs/180218/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC (rereco json 18/2/2018)
+    inputMCTTbartree = TFile.Open("/data3/Higgs/180218/TTTo2L2Nu/ZZ4lAnalysis.root")      #TTbarJets 2017 MC (rereco json 18/2/2018)
     lumi     = 41.37   # fb-1
     lumiText = '41.37 fb^{-1}'
     if(ZZTree):
