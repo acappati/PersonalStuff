@@ -163,11 +163,16 @@ if(redoDATAHistos) :
         else :
             if ( event.ZZsel < 0 ) : continue # skip events that do not pass the trigger
 
+
+
+        # if (max(LepPt[0],LeptPt[1])<20 || min(LepPt[0],LeptPt[1])<10) continue    # cut as in the 4l sample
+
+
         
         # Z->ee histos
         if(int(math.fabs(event.LepLepId[0])) == 11 ):
 
-            
+
             if event.LepPt[0] >= event.LepPt[1] :
 
                 LepPt_hist_ele_1stlep.Fill(event.LepPt[0])
@@ -426,6 +431,11 @@ if(redoMCDYHistos) :
             if ( event.Zsel < 0 ) : continue # skip events that do not pass the trigger
         else :
             if ( event.ZZsel < 0 ) : continue # skip events that do not pass the trigger
+
+
+
+        # if (max(LepPt[0],LeptPt[1])<20 || min(LepPt[0],LeptPt[1])<10) continue    # cut as in the 4l sample
+
 
 
         weight = partialSampleWeight*event.xsec*event.overallEventWeight
