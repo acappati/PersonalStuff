@@ -34,7 +34,7 @@ ZTree    = True
 # period = "data2016"
 period = "data2017"
 # *****************************
-lumiText = '41.86 fb^{-1}'
+lumiText = '41.37 fb^{-1}'
 #******************************
 
 
@@ -185,8 +185,8 @@ for key in keyList :
     
     hs = THStack("hs","")
 
-    # norm = 1 # normalize to MC xsection 
-    norm = ZMass_DATA[i].Integral() / (ZMass_MC_TTJets[i].Integral() + ZMass_MC_DY[i].Integral()) #normalize MC to data
+    norm = 1 # normalize to MC xsection 
+    # norm = ZMass_DATA[i].Integral() / (ZMass_MC_TTJets[i].Integral() + ZMass_MC_DY[i].Integral()) #normalize MC to data
 
 
     #DATA hist
@@ -194,13 +194,13 @@ for key in keyList :
     ZMass_DATA[i].SetMarkerSize(0.6)
             
     #TTJets MC hist 
-    ZMass_MC_TTJets[i].Scale(norm) #normalize MC to data
+    ZMass_MC_TTJets[i].Scale(norm) #normalize MC 
     ZMass_MC_TTJets[i].SetFillColor(3)
     ZMass_MC_TTJets[i].SetLineColor(kBlack)
     hs.Add(ZMass_MC_TTJets[i])
 
     # DY MC hist
-    ZMass_MC_DY[i].Scale(norm) #normalize MC to data
+    ZMass_MC_DY[i].Scale(norm) #normalize MC 
     ZMass_MC_DY[i].SetFillColor(5)
     ZMass_MC_DY[i].SetLineColor(kBlack)
     hs.Add(ZMass_MC_DY[i])

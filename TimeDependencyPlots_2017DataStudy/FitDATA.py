@@ -23,7 +23,7 @@ from helper import DoSimpleFit, Result, DoDCBunbinnedFit
 # fit options 
 fitMC      = False  #true for fitting MC in FitMC.py 
 fitDATA    = True   #true for fitting DATA in FitDATA.py 
-redoHistos = False
+redoHistos = True
 
 # data tree options 
 ZZTree   = False
@@ -53,8 +53,8 @@ if(period == "data2016"):
         print ("Error: wrong option!")
 
 elif(period == "data2017"):
-    data = TFile.Open("/data3/Higgs/180122/AllData/ZZ4lAnalysis.root") #2017 data
-    lumi = 41.86   # fb-1
+    data = TFile.Open("/data3/Higgs/180218/AllData/ZZ4lAnalysis.root") #2017 data
+    lumi = 41.37   # fb-1
     if(ZZTree):
         tree      = data.Get("ZZTree/candTree")
         treeText  = "ZZTree"
@@ -99,6 +99,21 @@ if(redoHistos) :
         ZMass_mu_hist_extraMu  = TH1F( 'ZMass_mu_extraMu' , 'ZMass_mu_extraMu' , 120, 60, 120)  #ZMass , Z->mumu + Extra mu
         ZMass_mu_hist_extraEl  = TH1F( 'ZMass_mu_extraEl' , 'ZMass_mu_extraEl' , 120, 60, 120)  #ZMass , Z->mumu + Extra e
     
+
+
+    tree.SetBranchStatus("*",0)  # disable all branches
+    if ZTree :
+        tree.SetBranchStatus("Zsel",1)
+    else : 
+        tree.SetBranchStatus("ZZsel",1)
+    tree.SetBranchStatus("LepLepId",1)
+    if ZTree :
+        tree.SetBranchStatus("ZMass",1)
+    else :
+        tree.SetBranchStatus("Z1Mass",1)
+    tree.SetBranchStatus("LepEta",1)
+
+
 
     #read ttree ZTree
     if ZTree :

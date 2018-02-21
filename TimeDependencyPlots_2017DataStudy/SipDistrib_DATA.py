@@ -19,8 +19,8 @@ redoHistos = True
 
 # data tree options 
 ZZTree   = False
-CRZLTree = True
-ZTree    = False
+CRZLTree = False
+ZTree    = True
 
 # data periods options
 # period = "data2016"
@@ -46,8 +46,8 @@ if(period == "data2016"):
         print ("Error: wrong option!")
 
 elif(period == "data2017"):
-    data = TFile.Open("/data3/Higgs/180122/AllData/ZZ4lAnalysis.root") #2017 data
-    lumi = 41.86   # fb-1
+    data = TFile.Open("/data3/Higgs/180218/AllData/ZZ4lAnalysis.root") #2017 data
+    lumi = 41.37   # fb-1
     if(ZZTree):
         tree      = data.Get("ZZTree/candTree")
         treeText  = "ZZTree"
@@ -99,7 +99,15 @@ if(redoHistos) :
     
     
 
-    
+    tree.SetBranchStatus("*",0)  # disable all branches
+    if ZTree :
+        tree.SetBranchStatus("Zsel",1)
+    else : 
+        tree.SetBranchStatus("ZZsel",1)
+    tree.SetBranchStatus("LepLepId",1)
+    tree.SetBranchStatus("LepPt",1)
+    tree.SetBranchStatus("LepEta",1)
+    tree.SetBranchStatus("LepSIP",1)
 
 
 

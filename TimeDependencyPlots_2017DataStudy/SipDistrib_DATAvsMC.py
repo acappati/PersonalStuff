@@ -19,14 +19,14 @@ from ROOT import kBlue, kRed, kBlack, kWhite, kAzure
 
 # data tree options 
 ZZTree   = False
-CRZLTree = True
-ZTree    = False
+CRZLTree = False
+ZTree    = True
 
 # data periods options
 # period = "data2016"
 period = "data2017"
 # *****************************
-lumiText = '41.86 fb^{-1}'
+lumiText = '41.37 fb^{-1}'
 #******************************
 
 
@@ -159,15 +159,16 @@ for i in range(len(nameList)) :
 
     canvas = TCanvas("canvas","canvas",800,800)
 
-    #normalize MC to data
-    norm = SipDATA[i].Integral() / SipMC[i].Integral()
+    #normalize MC 
+    norm = 1 # to lumi 
+    # norm = SipDATA[i].Integral() / SipMC[i].Integral() #to data
 
     #DATA hist
     SipDATA[i].SetMarkerStyle(20)
     SipDATA[i].SetMarkerSize(0.6)
 
     #MC hist
-    SipMC[i].Scale(norm) #normalize MC to data
+    SipMC[i].Scale(norm) #normalize MC 
     SipMC[i].SetFillColor(kAzure+6)
     SipMC[i].SetLineColor(kBlack)
 

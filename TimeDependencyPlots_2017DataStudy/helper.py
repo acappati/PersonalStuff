@@ -408,11 +408,11 @@ def SAME3VsLumi(g1, g2, g3, title, ptype, lineMC1, lineDATA1, lineMC2, lineDATA2
         textLetters.DrawLatex(23., gPad.GetUymin()+0.3,"E")
         textLetters.DrawLatex(36., gPad.GetUymin()+0.3,"F")
     elif(ptype == "Zmult") :
-        textLetters.DrawLatex(2.,  100000,"B")
-        textLetters.DrawLatex(9.5, 100000,"C")
-        textLetters.DrawLatex(16., 100000,"D")
-        textLetters.DrawLatex(23., 100000,"E")
-        textLetters.DrawLatex(36., 100000,"F")
+        textLetters.DrawLatex(2.,  260000,"B")
+        textLetters.DrawLatex(9.5, 260000,"C")
+        textLetters.DrawLatex(16., 260000,"D")
+        textLetters.DrawLatex(23., 260000,"E")
+        textLetters.DrawLatex(36., 260000,"F")
 
     
     # ****
@@ -426,17 +426,17 @@ def SAME3VsLumi(g1, g2, g3, title, ptype, lineMC1, lineDATA1, lineMC2, lineDATA2
         lineB.SetLineStyle(2)
         lineB.Draw()    
         
-        lineC = TLine(14.55, down, 14.55, up) # Run2017C up to 14.58 fb-1
+        lineC = TLine(14.549, down, 14.549, up) # Run2017C up to 14.549 fb-1
         lineC.SetLineColor(kBlack)
         lineC.SetLineStyle(2)
         lineC.Draw()
         
-        lineD = TLine(18.869, down, 18.869, up) # Run2017D up to 18.902 fb-1
+        lineD = TLine(18.868, down, 18.868, up) # Run2017D up to 18.868 fb-1
         lineD.SetLineColor(kBlack)
         lineD.SetLineStyle(2)
         lineD.Draw()
         
-        lineE = TLine(28.294, down, 28.294, up) # Run2017E up to 28.29 fb-1
+        lineE = TLine(28.293, down, 28.293, up) # Run2017E up to 28.293 fb-1
         lineE.SetLineColor(kBlack)
         lineE.SetLineStyle(2)
         lineE.Draw()
@@ -564,16 +564,25 @@ def SAME2VsLumi(g1, g2,title, ptype, dataPeriod):
     canvas.Update()
 
     
+
     # Draw letters for data-taking periods
     textLetters = TLatex()
     textLetters.SetTextColor(kGray+1)
     textLetters.SetTextSize(0.03)
-    textLetters.DrawLatex(2.,  0.8*gPad.GetUymax(),"B")
-    textLetters.DrawLatex(9.5, 0.8*gPad.GetUymax(),"C")
-    textLetters.DrawLatex(16., 0.8*gPad.GetUymax(),"D")
-    textLetters.DrawLatex(23., 0.8*gPad.GetUymax(),"E")
-    textLetters.DrawLatex(36., 0.8*gPad.GetUymax(),"F")
+    if(ptype == "ISO"):
+        textLetters.DrawLatex(2.,  0.8*gPad.GetUymax(),"B")
+        textLetters.DrawLatex(9.5, 0.8*gPad.GetUymax(),"C")
+        textLetters.DrawLatex(16., 0.8*gPad.GetUymax(),"D")
+        textLetters.DrawLatex(23., 0.8*gPad.GetUymax(),"E")
+        textLetters.DrawLatex(36., 0.8*gPad.GetUymax(),"F")
+    elif(ptype == "SIP"):
+        textLetters.DrawLatex(2.,  1.5,"B")    
+        textLetters.DrawLatex(9.5, 1.5,"C")
+        textLetters.DrawLatex(16., 1.5,"D")
+        textLetters.DrawLatex(23., 1.5,"E")
+        textLetters.DrawLatex(36., 1.5,"F")
     
+
 
     # ****
     if(dataPeriod == "data2017"):
@@ -586,17 +595,17 @@ def SAME2VsLumi(g1, g2,title, ptype, dataPeriod):
         lineB.SetLineStyle(2)
         lineB.Draw()
         
-        lineC = TLine(14.55, down, 14.55, up) # Run2017C up to 14.58 fb-1
+        lineC = TLine(14.549, down, 14.549, up) # Run2017C up to 14.549 fb-1
         lineC.SetLineColor(kBlack)
         lineC.SetLineStyle(2)
         lineC.Draw()
         
-        lineD = TLine(18.869, down, 18.869, up) # Run2017D up to 18.902 fb-1
+        lineD = TLine(18.868, down, 18.868, up) # Run2017D up to 18.868 fb-1
         lineD.SetLineColor(kBlack)
         lineD.SetLineStyle(2)
         lineD.Draw()
         
-        lineE = TLine(28.294, down, 28.294, up) # Run2017E up to 28.29 fb-1
+        lineE = TLine(28.293, down, 28.293, up) # Run2017E up to 28.293 fb-1
         lineE.SetLineColor(kBlack)
         lineE.SetLineStyle(2)
         lineE.Draw()

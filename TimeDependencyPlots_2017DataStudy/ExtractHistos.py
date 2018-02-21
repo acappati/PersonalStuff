@@ -152,6 +152,21 @@ for i in range(0,len(RunNum_B)):
 
 print "Splitting data into lumi blocks."
 
+
+tree.SetBranchStatus("*",0)  # disable all branches
+if ZTree :
+    tree.SetBranchStatus("Zsel",1)
+else : 
+    tree.SetBranchStatus("ZZsel",1)
+tree.SetBranchStatus("RunNumber",1)
+tree.SetBranchStatus("LepLepId",1)
+tree.SetBranchStatus("ZMass",1)
+tree.SetBranchStatus("LepEta",1)
+tree.SetBranchStatus("LepCombRelIsoPF",1)
+tree.SetBranchStatus("LepSIP",1)
+
+
+
 if ZTree : 
     for i in range(0, len(RunNum_B)):
         print(str(i+1)+". lumi block...")
