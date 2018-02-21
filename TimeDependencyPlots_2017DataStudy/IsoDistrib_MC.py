@@ -19,9 +19,9 @@ redoHistos = True
 
 # data tree options 
 ZZTree    = False
-CRZLLTree = True
+CRZLLTree = False
 CRZLTree  = False
-ZTree     = False
+ZTree     = True
 
 # data periods options
 # period = "data2016"
@@ -32,7 +32,7 @@ period = "data2017"
 if(period == "data2016"):
     lumi = 35.9     # fb-1
 elif(period == "data2017"):
-    lumi = 41.86    # fb-1
+    lumi = 41.37    # fb-1
 
 
 #input file (DY MC)
@@ -55,7 +55,7 @@ if(period == "data2016"):
 
 
 elif(period == "data2017"):
-    inputTree = TFile.Open("/data3/Higgs/180122/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC
+    inputTree = TFile.Open("/data3/Higgs/180218/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC
     if(ZZTree):
         tree      = inputTree.Get("ZZTree/candTree")
         treeText  = "ZZTree"
@@ -83,13 +83,14 @@ if(redoHistos) :
 
     # define ISO histograms 
     # Z->ee
-    Z_ele_1st_ISO_hist    = TH1F('ISO leading ele'               , 'ISO leading ele'               , 100, 0, 0.6) 
-    Z_ele_1st_ISO_hist_EB = TH1F('ISO leading ele in ECAL Barrel', 'ISO leading ele in ECAL Barrel', 100, 0, 0.6) 
-    Z_ele_1st_ISO_hist_EE = TH1F('ISO leading ele in ECAL Endcap', 'ISO leading ele in ECAL Endcap', 100, 0, 0.6) 
+    # Z_ele_1st_ISO_hist    = TH1F('ISO leading ele'               , 'ISO leading ele'               , 100, 0, 0.6) 
+    # Z_ele_1st_ISO_hist_EB = TH1F('ISO leading ele in ECAL Barrel', 'ISO leading ele in ECAL Barrel', 100, 0, 0.6) 
+    # Z_ele_1st_ISO_hist_EE = TH1F('ISO leading ele in ECAL Endcap', 'ISO leading ele in ECAL Endcap', 100, 0, 0.6) 
 
-    Z_ele_max_ISO_hist    = TH1F('ISO max ele'               , 'ISO max ele'               , 100, 0, 0.6) 
-    Z_ele_max_ISO_hist_EB = TH1F('ISO max ele in ECAL Barrel', 'ISO max ele in ECAL Barrel', 100, 0, 0.6) 
-    Z_ele_max_ISO_hist_EE = TH1F('ISO max ele in ECAL Endcap', 'ISO max ele in ECAL Endcap', 100, 0, 0.6) 
+    # Z_ele_max_ISO_hist    = TH1F('ISO max ele'               , 'ISO max ele'               , 100, 0, 0.6) 
+    # Z_ele_max_ISO_hist_EB = TH1F('ISO max ele in ECAL Barrel', 'ISO max ele in ECAL Barrel', 100, 0, 0.6) 
+    # Z_ele_max_ISO_hist_EE = TH1F('ISO max ele in ECAL Endcap', 'ISO max ele in ECAL Endcap', 100, 0, 0.6)
+    
 
     # Z->mumu
     Z_mu_1st_ISO_hist    = TH1F('ISO leading mu'               , 'ISO leading mu'               , 100, 0, 0.6) 
@@ -101,9 +102,9 @@ if(redoHistos) :
     Z_mu_max_ISO_hist_ME = TH1F('ISO max mu in Muon Endcap', 'ISO max mu in Muon Endcap', 100, 0, 0.6) 
    
     if not ZTree :
-        Z_ExtraEl_ISO_hist    = TH1F('ISO extraEl'               , 'ISO extraEl'               , 100, 0, 2.)
-        Z_ExtraEl_ISO_hist_EB = TH1F('ISO extraEl in ECAL Barrel', 'ISO extraEl in ECAL Barrel', 100, 0, 2.)
-        Z_ExtraEl_ISO_hist_EE = TH1F('ISO extraEl in ECAL Endcap', 'ISO extraEl in ECAL Endcap', 100, 0, 2.)
+        # Z_ExtraEl_ISO_hist    = TH1F('ISO extraEl'               , 'ISO extraEl'               , 100, 0, 2.)
+        # Z_ExtraEl_ISO_hist_EB = TH1F('ISO extraEl in ECAL Barrel', 'ISO extraEl in ECAL Barrel', 100, 0, 2.)
+        # Z_ExtraEl_ISO_hist_EE = TH1F('ISO extraEl in ECAL Endcap', 'ISO extraEl in ECAL Endcap', 100, 0, 2.)
 
         Z_ExtraMu_ISO_hist    = TH1F('ISO extraMu'               , 'ISO extraMu'               , 100, 0, 2.)
         Z_ExtraMu_ISO_hist_MB = TH1F('ISO extraMu in Muon Barrel', 'ISO extraMu in Muon Barrel', 100, 0, 2.)
@@ -130,40 +131,40 @@ if(redoHistos) :
 
         
         # Z->ee 
-        if(int(math.fabs(event.LepLepId[0])) == 11 ) :
+        # if(int(math.fabs(event.LepLepId[0])) == 11 ) :
             
-            if event.LepPt[0] >= event.LepPt[1] :
-                Z_ele_1st_ISO_hist.Fill(event.LepCombRelIsoPF[0], weight)
+        #     if event.LepPt[0] >= event.LepPt[1] :
+        #         Z_ele_1st_ISO_hist.Fill(event.LepCombRelIsoPF[0], weight)
 
-                if math.fabs(event.LepEta[0]) <= 1.479 :
-                    Z_ele_1st_ISO_hist_EB.Fill(event.LepCombRelIsoPF[0], weight)
-                else :
-                    Z_ele_1st_ISO_hist_EE.Fill(event.LepCombRelIsoPF[0], weight)
+        #         if math.fabs(event.LepEta[0]) <= 1.479 :
+        #             Z_ele_1st_ISO_hist_EB.Fill(event.LepCombRelIsoPF[0], weight)
+        #         else :
+        #             Z_ele_1st_ISO_hist_EE.Fill(event.LepCombRelIsoPF[0], weight)
 
-            else :
-                Z_ele_1st_ISO_hist.Fill(event.LepCombRelIsoPF[1], weight)
+        #     else :
+        #         Z_ele_1st_ISO_hist.Fill(event.LepCombRelIsoPF[1], weight)
 
-                if math.fabs(event.LepEta[1]) <= 1.479 :
-                    Z_ele_1st_ISO_hist_EB.Fill(event.LepCombRelIsoPF[1], weight)
-                else :
-                    Z_ele_1st_ISO_hist_EE.Fill(event.LepCombRelIsoPF[1], weight)
+        #         if math.fabs(event.LepEta[1]) <= 1.479 :
+        #             Z_ele_1st_ISO_hist_EB.Fill(event.LepCombRelIsoPF[1], weight)
+        #         else :
+        #             Z_ele_1st_ISO_hist_EE.Fill(event.LepCombRelIsoPF[1], weight)
 
             
-            if(event.LepCombRelIsoPF[0] >= event.LepCombRelIsoPF[1]):
-                Z_ele_max_ISO_hist.Fill(event.LepCombRelIsoPF[0], weight)
+        #     if(event.LepCombRelIsoPF[0] >= event.LepCombRelIsoPF[1]):
+        #         Z_ele_max_ISO_hist.Fill(event.LepCombRelIsoPF[0], weight)
 
-                if math.fabs(event.LepEta[0]) <= 1.479 :
-                    Z_ele_max_ISO_hist_EB.Fill(event.LepCombRelIsoPF[0], weight)
-                else :
-                    Z_ele_max_ISO_hist_EE.Fill(event.LepCombRelIsoPF[0], weight)
+        #         if math.fabs(event.LepEta[0]) <= 1.479 :
+        #             Z_ele_max_ISO_hist_EB.Fill(event.LepCombRelIsoPF[0], weight)
+        #         else :
+        #             Z_ele_max_ISO_hist_EE.Fill(event.LepCombRelIsoPF[0], weight)
 
-            else :
-                Z_ele_max_ISO_hist.Fill(event.LepCombRelIsoPF[1], weight)
+        #     else :
+        #         Z_ele_max_ISO_hist.Fill(event.LepCombRelIsoPF[1], weight)
                         
-                if math.fabs(event.LepEta[1]) <= 1.479 :
-                    Z_ele_max_ISO_hist_EB.Fill(event.LepCombRelIsoPF[1], weight)
-                else :
-                    Z_ele_max_ISO_hist_EE.Fill(event.LepCombRelIsoPF[1], weight)
+        #         if math.fabs(event.LepEta[1]) <= 1.479 :
+        #             Z_ele_max_ISO_hist_EB.Fill(event.LepCombRelIsoPF[1], weight)
+        #         else :
+        #             Z_ele_max_ISO_hist_EE.Fill(event.LepCombRelIsoPF[1], weight)
 
           
 
@@ -207,16 +208,16 @@ if(redoHistos) :
         # extra lepton
         if not ZTree :
                 
-                if(int(math.fabs(event.LepLepId[2])) == 11 ) :
+                # if(int(math.fabs(event.LepLepId[2])) == 11 ) :
 
-                    Z_ExtraEl_ISO_hist.Fill(event.LepCombRelIsoPF[2], weight)
+                #     Z_ExtraEl_ISO_hist.Fill(event.LepCombRelIsoPF[2], weight)
                     
-                    if math.fabs(event.LepEta[2]) <= 1.479 :  
-                        Z_ExtraEl_ISO_hist_EB.Fill(event.LepCombRelIsoPF[2], weight)
-                    else :
-                        Z_ExtraEl_ISO_hist_EE.Fill(event.LepCombRelIsoPF[2], weight)
+                #     if math.fabs(event.LepEta[2]) <= 1.479 :  
+                #         Z_ExtraEl_ISO_hist_EB.Fill(event.LepCombRelIsoPF[2], weight)
+                #     else :
+                #         Z_ExtraEl_ISO_hist_EE.Fill(event.LepCombRelIsoPF[2], weight)
 
-                elif(int(math.fabs(event.LepLepId[2])) == 13 ) :
+                if(int(math.fabs(event.LepLepId[2])) == 13 ) :
                     
                     Z_ExtraMu_ISO_hist.Fill(event.LepCombRelIsoPF[2], weight)
 
@@ -225,8 +226,8 @@ if(redoHistos) :
                     else :
                         Z_ExtraMu_ISO_hist_ME.Fill(event.LepCombRelIsoPF[2], weight)
 
-                else :
-                    print "Error: wrong particle ID!"
+                # else :
+                #     print "Error: wrong particle ID!"
 
 
     #save histograms in a root file 
@@ -234,13 +235,13 @@ if(redoHistos) :
     Iso_outFile = TFile.Open("IsoDistrib_MC_"+ period + "_" + treeText +".root", "RECREATE")
     Iso_outFile.cd()
 
-    Z_ele_1st_ISO_hist.Write()
-    Z_ele_1st_ISO_hist_EB.Write()
-    Z_ele_1st_ISO_hist_EE.Write()
+    # Z_ele_1st_ISO_hist.Write()
+    # Z_ele_1st_ISO_hist_EB.Write()
+    # Z_ele_1st_ISO_hist_EE.Write()
                                 
-    Z_ele_max_ISO_hist.Write()
-    Z_ele_max_ISO_hist_EB.Write()
-    Z_ele_max_ISO_hist_EE.Write()
+    # Z_ele_max_ISO_hist.Write()
+    # Z_ele_max_ISO_hist_EB.Write()
+    # Z_ele_max_ISO_hist_EE.Write()
                                                    
     Z_mu_1st_ISO_hist.Write()
     Z_mu_1st_ISO_hist_MB.Write()
@@ -251,9 +252,9 @@ if(redoHistos) :
     Z_mu_max_ISO_hist_ME.Write()
                                 
     if not ZTree :               
-        Z_ExtraEl_ISO_hist.Write()
-        Z_ExtraEl_ISO_hist_EB.Write()
-        Z_ExtraEl_ISO_hist_EE.Write()
+        # Z_ExtraEl_ISO_hist.Write()
+        # Z_ExtraEl_ISO_hist_EB.Write()
+        # Z_ExtraEl_ISO_hist_EE.Write()
                                 
         Z_ExtraMu_ISO_hist.Write()
         Z_ExtraMu_ISO_hist_MB.Write()

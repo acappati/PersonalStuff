@@ -19,9 +19,9 @@ from ROOT import kBlue, kRed, kBlack, kWhite, kAzure, kOrange
 
 # data tree options 
 ZZTree    = False
-CRZLLTree = True
+CRZLLTree = False
 CRZLTree  = False
-ZTree     = False
+ZTree     = True
 
 # data periods options
 # period = "data2016"
@@ -30,7 +30,7 @@ period = "data2017"
 if period == "data2016" :
     lumiText = '35.9 fb^{-1}'
 if period == "data2017" :
-    lumiText = '41.86 fb^{-1}'
+    lumiText = '41.37 fb^{-1}'
 #******************************
 
 
@@ -61,13 +61,13 @@ print 'Reading file', histoDATA_input.GetName(),'...'
 
 IsoDATA = []
 
-IsoDATA.append(histoDATA_input.Get('ISO leading ele'))
-IsoDATA.append(histoDATA_input.Get('ISO leading ele in ECAL Barrel'))
-IsoDATA.append(histoDATA_input.Get('ISO leading ele in ECAL Endcap'))
+# IsoDATA.append(histoDATA_input.Get('ISO leading ele'))
+# IsoDATA.append(histoDATA_input.Get('ISO leading ele in ECAL Barrel'))
+# IsoDATA.append(histoDATA_input.Get('ISO leading ele in ECAL Endcap'))
 
-IsoDATA.append(histoDATA_input.Get('ISO max ele'))
-IsoDATA.append(histoDATA_input.Get('ISO max ele in ECAL Barrel'))
-IsoDATA.append(histoDATA_input.Get('ISO max ele in ECAL Endcap'))
+# IsoDATA.append(histoDATA_input.Get('ISO max ele'))
+# IsoDATA.append(histoDATA_input.Get('ISO max ele in ECAL Barrel'))
+# IsoDATA.append(histoDATA_input.Get('ISO max ele in ECAL Endcap'))
 
 IsoDATA.append(histoDATA_input.Get('ISO leading mu'))
 IsoDATA.append(histoDATA_input.Get('ISO leading mu in Muon Barrel'))
@@ -78,9 +78,9 @@ IsoDATA.append(histoDATA_input.Get('ISO max mu in Muon Barrel'))
 IsoDATA.append(histoDATA_input.Get('ISO max mu in Muon Endcap'))
 
 if not ZTree :
-    IsoDATA.append(histoDATA_input.Get('ISO extraEl'))
-    IsoDATA.append(histoDATA_input.Get('ISO extraEl in ECAL Barrel'))
-    IsoDATA.append(histoDATA_input.Get('ISO extraEl in ECAL Endcap'))
+    # IsoDATA.append(histoDATA_input.Get('ISO extraEl'))
+    # IsoDATA.append(histoDATA_input.Get('ISO extraEl in ECAL Barrel'))
+    # IsoDATA.append(histoDATA_input.Get('ISO extraEl in ECAL Endcap'))
 
     IsoDATA.append(histoDATA_input.Get('ISO extraMu'))
     IsoDATA.append(histoDATA_input.Get('ISO extraMu in Muon Barrel'))
@@ -96,13 +96,13 @@ print 'Reading file', histoMC_input.GetName(),'...'
 
 IsoMC = []
 
-IsoMC.append(histoMC_input.Get('ISO leading ele'))
-IsoMC.append(histoMC_input.Get('ISO leading ele in ECAL Barrel'))
-IsoMC.append(histoMC_input.Get('ISO leading ele in ECAL Endcap'))
+# IsoMC.append(histoMC_input.Get('ISO leading ele'))
+# IsoMC.append(histoMC_input.Get('ISO leading ele in ECAL Barrel'))
+# IsoMC.append(histoMC_input.Get('ISO leading ele in ECAL Endcap'))
 
-IsoMC.append(histoMC_input.Get('ISO max ele'))
-IsoMC.append(histoMC_input.Get('ISO max ele in ECAL Barrel'))
-IsoMC.append(histoMC_input.Get('ISO max ele in ECAL Endcap'))
+# IsoMC.append(histoMC_input.Get('ISO max ele'))
+# IsoMC.append(histoMC_input.Get('ISO max ele in ECAL Barrel'))
+# IsoMC.append(histoMC_input.Get('ISO max ele in ECAL Endcap'))
 
 IsoMC.append(histoMC_input.Get('ISO leading mu'))
 IsoMC.append(histoMC_input.Get('ISO leading mu in Muon Barrel'))
@@ -113,9 +113,9 @@ IsoMC.append(histoMC_input.Get('ISO max mu in Muon Barrel'))
 IsoMC.append(histoMC_input.Get('ISO max mu in Muon Endcap'))
 
 if not ZTree :
-    IsoMC.append(histoMC_input.Get('ISO extraEl'))
-    IsoMC.append(histoMC_input.Get('ISO extraEl in ECAL Barrel'))
-    IsoMC.append(histoMC_input.Get('ISO extraEl in ECAL Endcap'))
+    # IsoMC.append(histoMC_input.Get('ISO extraEl'))
+    # IsoMC.append(histoMC_input.Get('ISO extraEl in ECAL Barrel'))
+    # IsoMC.append(histoMC_input.Get('ISO extraEl in ECAL Endcap'))
 
     IsoMC.append(histoMC_input.Get('ISO extraMu'))
     IsoMC.append(histoMC_input.Get('ISO extraMu in Muon Barrel'))
@@ -124,12 +124,12 @@ if not ZTree :
 
 
 if ZTree :
-    nameList = ['ISO_leading_ele',
-                'ISO_leading_ele_InECALbarrel',
-                'ISO_leading_ele_InECALendcap',
-                'maxISO_ele',
-                'maxISO_ele_InECALbarrel',
-                'maxISO_ele_InECALendcap',
+    nameList = [# 'ISO_leading_ele',
+                # 'ISO_leading_ele_InECALbarrel',
+                # 'ISO_leading_ele_InECALendcap',
+                # 'maxISO_ele',
+                # 'maxISO_ele_InECALbarrel',
+                # 'maxISO_ele_InECALendcap',
                 'ISO_leading_mu',
                 'ISO_leading_mu_InMuonBarrel',
                 'ISO_leading_mu_InMuonEndcap',
@@ -138,21 +138,21 @@ if ZTree :
                 'maxISO_mu_InMuonEndcap']
 
 else :
-    nameList = ['ISO_leading_ele',
-                'ISO_leading_ele_InECALbarrel',
-                'ISO_leading_ele_InECALendcap',
-                'maxISO_ele',
-                'maxISO_ele_InECALbarrel',
-                'maxISO_ele_InECALendcap',
+    nameList = [# 'ISO_leading_ele',
+                # 'ISO_leading_ele_InECALbarrel',
+                # 'ISO_leading_ele_InECALendcap',
+                # 'maxISO_ele',
+                # 'maxISO_ele_InECALbarrel',
+                # 'maxISO_ele_InECALendcap',
                 'ISO_leading_mu',
                 'ISO_leading_mu_InMuonBarrel',
                 'ISO_leading_mu_InMuonEndcap',
                 'maxISO_mu',
                 'maxISO_mu_InMuonBarrel',
                 'maxISO_mu_InMuonEndcap',
-                'ISO_extraEl',
-                'ISO_extraEl_InECALbarrel',
-                'ISO_extraEl_InECALendcap',
+                # 'ISO_extraEl',
+                # 'ISO_extraEl_InECALbarrel',
+                # 'ISO_extraEl_InECALendcap',
                 'ISO_extraMu',
                 'ISO_extraMu_InMuonBarrel',
                 'ISO_extraMu_InMuonEndcap']
@@ -164,16 +164,17 @@ for i in range(len(nameList)) :
 
     canvas = TCanvas("canvas","canvas",800,800)
 
-    #normalize MC to data
-    norm = IsoDATA[i].Integral() / IsoMC[i].Integral()
+    #normalize MC 
+    norm = 1 # to xsec
+    # norm = IsoDATA[i].Integral() / IsoMC[i].Integral() # to data
 
     #DATA hist
     IsoDATA[i].SetMarkerStyle(20)
     IsoDATA[i].SetMarkerSize(0.6)
 
     #MC hist
-    IsoMC[i].Scale(norm) #normalize MC to data
-    IsoMC[i].SetFillColor(kOrange-3)
+    IsoMC[i].Scale(norm) #normalize MC 
+    IsoMC[i].SetFillColor(kOrange-2)
     IsoMC[i].SetLineColor(kBlack)
 
 
