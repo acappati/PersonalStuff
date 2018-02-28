@@ -164,6 +164,7 @@ if(redoDATAHistos) :
     treeDATA.SetBranchStatus("LepPt",1)
     treeDATA.SetBranchStatus("LepEta",1)
     treeDATA.SetBranchStatus("LepPhi",1)
+    treeDATA.SetBranchStatus("ZMass",1)
 
 
     # read tree 
@@ -176,7 +177,11 @@ if(redoDATAHistos) :
 
 
 
-        # if (max(LepPt[0],LeptPt[1])<20 || min(LepPt[0],LeptPt[1])<10) continue    # cut as in the 4l sample
+        # if (max(event.LepPt[0],event.LepPt[1])<20 || min(event.LepPt[0],event.LepPt[1])<10) : continue    # cut as in the 4l sample
+        # if max(event.LepPt[0],event.LepPt[1]) < 30. : continue  # cut on the leading lepton pt 
+
+        if event.ZMass < 40. : continue    # cut in ZMass
+        # if event.ZMass < 80. or event.ZMass > 100. : continue  # cut in ZMass
 
 
         
@@ -445,7 +450,12 @@ if(redoMCDYHistos) :
 
 
 
-        # if (max(LepPt[0],LeptPt[1])<20 || min(LepPt[0],LeptPt[1])<10) continue    # cut as in the 4l sample
+        # if (max(event.LepPt[0],event.LepPt[1])<20 || min(event.LepPt[0],event.LepPt[1])<10) : continue    # cut as in the 4l sample
+        # if max(event.LepPt[0],event.LepPt[1]) < 30. : continue  # cut on the leading lepton pt 
+
+        if event.ZMass < 40. : continue    # cut in ZMass
+        # if event.ZMass < 80. or event.ZMass > 100. : continue  # cut in ZMass
+
 
 
 
@@ -716,7 +726,11 @@ if(redoMCTTbarHistos) :
 
 
 
-        # if (max(LepPt[0],LeptPt[1])<20 || min(LepPt[0],LeptPt[1])<10) continue    # cut as in the 4l sample
+        # if (max(event.LepPt[0],event.LepPt[1])<20 || min(event.LepPt[0],event.LepPt[1])<10) : continue    # cut as in the 4l sample
+        # if max(event.LepPt[0],event.LepPt[1]) < 30. : continue  # cut on the leading lepton pt 
+
+        if event.ZMass < 40. : continue    # cut in ZMass
+        # if event.ZMass < 80. or event.ZMass > 100. : continue  # cut in ZMass
 
 
 
