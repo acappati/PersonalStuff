@@ -30,16 +30,28 @@ To compare Iso DATA/MC distributions:
    -   python IsoDistrib_MC.py
    -   python IsoDistrib_DATAvsMC.py 
 
+
 To compare SIP DATA/MC distributions:
  
    -   python SipDistrib_DATA.py 
    -   python SipDistrib_MC.py 
    -   python SipDistrib_DATAvsMC.py
 
+
 To compare LepBDT DATA/MC distributions:
 
    -   python LepBDTdistrib_DATA.py 
    -   python LepBDTdistrib_MC.py 
    -   python LepBDTdistrib_DATAvsMC.py 
+
+
+To compare jet MET DATA/MC distributions:
+
+   -   python jetsMetDistrib_DATAvsMC.py
+
+
+To compare Lepton pT eta phi DATA/MC distributions:
+
+   -   python LepPtEtaPhiDistrib_DATAvsMC.py
 
 ************************	
