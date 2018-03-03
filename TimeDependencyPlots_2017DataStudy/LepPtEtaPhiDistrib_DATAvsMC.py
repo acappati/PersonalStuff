@@ -180,6 +180,7 @@ if(redoDATAHistos) :
 
         # if (max(event.LepPt[0],event.LepPt[1])<20 || min(event.LepPt[0],event.LepPt[1])<10) : continue    # cut as in the 4l sample
         # if max(event.LepPt[0],event.LepPt[1]) < 30. : continue  # cut on the leading lepton pt 
+        # if max(event.LepPt[0],event.LepPt[1]) < 20. : continue  # cut on the leading lepton pt 
 
         # if event.ZMass < 40. : continue    # cut in ZMass
         # if event.ZMass < 80. or event.ZMass > 100. : continue  # cut in ZMass
@@ -453,6 +454,7 @@ if(redoMCDYHistos) :
 
         # if (max(event.LepPt[0],event.LepPt[1])<20 || min(event.LepPt[0],event.LepPt[1])<10) : continue    # cut as in the 4l sample
         # if max(event.LepPt[0],event.LepPt[1]) < 30. : continue  # cut on the leading lepton pt 
+        # if max(event.LepPt[0],event.LepPt[1]) < 20. : continue  # cut on the leading lepton pt
 
         # if event.ZMass < 40. : continue    # cut in ZMass
         # if event.ZMass < 80. or event.ZMass > 100. : continue  # cut in ZMass
@@ -729,6 +731,7 @@ if(redoMCTTbarHistos) :
 
         # if (max(event.LepPt[0],event.LepPt[1])<20 || min(event.LepPt[0],event.LepPt[1])<10) : continue    # cut as in the 4l sample
         # if max(event.LepPt[0],event.LepPt[1]) < 30. : continue  # cut on the leading lepton pt 
+        # if max(event.LepPt[0],event.LepPt[1]) < 20. : continue  # cut on the leading lepton pt
 
         # if event.ZMass < 40. : continue    # cut in ZMass
         # if event.ZMass < 80. or event.ZMass > 100. : continue  # cut in ZMass
