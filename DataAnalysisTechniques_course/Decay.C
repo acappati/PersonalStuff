@@ -5,7 +5,7 @@
 // usage:
 //        root
 //        .L Decay.C++
-//        Decay(number of initial nuclei, decay constant [s^-1], time interval [s], seed)
+//        Decay(number of initial nuclei, decay constant [s^-1], time interval [s], bool for changing seed)
 //
 // **************************
 
