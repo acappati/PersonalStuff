@@ -26,7 +26,7 @@ ZTree    = True
 # period = "data2016"
 period = "data2017"
 # *****************************
-lumiText = '41.37 fb^{-1}'
+lumiText = '41.30 fb^{-1}'
 #******************************
 
 
@@ -132,15 +132,16 @@ for i in range(len(nameList)) :
 
     canvas = TCanvas("canvas","canvas",800,800)
 
-    #normalize MC to data
-    norm = LepBDTDATA[i].Integral() / LepBDTMC[i].Integral()
+    #normalization
+    norm = 1 # norm MC to xsec
+    # norm = LepBDTDATA[i].Integral() / LepBDTMC[i].Integral()   # norm MC to data
 
     #DATA hist
     LepBDTDATA[i].SetMarkerStyle(20)
     LepBDTDATA[i].SetMarkerSize(0.6)
 
     #MC hist
-    LepBDTMC[i].Scale(norm) #normalize MC to data
+    LepBDTMC[i].Scale(norm) #normalize MC 
     LepBDTMC[i].SetFillColor(kMagenta-6)
     LepBDTMC[i].SetLineColor(kBlack)
 

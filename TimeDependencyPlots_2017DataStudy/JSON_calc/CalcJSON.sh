@@ -31,7 +31,7 @@
 # ****************
 #JSON_path=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/PromptReco/Cert_294927-305636_13TeV_PromptReco_Collisions17_JSON.txt # Nov 10, 2017; 35.88/fb
 #JSON_path=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/Final/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt # Dec 15, 2017; 41.86/fb
-JSON_path=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt # Feb 2, 2018; 41.37/fb
+JSON_path=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt # Feb 2, 2018; 41.30/fb
 
 
 JSON_localName=GoldenJSON_2017data.txt
@@ -39,8 +39,12 @@ Output=LumiCalc_2017data.txt
 
 
 cp $JSON_path $JSON_localName
+
 # normtag file is not available yet
-brilcalc lumi -b "STABLE BEAMS" -u /fb -i $JSON_path -o $Output
+# brilcalc lumi -b "STABLE BEAMS" -u /fb -i $JSON_path -o $Output
+
+# norm tag now available 
+brilcalc lumi --normtag /cvmfs/cms-bril.cern.ch/cms-lumi-pog/Normtags/normtag_PHYSICS.json -i $JSON_path -u /fb -o $Output
 
 
 

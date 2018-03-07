@@ -30,7 +30,7 @@ period = "data2017"
 if period == "data2016" :
     lumiText = '35.9 fb^{-1}'
 if period == "data2017" :
-    lumiText = '41.37 fb^{-1}'
+    lumiText = '41.30 fb^{-1}'
 #******************************
 
 

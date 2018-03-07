@@ -32,7 +32,7 @@ period = "data2017"
 if(period == "data2016"):
     lumi = 35.9     # fb-1
 elif(period == "data2017"):
-    lumi = 41.37    # fb-1
+    lumi = 41.30    # fb-1
 
 
 #input file (DY MC)
@@ -55,7 +55,7 @@ if(period == "data2016"):
 
 
 elif(period == "data2017"):
-    inputTree = TFile.Open("/data3/Higgs/180218/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC
+    inputTree = TFile.Open("/data3/Higgs/180305/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC
     if(ZZTree):
         tree      = inputTree.Get("ZZTree/candTree")
         treeText  = "ZZTree"

@@ -67,11 +67,11 @@ if(period == "data2016"):
         print ("Error: wrong option!")
 
 elif(period == "data2017"):
-    inputDATAtree    = TFile.Open("/data3/Higgs/180218/AllData/ZZ4lAnalysis.root")        #2017 data (rereco json 18/2/2018)   
-    inputMCDYtree    = TFile.Open("/data3/Higgs/180218/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC (rereco json 18/2/2018)
-    inputMCTTbartree = TFile.Open("/data3/Higgs/180218/TTTo2L2Nu/ZZ4lAnalysis.root")      #TTbarJets 2017 MC (rereco json 18/2/2018)
-    lumi     = 41.37   # fb-1
-    lumiText = '41.37 fb^{-1}'
+    inputDATAtree    = TFile.Open("/data3/Higgs/180305/AllData/ZZ4lAnalysis.root")        #2017 data (rereco json)   
+    inputMCDYtree    = TFile.Open("/data3/Higgs/180305/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC (rereco json)
+    inputMCTTbartree = TFile.Open("/data3/Higgs/180305/TTTo2L2Nu/ZZ4lAnalysis.root")      #TTbarJets 2017 MC (rereco json)
+    lumi     = 41.30   # fb-1
+    lumiText = '41.30 fb^{-1}'
     if(ZZTree):
         treeDATA    = inputDATAtree.Get("ZZTree/candTree")
         treeMCDY    = inputMCDYtree.Get("ZZTree/candTree")
@@ -1474,7 +1474,7 @@ for i in range(len(inDATA_list)) :
     legend = TLegend(0.82,0.75,0.95,0.89)
     legend.AddEntry(inDATA_list[i],"Data", "p")
     legend.AddEntry(inMCDY_list[i],"DY MC","f")
-    legend.AddEntry(inMCTTbar_list[i],"t#bar{t}","f")
+    legend.AddEntry(inMCTTbar_list[i],"t#bar{t} MC","f")
     legend.SetFillColor(kWhite)
     legend.SetLineColor(kBlack)
     legend.SetTextFont(43)

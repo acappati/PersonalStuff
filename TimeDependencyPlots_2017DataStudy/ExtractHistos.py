@@ -34,7 +34,7 @@ if(period == "data2016"):
     saveAs   = "2016data_0p5_reduced"
 
 elif(period == "data2017"):
-    data     = TFile.Open("/data3/Higgs/180218/AllData/ZZ4lAnalysis.root")
+    data     = TFile.Open("/data3/Higgs/180305/AllData/ZZ4lAnalysis.root")
     inputTXT = "JSON_calc/SplittedBlocks_2017data_0p5_new.txt"
     saveAs   = "2017data_0p5_reduced"
 
