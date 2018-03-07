@@ -5,7 +5,7 @@
 // usage:
 //        root
 //        .L Decay.C++
-//        Decay(number of initial nuclei, decay constant, time interval in s, number of time intervals after which counting remaining nuclei, seed)
+//        Decay(number of initial nuclei, decay constant [s^-1], time interval [s], seed)
 //
 // **************************
 
@@ -17,6 +17,7 @@
 #include <TStyle.h>
 #include <TMath.h>
 #include <TAttFill.h>
+#include <TTimeStamp.h>
 
 
 using namespace std;
@@ -33,8 +34,9 @@ Double_t Exp_function(Double_t *variable,Double_t *parameter){
 }
 
 
+
 // main function
-void Decay(Int_t N0 = 100, Float_t alpha = 0.01, Float_t dt = 1, UInt_t seed = 2126)
+void Decay(Int_t N0 = 5000, Float_t alpha = 0.02, Float_t dt = 1, bool changeSeed = kTRUE)
 {
 
   // prob of a nucleus to decay 
@@ -48,15 +50,20 @@ void Decay(Int_t N0 = 100, Float_t alpha = 0.01, Float_t dt = 1, UInt_t seed = 2
 
 
   // random number for the loop 
-  TRandom3 *rand = new TRandom3();
-  //gRandom->SetSeed(seed);
-  rand->SetSeed(seed);
- 
+  TRandom3 *rand = new TRandom3();           // use default TRandom3 seed = 4357
+  if(changeSeed){
+    TTimeStamp *tim = new TTimeStamp();
+    rand->SetSeed(tim->GetTime());	     // can change the seed according to machine time
+  }
+
+     
 
   // histo for the number of remaining nuclei after a certain time 
   TH1I *Nremaining_hist = new TH1I("Nremaining_hist","Remaining Nuclei",nBins,0.,timeTot);
-  Nremaining_hist->GetXaxis()->SetTitle(Form("Number of time intervals (dt = %.2f s)",dt));
-  Nremaining_hist->GetYaxis()->SetTitle("N_{remaining nuclei}");
+  Nremaining_hist->GetXaxis()->SetTitle(Form("Number of time intervals (dt = %.1f s)",dt));
+  Nremaining_hist->GetXaxis()->SetTitleOffset(1.32);
+  Nremaining_hist->GetYaxis()->SetTitle("N of remaining nuclei");
+  Nremaining_hist->GetYaxis()->SetTitleOffset(1.3);
   Nremaining_hist->SetLineColor(kBlack);
   Nremaining_hist->SetFillColor(kGreen-9);
 
@@ -65,15 +72,15 @@ void Decay(Int_t N0 = 100, Float_t alpha = 0.01, Float_t dt = 1, UInt_t seed = 2
   Int_t N = N0;
  
   for(Float_t time=0; time<timeTot; time += dt){      // loop from t=0 to t in step of dt (ndt=number of time delay)
-    for(Int_t nuclei=0; nuclei<N; nuclei++){      // loop over each remaining parent nucleus 
+    for(Int_t nuclei=0; nuclei<N; nuclei++){          // loop over each remaining parent nucleus 
 
-      if(rand->Rndm() < decay_prob) N--; // gen random number, if it is lower than decay prob, nucleus decays
-
+      if(rand->Rndm() < decay_prob) N--;   // gen random number, if it is lower than decay prob, nucleus decays
+      
     }
     Nremaining_hist->Fill(time,N);
   }
 
-
+  
   // plot the histo
   gStyle->SetOptStat(0);
   TCanvas *canvas = new TCanvas("canvas","canvas",800,600);
@@ -95,7 +102,7 @@ void Decay(Int_t N0 = 100, Float_t alpha = 0.01, Float_t dt = 1, UInt_t seed = 2
   canvas->Update();
 
   
-  canvas->SaveAs("Remaining_nuclei.png");
+  canvas->SaveAs(Form("RemainingNuclei_N0%d_alpha%.2f.png",N0,alpha));
 
 
 
