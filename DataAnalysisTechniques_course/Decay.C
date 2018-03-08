@@ -71,7 +71,7 @@ void Decay(Int_t N0 = 5000, Float_t alpha = 0.02, Float_t dt = 1, bool changeSee
   // start from number of remaining nuclei: initially is N0 
   Int_t N = N0;
  
-  for(Float_t time=0; time<timeTot; time += dt){      // loop from t=0 to t in step of dt (ndt=number of time delay)
+  for(Float_t time=0; time<timeTot; time += dt){      // loop from t=0 to t in step of dt 
     for(Int_t nuclei=0; nuclei<N; nuclei++){          // loop over each remaining parent nucleus 
 
       if(rand->Rndm() < decay_prob) N--;   // gen random number, if it is lower than decay prob, nucleus decays
