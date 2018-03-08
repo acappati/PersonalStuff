@@ -1,3 +1,14 @@
+// **************************
+//
+// purpose: plot 4l invariant mass (very basic version) 
+//
+// usage:
+//        root
+//        .L plotInvMass.cc++
+//        plotInvMass()
+//
+// **************************
+
 #include "TFile.h"
 #include "TStyle.h"
 #include "TCanvas.h"
@@ -28,7 +39,7 @@ void readFileMakeHisto(TString infile, TH1F *hist, Float_t L, Int_t k);
 //Macro
 void plotInvMass()
 {
-  Double_t L=3.785; //[{fb}^{-1}]
+  Double_t L=35.9; //[{fb}^{-1}]
   Int_t nBin=225;//207
   Double_t xMin=70.; //70
   Double_t xMax=970.;//898
@@ -54,8 +65,8 @@ void plotInvMass()
   //****************************
   TH1F *hmass2=new TH1F("hmass2","ZZMass",nBin,xMin,xMax);
   //readFileMakeHisto("/data3/Higgs/160803_complete_newEbE/AllData/ZZ4lAnalysis.root",hmass2,L,2); //L=12.9 [{fb}^{-1}]
-  //readFileMakeHisto("/data3/Higgs/170222/AllData/ZZ4lAnalysis.root",hmass2,L,2);
-  readFileMakeHisto("/data3/Higgs/170712_Data2017/AllData/ZZ4lAnalysis.root",hmass2,L,2);  
+  readFileMakeHisto("/data3/Higgs/170222/AllData/ZZ4lAnalysis.root",hmass2,L,2);
+  //readFileMakeHisto("/data3/Higgs/170712_Data2017/AllData/ZZ4lAnalysis.root",hmass2,L,2);  
   //****************************
 
 
@@ -94,7 +105,7 @@ void plotInvMass()
   //sum and draw histo
   THStack *hs = new THStack("hs","");
   TCanvas *c2=new TCanvas("c2","c2");
-  TH1F *hr=c2->DrawFrame(xMin,0.,xMax,30.);
+  TH1F *hr=c2->DrawFrame(xMin,0.,xMax,110.);
   hr->SetXTitle("m_{4l} (GeV)");
   hr->SetYTitle("Events/4 GeV");
   //hr->SetTitle();
@@ -150,7 +161,7 @@ void plotInvMass()
   //******************************
   //Legend
   TLegend *leg=new TLegend(0.63,0.68,0.83,0.82);
-  leg->AddEntry("tgmass2","Data","p");
+  leg->AddEntry("tgmass2","Data","pe");
   leg->AddEntry(hmass1,"H(125)","f");  
   leg->AddEntry(hmass0,"q#bar{q} #rightarrow ZZ, Z#gamma *","f");
   leg->AddEntry(hmass10,"gg #rightarrow ZZ, Z#gamma *","f");
