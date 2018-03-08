@@ -83,29 +83,30 @@ void Decay(Int_t N0 = 5000, Float_t alpha = 0.02, Float_t dt = 1, bool changeSee
   
   // plot the histo
   gStyle->SetOptStat(0);
-  TCanvas *canvas = new TCanvas("canvas","canvas",800,600);
-  canvas->Draw();
-  canvas->cd();
+  TCanvas *canvas_yLin = new TCanvas("canvas_yLin","canvas_yLin",800,600);
+  TCanvas *canvas_yLog = new TCanvas("canvas_yLog","canvas_yLog",800,600);
 
-  Nremaining_hist->Draw("histo");
+  canvas_yLin->cd();
+  Nremaining_hist->DrawClone("histo");
+  canvas_yLog->cd()->SetLogy();
+  Nremaining_hist->DrawClone("histo");
 
-  canvas->Update();
-
-
+  
   // plot theoretical decay function  N = N0 * e^(-alpha*t)
   TF1 *functionTh = new TF1("functionTh",Exp_function,0,timeTot,2);
   functionTh->SetParameter(0,N0);
   functionTh->SetParameter(1,alpha);
   functionTh->SetLineColor(kRed);
+
+  canvas_yLin->cd();
   functionTh->Draw("same");
-
-  canvas->Update();
-
+  canvas_yLog->cd()->SetLogy();
+  functionTh->Draw("same");
   
-  canvas->SaveAs(Form("RemainingNuclei_N0%d_alpha%.2f.png",N0,alpha));
-
-
-
   
+  // save plots 
+  canvas_yLin->SaveAs(Form("RemainingNuclei_yLinScale_N0%d_alpha%.2f.png",N0,alpha));
+  canvas_yLog->SaveAs(Form("RemainingNuclei_yLogScale_N0%d_alpha%.2f.png",N0,alpha));
+
 
 }
