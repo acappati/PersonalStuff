@@ -48,9 +48,9 @@ elif(period == "data2017"):
 
 #input file
 if(MCsample == "DYJets"):
-    inputTree = TFile.Open("/data3/Higgs/180305/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets
+    inputTree = TFile.Open("/data3/Higgs/180416/MC_main/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets
 elif(MCsample == "TTJets"):
-    inputTree = TFile.Open("/data3/Higgs/180305/TTTo2L2Nu/ZZ4lAnalysis.root")  #TTJets 
+    inputTree = TFile.Open("/data3/Higgs/180416/MC_main/TTTo2L2Nu/ZZ4lAnalysis.root")  #TTJets 
 else:
     print ("Error: wrong MC sample!")
 

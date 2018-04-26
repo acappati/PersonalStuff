@@ -55,7 +55,7 @@ if(period == "data2016"):
 
 
 elif(period == "data2017"):
-    inputTree = TFile.Open("/data3/Higgs/180305/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC
+    inputTree = TFile.Open("/data3/Higgs/180416/MC_main/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC
     if(ZZTree):
         tree      = inputTree.Get("ZZTree/candTree")
         treeText  = "ZZTree"
