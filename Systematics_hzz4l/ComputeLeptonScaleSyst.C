@@ -64,7 +64,7 @@ using namespace std;
 using namespace RooFit ;
 
 #define REDOHISTOS 0
-#define REDOTHEFIT 1
+#define REDOTHEFIT 0
 
 
 // *** global definitions
@@ -275,6 +275,9 @@ void doHistograms(string inputPathMC, string inputPathData, float lumi)
 void doTheFit(string outputPathFitResultsPlots)
 {
 
+  // define output file for fit result plots 
+  TFile* fOutFitResults_plotFrame = new TFile("file_FitResultsPlots.root","recreate");
+
   // read file with histos
   TFile* fInHistos = TFile::Open("file_DataMCHistos.root");
 
@@ -360,9 +363,11 @@ void doTheFit(string outputPathFitResultsPlots)
         tot_pdf.fitTo(dh,Range("range80100gev"));
                 
         // plot data on the frame
-        RooPlot* frame = mll.frame(Title(inputhist[dat][catEta][catPt]->GetName()));
+        RooPlot* frame = mll.frame();
+        frame->SetName(inputhist[dat][catEta][catPt]->GetName());  // name is the name which appears in the root file
+        frame->SetTitle(inputhist[dat][catEta][catPt]->GetName()); // title is the title on the canvas  
         dh.plotOn(frame,DataError(RooAbsData::SumW2)); 
-        tot_pdf.plotOn(frame);
+        tot_pdf.plotOn(frame,LineColor(dat==0?kBlue:kRed)); //blue line for data, red for MC 
 
 
         // plot on the canvas and save plots
@@ -391,7 +396,7 @@ void doTheFit(string outputPathFitResultsPlots)
         c->SaveAs((outputPathFitResultsPlots + "/" + Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()) + ".png").c_str());
 
 
-        // save fit values 
+        // save fit values in histos 
         hfitResults_poleBW[dat][catEta][catPt]->Fill(0.5,pole_BW.getVal());
         hfitResults_widthBW[dat][catEta][catPt]->Fill(0.5,width_BW.getVal());  
 	                                                  
@@ -402,12 +407,17 @@ void doTheFit(string outputPathFitResultsPlots)
 	hfitResults_a2DCB[dat][catEta][catPt]->Fill(0.5,a2_DCB.getVal());	  
 	hfitResults_n2DCB[dat][catEta][catPt]->Fill(0.5,n2_DCB.getVal());    
 
+
+        // write fit plot frame in a file 
+        fOutFitResults_plotFrame->cd();
+        frame->Write();
+
       }
     }
   }
 
-
-  // write histos in a file 
+  
+  // write fit results histos in a file 
   TFile* fOutFitResults = new TFile("file_FitResults.root","recreate");
   fOutFitResults->cd();
   for(int dat=0; dat<nDatasets; dat++){
@@ -434,9 +444,13 @@ void doTheFit(string outputPathFitResultsPlots)
   }
   fOutFitResults->Close();
   delete fOutFitResults;
+  
+  fOutFitResults_plotFrame->Close();
+  delete fOutFitResults_plotFrame;
 
 
 }// end doTheFit function 
+
 
 
 // take fit results and compute dilepton scale 
@@ -457,8 +471,8 @@ void computeDileptonScale()
 void ComputeLeptonScaleSyst()
 {
  
-  string inputPathMC = "/data3/Higgs/180305/";
-  string inputPathData = "/data3/Higgs/180305/";
+  string inputPathMC = "/data3/Higgs/180416/MC_main/";
+  string inputPathData = "/data3/Higgs/180416/";
 
   string outputPathFitResultsPlots = "plotsSysts_FitResults";
 
