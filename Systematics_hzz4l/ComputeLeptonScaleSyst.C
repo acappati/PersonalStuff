@@ -303,7 +303,7 @@ void doTheFit(string outputPathFitResultsPlots)
 
         // take histos from file
         inputhist[dat][catEta][catPt] = (TH1F*)fInHistos->Get(Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
-        cout<<inputhist[dat][catEta][catPt]->GetName()<<endl;
+        //cout<<inputhist[dat][catEta][catPt]->GetName()<<endl; //debug
 
         // define histos to store fit results
         hfitResults_poleBW[dat][catEta][catPt] = new TH1F(Form("hfitResults_poleBW_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()),Form("hfitResults_poleBW_%s_%s_%s", datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()), 1,0,1);
@@ -457,8 +457,24 @@ void doTheFit(string outputPathFitResultsPlots)
 void computeDileptonScale()
 {
   
+ // read file with fit results
   TFile* fInFitResults = TFile::Open("file_FitResults.root");
 
+  // define input histos 
+  TH1F* hinput_meanFitResults[nDatasets][nCatEta][nCatpT];
+
+  for(int dat=0; dat<nDatasets; dat++){
+    for(int catEta=0; catEta<nCatEta; catEta++){
+      for(int catPt=0; catPt<nCatpT; catPt++){
+
+        hinput_meanFitResults[dat][catEta][catPt] = (TH1F*)fInFitResults->Get(Form("hfitResults_meanDCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        cout<<hinput_meanFitResults[dat][catEta][catPt]->GetName()<<endl; // debug
+
+        // ...
+
+      }
+    }
+  }
 
 
 
@@ -487,7 +503,7 @@ void ComputeLeptonScaleSyst()
 
   if(REDOTHEFIT) doTheFit(outputPathFitResultsPlots);
 
-  //computeDileptonScale();
+  computeDileptonScale();
 
   
 
