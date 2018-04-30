@@ -463,19 +463,53 @@ void computeDileptonScale()
   // define input histos 
   TH1F* hinput_meanFitResults[nDatasets][nCatEta][nCatpT];
 
+  // read histos with fit results from file 
   for(int dat=0; dat<nDatasets; dat++){
     for(int catEta=0; catEta<nCatEta; catEta++){
       for(int catPt=0; catPt<nCatpT; catPt++){
 
         hinput_meanFitResults[dat][catEta][catPt] = (TH1F*)fInFitResults->Get(Form("hfitResults_meanDCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
-        cout<<hinput_meanFitResults[dat][catEta][catPt]->GetName()<<endl; // debug
-
-        // ...
+        //cout<<hinput_meanFitResults[dat][catEta][catPt]->GetName()<<endl; // debug
 
       }
     }
   }
 
+  // dilepton scale vector and histos
+  Float_t vec_dileptonScale[nCatEta][nCatpT]; 
+  TH1F* h_dileptonScale[nCatEta][nCatpT]; 
+
+  // compute dilepton scale 
+  for(int catEta=0; catEta<nCatEta; catEta++){
+    for(int catPt=0; catPt<nCatpT; catPt++){
+
+      vec_dileptonScale[catEta][catPt] = (hinput_meanFitResults[0][catEta][catPt]->GetBinContent(1) - hinput_meanFitResults[1][catEta][catPt]->GetBinContent(1) )/ Zmass_nominalPDG;  // data_mean - MC_mean /ZmassPDG
+
+
+      h_dileptonScale[catEta][catPt] = new TH1F(Form("h_dileptonScale_%s_%s",sCategEta[catEta].c_str(),sCategpT[catPt].c_str()),Form("h_dileptonScale_%s_%s",sCategEta[catEta].c_str(),sCategpT[catPt].c_str()), 1,0,1);
+      h_dileptonScale[catEta][catPt]->Sumw2(true);        
+
+      h_dileptonScale[catEta][catPt]->Fill(0.5,vec_dileptonScale[catEta][catPt]);
+
+      //cout<<vec_dileptonScale[catEta][catPt]<<endl;
+      //cout<<h_dileptonScale[catEta][catPt]->GetBinContent(1)<<endl;
+
+    }
+  }
+  
+  // save dilepton scale into a file 
+  TFile* fOutDileptonScale = new TFile("file_DileptonScale.root","recreate");
+  fOutDileptonScale->cd();
+  for(int catEta=0; catEta<nCatEta; catEta++){
+    for(int catPt=0; catPt<nCatpT; catPt++){
+
+      h_dileptonScale[catEta][catPt]->Write(h_dileptonScale[catEta][catPt]->GetName());
+      delete h_dileptonScale[catEta][catPt];
+
+    }
+  }
+  fOutDileptonScale->Close();
+  delete fOutDileptonScale;
 
 
 }// end computeDileptonScale function
