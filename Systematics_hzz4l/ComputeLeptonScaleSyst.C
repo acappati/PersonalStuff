@@ -64,7 +64,7 @@ using namespace std;
 using namespace RooFit ;
 
 #define REDOHISTOS 0
-#define REDOTHEFIT 0
+#define REDOTHEFIT 1
 
 
 // *** global definitions
@@ -315,14 +315,14 @@ void doTheFit(string outputPathFitResultsPlots)
 	hfitResults_a2DCB[dat][catEta][catPt] = new TH1F(Form("hfitResults_a2DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()),Form("hfitResults_a2DCB_%s_%s_%s", datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()), 1,0,1);
 	hfitResults_n2DCB[dat][catEta][catPt] = new TH1F(Form("hfitResults_n2DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()),Form("hfitResults_n2DCB_%s_%s_%s", datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()), 1,0,1);
         
-        hfitResults_poleBW[dat][catEta][catPt]->Sumw2(true);
-        hfitResults_widthBW[dat][catEta][catPt]->Sumw2(true);
-        hfitResults_meanDCB[dat][catEta][catPt]->Sumw2(true);
-        hfitResults_sigmaDCB[dat][catEta][catPt]->Sumw2(true);
-        hfitResults_a1DCB[dat][catEta][catPt]->Sumw2(true);
-        hfitResults_n1DCB[dat][catEta][catPt]->Sumw2(true);
-        hfitResults_a2DCB[dat][catEta][catPt]->Sumw2(true);
-        hfitResults_n2DCB[dat][catEta][catPt]->Sumw2(true);
+        // hfitResults_poleBW[dat][catEta][catPt]->Sumw2(true);
+        // hfitResults_widthBW[dat][catEta][catPt]->Sumw2(true);
+        // hfitResults_meanDCB[dat][catEta][catPt]->Sumw2(true);
+        // hfitResults_sigmaDCB[dat][catEta][catPt]->Sumw2(true);
+        // hfitResults_a1DCB[dat][catEta][catPt]->Sumw2(true);
+        // hfitResults_n1DCB[dat][catEta][catPt]->Sumw2(true);
+        // hfitResults_a2DCB[dat][catEta][catPt]->Sumw2(true);
+        // hfitResults_n2DCB[dat][catEta][catPt]->Sumw2(true);
 
 
         // define roofit variable for the fit
@@ -398,14 +398,22 @@ void doTheFit(string outputPathFitResultsPlots)
 
         // save fit values in histos 
         hfitResults_poleBW[dat][catEta][catPt]->Fill(0.5,pole_BW.getVal());
+        hfitResults_poleBW[dat][catEta][catPt]->SetBinError(1,pole_BW.getError());
         hfitResults_widthBW[dat][catEta][catPt]->Fill(0.5,width_BW.getVal());  
+        hfitResults_widthBW[dat][catEta][catPt]->SetBinError(1,width_BW.getError());
 	                                                  
 	hfitResults_meanDCB[dat][catEta][catPt]->Fill(0.5,mean_DCB.getVal());  
+        hfitResults_meanDCB[dat][catEta][catPt]->SetBinError(1,mean_DCB.getError());
 	hfitResults_sigmaDCB[dat][catEta][catPt]->Fill(0.5,sigma_DCB.getVal()); 
-	hfitResults_a1DCB[dat][catEta][catPt]->Fill(0.5,a1_DCB.getVal());	  
-	hfitResults_n1DCB[dat][catEta][catPt]->Fill(0.5,n1_DCB.getVal());	  
-	hfitResults_a2DCB[dat][catEta][catPt]->Fill(0.5,a2_DCB.getVal());	  
+        hfitResults_sigmaDCB[dat][catEta][catPt]->SetBinError(1,sigma_DCB.getError());
+	hfitResults_a1DCB[dat][catEta][catPt]->Fill(0.5,a1_DCB.getVal());
+        hfitResults_a1DCB[dat][catEta][catPt]->SetBinError(1,a1_DCB.getError());
+	hfitResults_n1DCB[dat][catEta][catPt]->Fill(0.5,n1_DCB.getVal());
+        hfitResults_n1DCB[dat][catEta][catPt]->SetBinError(1,n1_DCB.getError());
+	hfitResults_a2DCB[dat][catEta][catPt]->Fill(0.5,a2_DCB.getVal());
+        hfitResults_a2DCB[dat][catEta][catPt]->SetBinError(1,a2_DCB.getError());
 	hfitResults_n2DCB[dat][catEta][catPt]->Fill(0.5,n2_DCB.getVal());    
+        hfitResults_n2DCB[dat][catEta][catPt]->SetBinError(1,n2_DCB.getError());    
 
 
         // write fit plot frame in a file 
@@ -477,6 +485,7 @@ void computeDileptonScale()
 
   // dilepton scale vector and histos
   Float_t vec_dileptonScale[nCatEta][nCatpT]; 
+  Float_t vec_dileptonScale_err[nCatEta][nCatpT]; 
   TH1F* h_dileptonScale[nCatEta][nCatpT]; 
 
   // compute dilepton scale 
@@ -484,12 +493,14 @@ void computeDileptonScale()
     for(int catPt=0; catPt<nCatpT; catPt++){
 
       vec_dileptonScale[catEta][catPt] = (hinput_meanFitResults[0][catEta][catPt]->GetBinContent(1) - hinput_meanFitResults[1][catEta][catPt]->GetBinContent(1) )/ Zmass_nominalPDG;  // data_mean - MC_mean /ZmassPDG
+      vec_dileptonScale_err[catEta][catPt] = TMath::Power((TMath::Power(hinput_meanFitResults[0][catEta][catPt]->GetBinError(1),2) + TMath::Power(hinput_meanFitResults[1][catEta][catPt]->GetBinError(1),2)), 0.5) / Zmass_nominalPDG;  
 
 
       h_dileptonScale[catEta][catPt] = new TH1F(Form("h_dileptonScale_%s_%s",sCategEta[catEta].c_str(),sCategpT[catPt].c_str()),Form("h_dileptonScale_%s_%s",sCategEta[catEta].c_str(),sCategpT[catPt].c_str()), 1,0,1);
-      h_dileptonScale[catEta][catPt]->Sumw2(true);        
+      //h_dileptonScale[catEta][catPt]->Sumw2(true);        
 
       h_dileptonScale[catEta][catPt]->Fill(0.5,vec_dileptonScale[catEta][catPt]);
+      h_dileptonScale[catEta][catPt]->SetBinError(1,vec_dileptonScale_err[catEta][catPt]);
 
       //cout<<vec_dileptonScale[catEta][catPt]<<endl;
       //cout<<h_dileptonScale[catEta][catPt]->GetBinContent(1)<<endl;
@@ -497,6 +508,15 @@ void computeDileptonScale()
     }
   }
   
+  // draw dilepton scale plots 
+  // Float_t vec_ptValues[nCatpT] = [15., 25., 35., 45., 55., 80.];
+  // Float_t vec_ptValues_err_ele[nCatpT] = [13., 10., 10., 10., 10., 40.];
+  // Float_t vec_ptValues_err_mu[nCatpT] = [15., 10., 10., 10., 10., 40.];
+  
+  //TGraphErrors* graph_eleCatEta0 = new TGraphErrors(nCatpT,vec_ptValues[nCatpT],vec_dileptonScale[0][nCatpT],vec_ptValues_err_ele[nCatpT],vec_dileptonScale_err[0][nCatpT]); //fixme
+  //...
+
+
   // save dilepton scale into a file 
   TFile* fOutDileptonScale = new TFile("file_DileptonScale.root","recreate");
   fOutDileptonScale->cd();
