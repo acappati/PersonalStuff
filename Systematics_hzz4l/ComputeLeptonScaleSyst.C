@@ -23,6 +23,7 @@
 #include "TGraph.h"
 #include "TGraphErrors.h"
 #include "TGraphAsymmErrors.h"
+#include "TMultiGraph.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TLegend.h"
@@ -56,6 +57,7 @@
 #include "RooAbsCollection.h"
 #include "RooNumConvPdf.h"
 
+#include "Plotter/CMS_lumi.C" // CMS official label definition
 #include "HiggsAnalysis/CombinedLimit/interface/HZZ4LRooPdfs.h"
 #include "HiggsAnalysis/CombinedLimit/interface/HZZ2L2QRooPdfs.h"  // contains DCB definition
 
@@ -64,7 +66,9 @@ using namespace std;
 using namespace RooFit ;
 
 #define REDOHISTOS 0
-#define REDOTHEFIT 1
+#define REDOTHEFIT 0
+
+#define WRITEEXTRATEXTONPLOTS 1 // draw Preliminary on Plots
 
 
 // *** global definitions
@@ -462,7 +466,7 @@ void doTheFit(string outputPathFitResultsPlots)
 
 
 // take fit results and compute dilepton scale 
-void computeDileptonScale()
+void computeDileptonScale(string lumiText, string outputPathDileptonScalePlots)
 {
   
  // read file with fit results
@@ -502,19 +506,158 @@ void computeDileptonScale()
       h_dileptonScale[catEta][catPt]->Fill(0.5,vec_dileptonScale[catEta][catPt]);
       h_dileptonScale[catEta][catPt]->SetBinError(1,vec_dileptonScale_err[catEta][catPt]);
 
-      //cout<<vec_dileptonScale[catEta][catPt]<<endl;
-      //cout<<h_dileptonScale[catEta][catPt]->GetBinContent(1)<<endl;
-
     }
   }
   
-  // draw dilepton scale plots 
-  // Float_t vec_ptValues[nCatpT] = [15., 25., 35., 45., 55., 80.];
-  // Float_t vec_ptValues_err_ele[nCatpT] = [13., 10., 10., 10., 10., 40.];
-  // Float_t vec_ptValues_err_mu[nCatpT] = [15., 10., 10., 10., 10., 40.];
+  // --- dilepton scale plots 
+  Float_t vec_ptValues_ele[nCatpT] = {13.5, 25., 35., 45., 55., 80.};
+  Float_t vec_ptValues_ele_err[nCatpT] = {6.5, 5., 5., 5., 5., 20.};
+  Float_t vec_ptValues_mu[nCatpT] = {12.5, 25., 35., 45., 55., 80.};
+  Float_t vec_ptValues_mu_err[nCatpT] = {7.5, 5., 5., 5., 5., 20.};
   
-  //TGraphErrors* graph_eleCatEta0 = new TGraphErrors(nCatpT,vec_ptValues[nCatpT],vec_dileptonScale[0][nCatpT],vec_ptValues_err_ele[nCatpT],vec_dileptonScale_err[0][nCatpT]); //fixme
-  //...
+  // electron plot
+  TGraphErrors* graph_eleCatEta0 = new TGraphErrors(nCatpT,vec_ptValues_ele,vec_dileptonScale[0],vec_ptValues_ele_err,vec_dileptonScale_err[0]); 
+  graph_eleCatEta0->SetMarkerColor(kBlue);
+  graph_eleCatEta0->SetMarkerStyle(25);
+  graph_eleCatEta0->SetMarkerSize(0.7);
+  TGraphErrors* graph_eleCatEta1 = new TGraphErrors(nCatpT,vec_ptValues_ele,vec_dileptonScale[1],vec_ptValues_ele_err,vec_dileptonScale_err[1]);
+  graph_eleCatEta1->SetMarkerColor(kBlack);
+  graph_eleCatEta1->SetMarkerStyle(25);
+  graph_eleCatEta1->SetMarkerSize(0.7);
+  TGraphErrors* graph_eleCatEta2 = new TGraphErrors(nCatpT,vec_ptValues_ele,vec_dileptonScale[2],vec_ptValues_ele_err,vec_dileptonScale_err[2]);
+  graph_eleCatEta2->SetMarkerColor(kRed);
+  graph_eleCatEta2->SetMarkerStyle(25);
+  graph_eleCatEta2->SetMarkerSize(0.7);
+
+  TMultiGraph* mg_ele = new TMultiGraph();
+  mg_ele->Add(graph_eleCatEta0);
+  mg_ele->Add(graph_eleCatEta1);
+  mg_ele->Add(graph_eleCatEta2);
+
+  mg_ele->SetMinimum(-0.02);
+  mg_ele->SetMaximum(0.02);
+
+  TCanvas* can_ele = new TCanvas("can_ele","can_ele",600,600);
+  mg_ele->Draw("ap"); 
+  mg_ele->GetXaxis()->SetTitle("Electron p_{T} [GeV]");
+  mg_ele->GetXaxis()->SetTitleFont(43);
+  mg_ele->GetXaxis()->SetTitleSize(18);
+  mg_ele->GetXaxis()->SetTitleOffset(1.3);
+  mg_ele->GetXaxis()->SetLabelFont(43);
+  mg_ele->GetXaxis()->SetLabelSize(13);
+  mg_ele->GetXaxis()->SetLimits(0.,100.); //set x axis limits (same as SetRangeUser but for TGraphs)
+  mg_ele->GetYaxis()->SetTitle("(m^{peak}_{data} - m^{peak}_{MC})/m_{PDG}");
+  mg_ele->GetYaxis()->SetTitleFont(43);
+  mg_ele->GetYaxis()->SetTitleSize(18);
+  mg_ele->GetYaxis()->SetTitleOffset(1.5);
+  mg_ele->GetYaxis()->SetLabelFont(43);
+  mg_ele->GetYaxis()->SetLabelSize(13);
+  gPad->SetTickx(); // set ticks also on upper x axis
+  gPad->SetTicky(); // set ticks also on right y axis
+
+  TLegend* legend_ele = new TLegend(0.58,0.15,0.8,0.35);
+  legend_ele->AddEntry(graph_eleCatEta0,"Z,|#eta| 0.0-0.8","lp");
+  legend_ele->AddEntry(graph_eleCatEta1,"Z,|#eta| 0.8-1.5","lp");
+  legend_ele->AddEntry(graph_eleCatEta2,"Z,|#eta| 1.5-2.5","lp");
+  legend_ele->SetTextFont(43);
+  legend_ele->SetTextSize(14);
+  legend_ele->SetLineColor(kWhite);
+  legend_ele->Draw();
+
+  // 0 level line
+  TLine* line0_ele = new TLine(0,0,100,0);
+  line0_ele->SetLineColor(kBlack);
+  line0_ele->SetLineStyle(2); // dashed line
+  line0_ele->Draw();
+
+  // print official CMS label and lumi 
+  writeExtraText = WRITEEXTRATEXTONPLOTS;
+  extraText  = "Preliminary";
+  lumi_sqrtS = lumiText + " (13 TeV)";
+  cmsTextSize = 0.42;
+  lumiTextSize = 0.35;
+  extraOverCmsTextSize = 0.72;
+  relPosX = 0.12;
+  CMS_lumi(can_ele,0,0);
+
+
+  can_ele->Update();
+
+  can_ele->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_electrons.png").c_str());
+  can_ele->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_electrons.pdf").c_str());
+   
+
+  // muon plot
+  TGraphErrors* graph_muCatEta3 = new TGraphErrors(nCatpT,vec_ptValues_mu,vec_dileptonScale[3],vec_ptValues_mu_err,vec_dileptonScale_err[3]); 
+  graph_muCatEta3->SetMarkerColor(kBlue);
+  graph_muCatEta3->SetMarkerStyle(25);
+  graph_muCatEta3->SetMarkerSize(0.7);
+  TGraphErrors* graph_muCatEta4 = new TGraphErrors(nCatpT,vec_ptValues_mu,vec_dileptonScale[4],vec_ptValues_mu_err,vec_dileptonScale_err[4]);
+  graph_muCatEta4->SetMarkerColor(kBlack);
+  graph_muCatEta4->SetMarkerStyle(25);
+  graph_muCatEta4->SetMarkerSize(0.7);
+  TGraphErrors* graph_muCatEta5 = new TGraphErrors(nCatpT,vec_ptValues_mu,vec_dileptonScale[5],vec_ptValues_mu_err,vec_dileptonScale_err[5]);
+  graph_muCatEta5->SetMarkerColor(kRed);
+  graph_muCatEta5->SetMarkerStyle(25);
+  graph_muCatEta5->SetMarkerSize(0.7);
+
+  TMultiGraph* mg_mu = new TMultiGraph();
+  mg_mu->Add(graph_muCatEta3);
+  mg_mu->Add(graph_muCatEta4);
+  mg_mu->Add(graph_muCatEta5);
+
+  mg_mu->SetMinimum(-0.02);
+  mg_mu->SetMaximum(0.02);
+ 
+  TCanvas* can_mu = new TCanvas("can_mu","can_mu",600,600);
+  mg_mu->Draw("ap");
+  mg_mu->GetXaxis()->SetTitle("Muon p_{T} [GeV]");
+  mg_mu->GetXaxis()->SetTitleFont(43);
+  mg_mu->GetXaxis()->SetTitleSize(18);
+  mg_mu->GetXaxis()->SetTitleOffset(1.3);
+  mg_mu->GetXaxis()->SetLabelFont(43);
+  mg_mu->GetXaxis()->SetLabelSize(13);
+  mg_mu->GetXaxis()->SetLimits(0.,100.); //set x axis limits (same as SetRangeUser but for TGraphs)
+  mg_mu->GetYaxis()->SetTitle("(m^{peak}_{data} - m^{peak}_{MC})/m_{PDG}");
+  mg_mu->GetYaxis()->SetTitleFont(43);
+  mg_mu->GetYaxis()->SetTitleSize(18);
+  mg_mu->GetYaxis()->SetTitleOffset(1.5);
+  mg_mu->GetYaxis()->SetLabelFont(43);
+  mg_mu->GetYaxis()->SetLabelSize(13);
+  gPad->SetTickx(); // set ticks also on upper x axis
+  gPad->SetTicky(); // set ticks also on right y axis
+
+  TLegend* legend_mu = new TLegend(0.58,0.15,0.8,0.35);
+  legend_mu->AddEntry(graph_eleCatEta0,"Z,|#eta| 0.0-0.9","lp");
+  legend_mu->AddEntry(graph_eleCatEta1,"Z,|#eta| 0.9-1.5","lp");
+  legend_mu->AddEntry(graph_eleCatEta2,"Z,|#eta| 1.5-2.5","lp");
+  legend_mu->SetTextFont(43);
+  legend_mu->SetTextSize(14);
+  legend_mu->SetLineColor(kWhite);
+  legend_mu->Draw();
+
+  // 0 level line
+  TLine* line0_mu = new TLine(0,0,100,0);
+  line0_mu->SetLineColor(kBlack);
+  line0_mu->SetLineStyle(2); // dashed line
+  line0_mu->Draw();
+
+  // print official CMS label and lumi 
+  writeExtraText = WRITEEXTRATEXTONPLOTS;
+  extraText  = "Preliminary";
+  lumi_sqrtS = lumiText + " (13 TeV)";
+  cmsTextSize = 0.42;
+  lumiTextSize = 0.35;
+  extraOverCmsTextSize = 0.72;
+  relPosX = 0.12;
+  CMS_lumi(can_mu,0,0);
+  
+
+  can_mu->Update();
+
+  can_mu->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_muons.png").c_str());
+  can_mu->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_muons.pdf").c_str());
+
 
 
   // save dilepton scale into a file 
@@ -545,19 +688,22 @@ void ComputeLeptonScaleSyst()
   string inputPathData = "/data3/Higgs/180416/";
 
   string outputPathFitResultsPlots = "plotsSysts_FitResults";
+  string outputPathDileptonScalePlots = "plotsSysts_DileptonScale";
 
   float lumi = 41.30; //fb-1
+  string lumiText = "41.30 fb^{-1}";
 
 
-  // create output directory 
-  gSystem->Exec(("mkdir -p "+outputPathFitResultsPlots).c_str());
+  // create output directories
+  gSystem->Exec(("mkdir -p "+outputPathFitResultsPlots).c_str());    //dir for fit results plots
+  gSystem->Exec(("mkdir -p "+outputPathDileptonScalePlots).c_str()); //dir for dilepton scale plots
 
 
   if(REDOHISTOS) doHistograms(inputPathMC, inputPathData, lumi);
 
   if(REDOTHEFIT) doTheFit(outputPathFitResultsPlots);
 
-  computeDileptonScale();
+  computeDileptonScale(lumiText, outputPathDileptonScalePlots);
 
   
 
