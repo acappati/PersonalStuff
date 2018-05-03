@@ -65,8 +65,9 @@
 using namespace std;
 using namespace RooFit ;
 
-#define REDOHISTOS 1
-#define REDOTHEFIT 1
+#define REDO2lHISTOS 1
+#define REDOTHE2lFIT 1
+#define COMPARE2lDATAMCFIT 1
 
 #define WRITEEXTRATEXTONPLOTS 1 // draw Preliminary on Plots
 
@@ -113,7 +114,7 @@ enum Process {Data=0, DY=1};
 
 
 // *** read file and do histograms
-void doHistograms(string inputPathMC, string inputPathData, float lumi)
+void do2lHistograms(string inputPathMC, string inputPathData, float lumi)
 {
 
   TH1::SetDefaultSumw2(true);
@@ -276,7 +277,7 @@ void doHistograms(string inputPathMC, string inputPathData, float lumi)
 
 
 // perform the fit 
-void doTheFit(string outputPathFitResultsPlots, string lumiText)
+void doThe2lFit(string outputPathFitResultsPlots, string lumiText)
 {
 
   // define output file for fit result plots 
@@ -732,6 +733,16 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
 
 
 
+// comparison between Data and MC 2l fit
+void compareDataMCfitPlots(string outputPathCompare2lDataMcFit, string lumiText)
+{
+
+
+
+}// end compareDataMCfitPlots function
+
+
+
 
 // *** main function
 void ComputeLeptonScaleSyst()
@@ -742,21 +753,28 @@ void ComputeLeptonScaleSyst()
 
   string outputPathFitResultsPlots = "plotsSysts_FitResults";
   string outputPathDileptonScalePlots = "plotsSysts_DileptonScale";
+  string outputPathCompare2lDataMcFit = "plotsSysts_CompareDataMC2lFit";
 
   float lumi = 41.30; //fb-1
   string lumiText = "41.30 fb^{-1}";
 
 
   // create output directories
-  gSystem->Exec(("mkdir -p "+outputPathFitResultsPlots).c_str());    //dir for fit results plots
+  if(REDOTHE2lFIT) gSystem->Exec(("mkdir -p "+outputPathFitResultsPlots).c_str());  //dir for fit results plots
+
   gSystem->Exec(("mkdir -p "+outputPathDileptonScalePlots).c_str()); //dir for dilepton scale plots
 
+  if(COMPARE2lDATAMCFIT) gSystem->Exec(("mkdir -p "+outputPathCompare2lDataMcFit).c_str()); //dir for comparison between Data and MC 2l fit
 
-  if(REDOHISTOS) doHistograms(inputPathMC, inputPathData, lumi);
 
-  if(REDOTHEFIT) doTheFit(outputPathFitResultsPlots, lumiText);
+  // execute functions 
+  if(REDO2lHISTOS) do2lHistograms(inputPathMC, inputPathData, lumi);
+
+  if(REDOTHE2lFIT) doThe2lFit(outputPathFitResultsPlots, lumiText);
 
   computeDileptonScale(outputPathDileptonScalePlots, lumiText);
+
+  if(COMPARE2lDATAMCFIT) compareDataMCfitPlots(outputPathCompare2lDataMcFit, lumiText);
 
   
 
