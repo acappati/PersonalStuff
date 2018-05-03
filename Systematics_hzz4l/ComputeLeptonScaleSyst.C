@@ -65,8 +65,8 @@
 using namespace std;
 using namespace RooFit ;
 
-#define REDOHISTOS 0
-#define REDOTHEFIT 0
+#define REDOHISTOS 1
+#define REDOTHEFIT 1
 
 #define WRITEEXTRATEXTONPLOTS 1 // draw Preliminary on Plots
 
@@ -276,7 +276,7 @@ void doHistograms(string inputPathMC, string inputPathData, float lumi)
 
 
 // perform the fit 
-void doTheFit(string outputPathFitResultsPlots)
+void doTheFit(string outputPathFitResultsPlots, string lumiText)
 {
 
   // define output file for fit result plots 
@@ -379,7 +379,7 @@ void doTheFit(string outputPathFitResultsPlots)
         c->cd();
         frame->Draw();
 
-        
+        // draw fit results on canvas
         TPaveText* pv = new TPaveText(0.69,0.52,0.95,0.87,"brNDC");
         pv->AddText(("BW pole: " + std::to_string(pole_BW.getVal())).c_str());
         pv->AddText(("BW width: " + std::to_string(width_BW.getVal())).c_str());
@@ -395,6 +395,19 @@ void doTheFit(string outputPathFitResultsPlots)
         pv->SetTextSize(0.037);
         pv->SetTextAlign(12); // text left aligned 
         pv->Draw();
+
+        // print official CMS label and lumi 
+        writeExtraText = WRITEEXTRATEXTONPLOTS;
+        extraText  = "Preliminary";
+        lumi_sqrtS = lumiText + " (13 TeV)";
+        cmsTextSize = 0.42;
+        lumiTextSize = 0.35;
+        extraOverCmsTextSize = 0.72;
+        relPosX = 0.12;
+        CMS_lumi(c,0,0);
+
+
+        c->Update();
 
         c->SaveAs((outputPathFitResultsPlots + "/" + Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()) + ".pdf").c_str());
         c->SaveAs((outputPathFitResultsPlots + "/" + Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()) + ".png").c_str());
@@ -466,7 +479,7 @@ void doTheFit(string outputPathFitResultsPlots)
 
 
 // take fit results and compute dilepton scale 
-void computeDileptonScale(string lumiText, string outputPathDileptonScalePlots)
+void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
 {
   
  // read file with fit results
@@ -510,21 +523,60 @@ void computeDileptonScale(string lumiText, string outputPathDileptonScalePlots)
   }
   
   // --- dilepton scale plots 
-  Float_t vec_ptValues_ele[nCatpT] = {13.5, 25., 35., 45., 55., 80.};
+
+  // define x axis values: mean value of each pT bin 
+  Float_t vec_ptValues_ele[nCatpT] = {13.5, 25., 35., 45., 55., 80.}; // first bin for ele: 7-20 GeV
+  Float_t vec_ptValues_mu[nCatpT] = {12.5, 25., 35., 45., 55., 80.};  // first bin for mu: 5-20 GeV
+  // define x axis uncertainties
   Float_t vec_ptValues_ele_err[nCatpT] = {6.5, 5., 5., 5., 5., 20.};
-  Float_t vec_ptValues_mu[nCatpT] = {12.5, 25., 35., 45., 55., 80.};
   Float_t vec_ptValues_mu_err[nCatpT] = {7.5, 5., 5., 5., 5., 20.};
-  
-  // electron plot
-  TGraphErrors* graph_eleCatEta0 = new TGraphErrors(nCatpT,vec_ptValues_ele,vec_dileptonScale[0],vec_ptValues_ele_err,vec_dileptonScale_err[0]); 
+
+  // define y axis values: dilepton scale for each Eta bin 
+  Float_t vec_dileptonScale_eleCatEta0[nCatpT];
+  Float_t vec_dileptonScale_eleCatEta1[nCatpT];
+  Float_t vec_dileptonScale_eleCatEta2[nCatpT];
+  Float_t vec_dileptonScale_muCatEta3[nCatpT];
+  Float_t vec_dileptonScale_muCatEta4[nCatpT];
+  Float_t vec_dileptonScale_muCatEta5[nCatpT];
+  // define y axis uncertainties
+  Float_t vec_dileptonScale_eleCatEta0_err[nCatpT];
+  Float_t vec_dileptonScale_eleCatEta1_err[nCatpT];
+  Float_t vec_dileptonScale_eleCatEta2_err[nCatpT];
+  Float_t vec_dileptonScale_muCatEta3_err[nCatpT];
+  Float_t vec_dileptonScale_muCatEta4_err[nCatpT];
+  Float_t vec_dileptonScale_muCatEta5_err[nCatpT];
+
+  for(int catPt=0; catPt<nCatpT; catPt++){
+
+    // y values
+    vec_dileptonScale_eleCatEta0[catPt] = vec_dileptonScale[0][catPt];
+    vec_dileptonScale_eleCatEta1[catPt] = vec_dileptonScale[1][catPt];
+    vec_dileptonScale_eleCatEta2[catPt] = vec_dileptonScale[2][catPt];
+    vec_dileptonScale_muCatEta3[catPt]  = vec_dileptonScale[3][catPt];
+    vec_dileptonScale_muCatEta4[catPt]  = vec_dileptonScale[4][catPt];
+    vec_dileptonScale_muCatEta5[catPt]  = vec_dileptonScale[5][catPt];
+
+    // y uncertainties
+    vec_dileptonScale_eleCatEta0_err[catPt] = vec_dileptonScale_err[0][catPt];
+    vec_dileptonScale_eleCatEta1_err[catPt] = vec_dileptonScale_err[1][catPt];
+    vec_dileptonScale_eleCatEta2_err[catPt] = vec_dileptonScale_err[2][catPt];
+    vec_dileptonScale_muCatEta3_err[catPt]  = vec_dileptonScale_err[3][catPt];
+    vec_dileptonScale_muCatEta4_err[catPt]  = vec_dileptonScale_err[4][catPt];
+    vec_dileptonScale_muCatEta5_err[catPt]  = vec_dileptonScale_err[5][catPt];
+
+  }
+
+    
+  // electron plots
+  TGraphErrors* graph_eleCatEta0 = new TGraphErrors(nCatpT,vec_ptValues_ele,vec_dileptonScale_eleCatEta0,vec_ptValues_ele_err,vec_dileptonScale_eleCatEta0_err); 
   graph_eleCatEta0->SetMarkerColor(kBlue);
   graph_eleCatEta0->SetMarkerStyle(25);
   graph_eleCatEta0->SetMarkerSize(0.7);
-  TGraphErrors* graph_eleCatEta1 = new TGraphErrors(nCatpT,vec_ptValues_ele,vec_dileptonScale[1],vec_ptValues_ele_err,vec_dileptonScale_err[1]);
+  TGraphErrors* graph_eleCatEta1 = new TGraphErrors(nCatpT,vec_ptValues_ele,vec_dileptonScale_eleCatEta1,vec_ptValues_ele_err,vec_dileptonScale_eleCatEta1_err);
   graph_eleCatEta1->SetMarkerColor(kBlack);
   graph_eleCatEta1->SetMarkerStyle(25);
   graph_eleCatEta1->SetMarkerSize(0.7);
-  TGraphErrors* graph_eleCatEta2 = new TGraphErrors(nCatpT,vec_ptValues_ele,vec_dileptonScale[2],vec_ptValues_ele_err,vec_dileptonScale_err[2]);
+  TGraphErrors* graph_eleCatEta2 = new TGraphErrors(nCatpT,vec_ptValues_ele,vec_dileptonScale_eleCatEta2,vec_ptValues_ele_err,vec_dileptonScale_eleCatEta2_err);
   graph_eleCatEta2->SetMarkerColor(kRed);
   graph_eleCatEta2->SetMarkerStyle(25);
   graph_eleCatEta2->SetMarkerSize(0.7);
@@ -585,18 +637,19 @@ void computeDileptonScale(string lumiText, string outputPathDileptonScalePlots)
 
   can_ele->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_electrons.png").c_str());
   can_ele->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_electrons.pdf").c_str());
+
    
 
-  // muon plot
-  TGraphErrors* graph_muCatEta3 = new TGraphErrors(nCatpT,vec_ptValues_mu,vec_dileptonScale[3],vec_ptValues_mu_err,vec_dileptonScale_err[3]); 
+  // muon plots
+  TGraphErrors* graph_muCatEta3 = new TGraphErrors(nCatpT,vec_ptValues_mu,vec_dileptonScale_muCatEta3,vec_ptValues_mu_err,vec_dileptonScale_muCatEta3_err); 
   graph_muCatEta3->SetMarkerColor(kBlue);
   graph_muCatEta3->SetMarkerStyle(25);
   graph_muCatEta3->SetMarkerSize(0.7);
-  TGraphErrors* graph_muCatEta4 = new TGraphErrors(nCatpT,vec_ptValues_mu,vec_dileptonScale[4],vec_ptValues_mu_err,vec_dileptonScale_err[4]);
+  TGraphErrors* graph_muCatEta4 = new TGraphErrors(nCatpT,vec_ptValues_mu,vec_dileptonScale_muCatEta4,vec_ptValues_mu_err,vec_dileptonScale_muCatEta4_err);
   graph_muCatEta4->SetMarkerColor(kBlack);
   graph_muCatEta4->SetMarkerStyle(25);
   graph_muCatEta4->SetMarkerSize(0.7);
-  TGraphErrors* graph_muCatEta5 = new TGraphErrors(nCatpT,vec_ptValues_mu,vec_dileptonScale[5],vec_ptValues_mu_err,vec_dileptonScale_err[5]);
+  TGraphErrors* graph_muCatEta5 = new TGraphErrors(nCatpT,vec_ptValues_mu,vec_dileptonScale_muCatEta5,vec_ptValues_mu_err,vec_dileptonScale_muCatEta5_err);
   graph_muCatEta5->SetMarkerColor(kRed);
   graph_muCatEta5->SetMarkerStyle(25);
   graph_muCatEta5->SetMarkerSize(0.7);
@@ -660,7 +713,7 @@ void computeDileptonScale(string lumiText, string outputPathDileptonScalePlots)
 
 
 
-  // save dilepton scale into a file 
+  // --- save dilepton scale into a file 
   TFile* fOutDileptonScale = new TFile("file_DileptonScale.root","recreate");
   fOutDileptonScale->cd();
   for(int catEta=0; catEta<nCatEta; catEta++){
@@ -701,9 +754,9 @@ void ComputeLeptonScaleSyst()
 
   if(REDOHISTOS) doHistograms(inputPathMC, inputPathData, lumi);
 
-  if(REDOTHEFIT) doTheFit(outputPathFitResultsPlots);
+  if(REDOTHEFIT) doTheFit(outputPathFitResultsPlots, lumiText);
 
-  computeDileptonScale(lumiText, outputPathDileptonScalePlots);
+  computeDileptonScale(outputPathDileptonScalePlots, lumiText);
 
   
 
