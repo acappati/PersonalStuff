@@ -1,7 +1,7 @@
 //*************************
 //
 // usage:
-//     root -l -b -q plotshapeFunction_LeptonScaleSystControlStudy.C++
+//     root -l -b -q ComputeLeptonScaleSyst_TestPlotShapes.C++
 //
 //*************************
 
@@ -68,7 +68,7 @@ Float_t Zmass_nominalPDG  = 91.1876; // GeV/c^2 (http://pdg.lbl.gov/2017/listing
 Float_t Zwidth_nominalPDG = 2.4952;  // GeV/c^2 (http://pdg.lbl.gov/2017/listings/rpp2017-list-z-boson.pdf)
 
 
-void plot_shapeFunction()
+void ComputeLeptonScaleSyst_TestPlotShapes()
 {
 
   // define roofit variable for the fit
