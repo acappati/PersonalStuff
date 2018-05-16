@@ -70,6 +70,7 @@ using namespace RooFit ;
 #define REDOTHE2lFIT 1
 #define COMPUTE2lSCALE 1
 #define COMPARE2lDATAMCFIT 1
+#define REDO4lHISTOS 1
 #define COMPUTE4lSCALE 0
 
 #define WRITEEXTRATEXTONPLOTS 1 // draw Preliminary on Plots
@@ -122,6 +123,16 @@ string sFinalState[nFinalStates] = {
   "fs_4e",
   "fs_4mu",
   "fs_2e2mu"
+};
+
+
+//variations of the 4l distribution 
+const int nVariations4lDistr = 3;
+enum variations4lDistr {distrNominal = 0, distrVarUp = 1, distrVarDn = 2};
+string sVariations4lDistr[nVariations4lDistr] = {
+  "distr_nominal",
+  "distr_varUp",
+  "distr_varDn"
 };
 
 
@@ -945,9 +956,11 @@ void compareDataMCfitPlots(string outputPathCompare2lDataMcFit, string lumiText)
 
 
 
-// compute 4l scale 
-void compute4lScale(string inputPathMC_ggH, string outputPath4lScaleFitPlots, string lumiText)
+// do 4l ggH histos  
+void do4lHistograms(string inputPathMC_ggH, float lumi)
 {
+
+  TH1::SetDefaultSumw2(true);
 
   TFile* inputFile;
   TTree* inputTree;
@@ -961,20 +974,136 @@ void compute4lScale(string inputPathMC_ggH, string outputPath4lScaleFitPlots, st
 
   Short_t ZZsel;
   Float_t ZZMass;
+  Short_t Z1Flav;
+  Short_t Z2Flav;
   vector<Float_t> *LepPt = 0;
   vector<Float_t> *LepEta = 0;
+  vector<Float_t> *LepPhi = 0;
   vector<Float_t> *LepLepId = 0;
   Float_t xsec;
   Float_t overallEventWeight;
 
   
   // define 4l histos 
-  TH1F* h_4lDistributions[nFinalStates]; //3 final states
+  TH1F* h4lDistrib[nVariations4lDistr][nFinalStates]; 
+  for(int var=0; var<nVariations4lDistr; var++){
+    for(int fs=0; fs<nFinalStates; fs++){
+
+      h4lDistrib[var][fs] = new TH1F(Form("h4lDistrib_%s_%s",sVariations4lDistr[var].c_str(),sFinalState[fs].c_str()),Form("h4lDistrib_%s_%s",sVariations4lDistr[var].c_str(),sFinalState[fs].c_str()),70,105.,140.);
+      h4lDistrib[var][fs]->Sumw2(true);
+    }
+  }
  
+ 
+  int currentFinalState = -1;
+  int currentCategEta = -1;
+  int currentCategPt = -1;
+
+
+  string dataset = "ggH125";
+  string inputFileName = string(Form("%s%s/ZZ4lAnalysis.root",inputPathMC_ggH.c_str(),dataset.c_str()));
+  inputFile = TFile::Open(inputFileName.c_str());
+
+  hCounters = (TH1F*)inputFile->Get("ZZTree/Counters");
+  gen_sumWeights = (Long64_t)hCounters->GetBinContent(40);
+  partialSampleWeight = lumi * 1000 / gen_sumWeights;
+
+
+  inputTree = (TTree*)inputFile->Get("ZZTree/candTree");
+  inputTree->SetBranchAddress("RunNumber", &nRun);
+  inputTree->SetBranchAddress("EventNumber", &nEvent);
+  inputTree->SetBranchAddress("LumiNumber", &nLumi);
+  inputTree->SetBranchAddress("ZZsel", &ZZsel);      
+  inputTree->SetBranchAddress("ZZMass", &ZZMass);   
+  inputTree->SetBranchAddress("Z1Flav", &Z1Flav);
+  inputTree->SetBranchAddress("Z2Flav", &Z2Flav);
+  inputTree->SetBranchAddress("LepPt", &LepPt);
+  inputTree->SetBranchAddress("LepEta", &LepEta);
+  inputTree->SetBranchAddress("LepPhi", &LepPhi);
+  inputTree->SetBranchAddress("LepLepId", &LepLepId);
+  inputTree->SetBranchAddress("xsec", &xsec); 
+  inputTree->SetBranchAddress("overallEventWeight", &overallEventWeight);
+  
+  
+  //process tree 
+  Long64_t entries = inputTree->GetEntries();
+  cout<<"Processing dataset "<<dataset<<" ("<<entries<<" entries) ..."<<endl;
+  
+  for(Long64_t z=0; z<entries; ++z){
+
+    inputTree->GetEntry(z);
+
+
+    if(LepEta->size()!=4){
+        cout<<"error in event "<<nRun<<":"<<nLumi<<":"<<nEvent<<", stored "<<LepEta->size()<<" leptons instead of 4"<<endl;
+        continue;
+    }
+
+
+    if( !(ZZsel>=90) ) continue;
+
+
+    Double_t eventWeight = partialSampleWeight * xsec * overallEventWeight ;
+
+
+    //find final state 
+    if(Z1Flav==-121){
+	if(Z2Flav==-121)
+	  currentFinalState = fs4e;
+	else if(Z2Flav==-169)
+	  currentFinalState = fs2e2mu;
+	else
+	  cerr<<"error in event "<<nRun<<":"<<nLumi<<":"<<nEvent<<", Z2Flav="<<Z2Flav<<endl;
+      }else if(Z1Flav==-169){
+	if(Z2Flav==-121)
+	  currentFinalState = fs2e2mu;
+	else if(Z2Flav==-169)
+	  currentFinalState = fs4mu;
+	else
+	  cerr<<"error in event "<<nRun<<":"<<nLumi<<":"<<nEvent<<", Z2Flav="<<Z2Flav<<endl;
+      }else{
+	cerr<<"error in event "<<nRun<<":"<<nLumi<<":"<<nEvent<<", Z1Flav="<<Z1Flav<<endl;
+     }
+     
+
+      
+    //fill 4l histos 
+    h4lDistrib[distrNominal][currentFinalState]->Fill(ZZMass,eventWeight);
+    h4lDistrib[distrVarUp][currentFinalState]->Fill(ZZMass,eventWeight);
+    h4lDistrib[distrVarDn][currentFinalState]->Fill(ZZMass,eventWeight);
+
+
+  } //end loop over tree entries
 
 
 
-}// end compute 4l scale function
+  // write histos in a file 
+  TFile* fOut4lhist = new TFile("file_MC4lHistos.root","recreate");
+  fOut4lhist->cd();
+  for(int var=0; var<nVariations4lDistr; var++){
+    for(int fs=0; fs<nFinalStates; fs++){
+       
+      h4lDistrib[var][fs]->Write(h4lDistrib[var][fs]->GetName());
+      delete h4lDistrib[var][fs];
+    }
+  }
+  fOut4lhist->Close();
+  delete fOut4lhist;
+
+
+
+}// end do4lHistograms function
+
+
+
+
+
+void compute4lScale(string outputPath4lScaleFitPlots, string lumiText)
+{ 
+
+
+
+} // end compute 4l scale function
 
 
 
@@ -983,8 +1112,8 @@ void compute4lScale(string inputPathMC_ggH, string outputPath4lScaleFitPlots, st
 void ComputeLeptonScaleSyst()
 {
  
-  string inputPathMC_DY = "/data3/Higgs/180416/MC_main/";
   string inputPathData = "/data3/Higgs/180416/";
+  string inputPathMC_DY = "/data3/Higgs/180416/MC_main/";
   string inputPathMC_ggH = "/data3/Higgs/180416/MC_main/";
 
   string outputPathFitResultsPlots = "plotsSysts_FitResults";
@@ -1017,7 +1146,9 @@ void ComputeLeptonScaleSyst()
 
   if(COMPARE2lDATAMCFIT) compareDataMCfitPlots(outputPathCompare2lDataMcFit, lumiText);
 
-  if(COMPUTE4lSCALE) compute4lScale(inputPathMC_ggH, outputPath4lScaleFitPlots, lumiText);
+  if(REDO4lHISTOS) do4lHistograms(inputPathMC_ggH, lumi);
+
+  if(COMPUTE4lSCALE) compute4lScale(outputPath4lScaleFitPlots, lumiText);
 
   
 }
