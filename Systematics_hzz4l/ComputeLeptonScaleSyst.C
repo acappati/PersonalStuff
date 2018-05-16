@@ -433,7 +433,7 @@ void doThe2lFit(string outputPathFitResultsPlots, string lumiText)
         // *** plot data on the frame
         RooPlot* frame = mll.frame();
         frame->SetName(inputhist[dat][catEta][catPt]->GetName());  // name is the name which appears in the root file
-        frame->SetTitle(inputhist[dat][catEta][catPt]->GetName()); // title is the title on the canvas  
+        frame->SetTitle(""); // title is the title on the canvas  
         dh.plotOn(frame,DataError(RooAbsData::SumW2)); 
         tot_pdf.plotOn(frame, NormRange("range80100gev"), LineColor(dat==0?kBlue:kRed)); //blue line for data, red for MC 
                                                                                          //NormRange needed to normalize pdf to data in the fitting range
@@ -836,28 +836,89 @@ void compareDataMCfitPlots(string outputPathCompare2lDataMcFit, string lumiText)
       }
     }
   }
+
+  
+  // read file with fit results
+  TFile* fInFitResults = TFile::Open("file_FitResults.root");
+
+  // define input histos 
+  TH1F* hin_poleBW[nDatasets][nCatEta][nCatpT];  
+  TH1F* hin_widthBW[nDatasets][nCatEta][nCatpT];  
+  TH1F* hin_meanDCB[nDatasets][nCatEta][nCatpT];
+  TH1F* hin_sigmaDCB[nDatasets][nCatEta][nCatpT]; 
+  TH1F* hin_a1DCB[nDatasets][nCatEta][nCatpT]; 
+  TH1F* hin_n1DCB[nDatasets][nCatEta][nCatpT];  
+  TH1F* hin_a2DCB[nDatasets][nCatEta][nCatpT]; 
+  TH1F* hin_n2DCB[nDatasets][nCatEta][nCatpT]; 
+  
+  // read histos with fit results from file 
+  for(int dat=0; dat<nDatasets; dat++){
+    for(int catEta=0; catEta<nCatEta; catEta++){
+      for(int catPt=0; catPt<nCatpT; catPt++){
+
+        hin_poleBW[dat][catEta][catPt] = (TH1F*)fInFitResults->Get(Form("hfitResults_poleBW_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_widthBW[dat][catEta][catPt] = (TH1F*)fInFitResults->Get(Form("hfitResults_widthBW_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_meanDCB[dat][catEta][catPt] = (TH1F*)fInFitResults->Get(Form("hfitResults_meanDCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_sigmaDCB[dat][catEta][catPt] = (TH1F*)fInFitResults->Get(Form("hfitResults_sigmaDCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_a1DCB[dat][catEta][catPt] = (TH1F*)fInFitResults->Get(Form("hfitResults_a1DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_n1DCB[dat][catEta][catPt] = (TH1F*)fInFitResults->Get(Form("hfitResults_n1DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_a2DCB[dat][catEta][catPt] = (TH1F*)fInFitResults->Get(Form("hfitResults_a2DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_n2DCB[dat][catEta][catPt] = (TH1F*)fInFitResults->Get(Form("hfitResults_n2DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        
+      }
+    }
+  }
   
 
   // plot
   for(int catEta=0; catEta<nCatEta; catEta++){
     for(int catPt=0; catPt<nCatpT; catPt++){
 
-      TCanvas *can = new TCanvas(inframe[0][catEta][catPt]->GetName(),inframe[0][catEta][catPt]->GetName());
+      TCanvas *can = new TCanvas("can","can");
       can->cd();
 
+      //fits
       inframe[1][catEta][catPt]->Draw(); // MC DY
       inframe[0][catEta][catPt]->Draw("same"); // data
 
+      // MC fit results
+      TPaveText* pv1 = new TPaveText(0.10,0.51,0.39,0.88,"brNDC");
+      pv1->AddText("MC DY: ");
+      pv1->AddText(Form("BW pole: %.3f #pm %.3f",   hin_poleBW[1][catEta][catPt]->GetBinContent(1),   hin_poleBW[1][catEta][catPt]->GetBinError(1)));
+      pv1->AddText(Form("BW width: %.3f #pm %.3f",  hin_widthBW[1][catEta][catPt]->GetBinContent(1),  hin_widthBW[1][catEta][catPt]->GetBinError(1)));
+      pv1->AddText(Form("DCB mean: %.3f #pm %.3f",  hin_meanDCB[1][catEta][catPt]->GetBinContent(1),  hin_meanDCB[1][catEta][catPt]->GetBinError(1)));
+      pv1->AddText(Form("DCB sigma: %.3f #pm %.3f", hin_sigmaDCB[1][catEta][catPt]->GetBinContent(1), hin_sigmaDCB[1][catEta][catPt]->GetBinError(1)));
+      pv1->AddText(Form("DCB a1: %.3f #pm %.3f",    hin_a1DCB[1][catEta][catPt]->GetBinContent(1),    hin_a1DCB[1][catEta][catPt]->GetBinError(1)));
+      pv1->AddText(Form("DCB n1: %.3f #pm %.3f",    hin_n1DCB[1][catEta][catPt]->GetBinContent(1),    hin_n1DCB[1][catEta][catPt]->GetBinError(1)));
+      pv1->AddText(Form("DCB a2: %.3f #pm %.3f",    hin_a2DCB[1][catEta][catPt]->GetBinContent(1),    hin_a2DCB[1][catEta][catPt]->GetBinError(1)));
+      pv1->AddText(Form("DCB n2: %.3f #pm %.3f",    hin_n2DCB[1][catEta][catPt]->GetBinContent(1),    hin_n2DCB[1][catEta][catPt]->GetBinError(1)));
+      pv1->SetFillColor(kWhite);
+      pv1->SetBorderSize(1);
+      pv1->SetTextColor(kRed);
+      pv1->SetTextFont(42);
+      pv1->SetTextSize(0.037);
+      pv1->SetTextAlign(12); // text left aligned 
+      pv1->Draw();
 
-      TPaveText* pv = new TPaveText(0.84,0.71,0.94,0.83,"brNDC");
-      pv->AddText("Data"); ((TText*)pv->GetListOfLines()->Last())->SetTextColor(kBlue);
-      pv->AddText("MC DY"); ((TText*)pv->GetListOfLines()->Last())->SetTextColor(kRed);
-      pv->SetFillColor(kWhite);
-      pv->SetBorderSize(1);
-      pv->SetTextFont(42);
-      pv->SetTextSize(0.037);
-      pv->SetTextAlign(12); // text left aligned 
-      pv->Draw();
+      // data fit results
+      TPaveText* pv2 = new TPaveText(0.66,0.51,0.95,0.88,"brNDC");
+      pv2->AddText("Data: ");
+      pv2->AddText(Form("BW pole: %.3f #pm %.3f",   hin_poleBW[0][catEta][catPt]->GetBinContent(1),   hin_poleBW[0][catEta][catPt]->GetBinError(1)));
+      pv2->AddText(Form("BW width: %.3f #pm %.3f",  hin_widthBW[0][catEta][catPt]->GetBinContent(1),  hin_widthBW[0][catEta][catPt]->GetBinError(1)));
+      pv2->AddText(Form("DCB mean: %.3f #pm %.3f",  hin_meanDCB[0][catEta][catPt]->GetBinContent(1),  hin_meanDCB[0][catEta][catPt]->GetBinError(1)));
+      pv2->AddText(Form("DCB sigma: %.3f #pm %.3f", hin_sigmaDCB[0][catEta][catPt]->GetBinContent(1), hin_sigmaDCB[0][catEta][catPt]->GetBinError(1)));
+      pv2->AddText(Form("DCB a1: %.3f #pm %.3f",    hin_a1DCB[0][catEta][catPt]->GetBinContent(1),    hin_a1DCB[0][catEta][catPt]->GetBinError(1)));
+      pv2->AddText(Form("DCB n1: %.3f #pm %.3f",    hin_n1DCB[0][catEta][catPt]->GetBinContent(1),    hin_n1DCB[0][catEta][catPt]->GetBinError(1)));
+      pv2->AddText(Form("DCB a2: %.3f #pm %.3f",    hin_a2DCB[0][catEta][catPt]->GetBinContent(1),    hin_a2DCB[0][catEta][catPt]->GetBinError(1)));
+      pv2->AddText(Form("DCB n2: %.3f #pm %.3f",    hin_n2DCB[0][catEta][catPt]->GetBinContent(1),    hin_n2DCB[0][catEta][catPt]->GetBinError(1)));
+      pv2->SetFillColor(kWhite);
+      pv2->SetBorderSize(1);
+      pv2->SetTextColor(kBlue);
+      pv2->SetTextFont(42);
+      pv2->SetTextSize(0.037);
+      pv2->SetTextAlign(12); // text left aligned 
+      pv2->Draw();
+
 
       // print official CMS label and lumi 
       writeExtraText = WRITEEXTRATEXTONPLOTS;
