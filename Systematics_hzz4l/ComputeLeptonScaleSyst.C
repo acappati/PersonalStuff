@@ -69,7 +69,7 @@ using namespace RooFit ;
 #define REDO2lHISTOS 1
 #define REDOTHE2lFIT 1
 #define COMPUTE2lSCALE 1
-#define COMPARE2lDATAMCFIT 0
+#define COMPARE2lDATAMCFIT 1
 #define COMPUTE4lSCALE 0
 
 #define WRITEEXTRATEXTONPLOTS 1 // draw Preliminary on Plots
@@ -820,8 +820,65 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
 void compareDataMCfitPlots(string outputPathCompare2lDataMcFit, string lumiText)
 {
 
+  // read file with rooplots 
+  TFile* fIn_frames = TFile::Open("file_FitResultsPlots.root");
+
+  // define input rooplots
+  RooPlot* inframe[nDatasets][nCatEta][nCatpT];  
+
+  // read rooplot from file
+  for(int dat=0; dat<nDatasets; dat++){
+    for(int catEta=0; catEta<nCatEta; catEta++){
+      for(int catPt=0; catPt<nCatpT; catPt++){
+
+        inframe[dat][catEta][catPt] = (RooPlot*)fIn_frames->Get(Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+       
+      }
+    }
+  }
+  
+
+  // plot
+  for(int catEta=0; catEta<nCatEta; catEta++){
+    for(int catPt=0; catPt<nCatpT; catPt++){
+
+      TCanvas *can = new TCanvas(inframe[0][catEta][catPt]->GetName(),inframe[0][catEta][catPt]->GetName());
+      can->cd();
+
+      inframe[1][catEta][catPt]->Draw(); // MC DY
+      inframe[0][catEta][catPt]->Draw("same"); // data
 
 
+      TPaveText* pv = new TPaveText(0.84,0.71,0.94,0.83,"brNDC");
+      pv->AddText("Data"); ((TText*)pv->GetListOfLines()->Last())->SetTextColor(kBlue);
+      pv->AddText("MC DY"); ((TText*)pv->GetListOfLines()->Last())->SetTextColor(kRed);
+      pv->SetFillColor(kWhite);
+      pv->SetBorderSize(1);
+      pv->SetTextFont(42);
+      pv->SetTextSize(0.037);
+      pv->SetTextAlign(12); // text left aligned 
+      pv->Draw();
+
+      // print official CMS label and lumi 
+      writeExtraText = WRITEEXTRATEXTONPLOTS;
+      extraText  = "Preliminary";
+      lumi_sqrtS = lumiText + " (13 TeV)";
+      cmsTextSize = 0.42;
+      lumiTextSize = 0.35;
+      extraOverCmsTextSize = 0.72;
+      relPosX = 0.12;
+      CMS_lumi(can,0,0);
+
+
+      can->Update();
+      can->SaveAs((outputPathCompare2lDataMcFit + "/" + Form("hist_%s_%s",sCategEta[catEta].c_str(),sCategpT[catPt].c_str()) + ".pdf").c_str());
+      can->SaveAs((outputPathCompare2lDataMcFit + "/" + Form("hist_%s_%s",sCategEta[catEta].c_str(),sCategpT[catPt].c_str()) + ".png").c_str());
+
+    }
+  } 
+
+
+  
 }// end compareDataMCfitPlots function
 
 
