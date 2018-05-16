@@ -56,6 +56,7 @@
 #include "RooMinuit.h"
 #include "RooAbsCollection.h"
 #include "RooNumConvPdf.h"
+#include "TLorentzVector.h"
 
 #include "Plotter/CMS_lumi.C" // CMS official label definition
 #include "HiggsAnalysis/CombinedLimit/interface/HZZ4LRooPdfs.h"
@@ -67,7 +68,9 @@ using namespace RooFit ;
 
 #define REDO2lHISTOS 1
 #define REDOTHE2lFIT 1
-#define COMPARE2lDATAMCFIT 1
+#define COMPUTE2lSCALE 1
+#define COMPARE2lDATAMCFIT 0
+#define COMPUTE4lSCALE 0
 
 #define WRITEEXTRATEXTONPLOTS 1 // draw Preliminary on Plots
 
@@ -75,6 +78,8 @@ using namespace RooFit ;
 // *** global definitions
 Float_t Zmass_nominalPDG  = 91.1876; // GeV/c^2 (http://pdg.lbl.gov/2017/listings/rpp2017-list-z-boson.pdf)
 Float_t Zwidth_nominalPDG = 2.4952;  // GeV/c^2 (http://pdg.lbl.gov/2017/listings/rpp2017-list-z-boson.pdf)
+Float_t mass_ele_nominalPDG = 0.0005; //GeV/c^2   
+Float_t mass_mu_nominalPDG  = 0.1057; //GeV/c^2
 
 
 const int nDatasets = 2;
@@ -93,28 +98,55 @@ string sCategEta[nCatEta] = {
   "ele_Eta_1.5-2.5",
   "mu_Eta_0-0.9",
   "mu_Eta_0.9-1.4",
-  "mu_Eta_1.4-2.5"
+  "mu_Eta_1.4-2.4"
 };
 
 // categories of lepton pT 
-const int nCatpT = 6;
-enum CategpT {pTmin20 = 0, pT2030 = 1, pT3040 = 2, pT4050 = 3, pT5060 = 4, pT60100 = 5};
+const int nCatpT = 5;
+enum CategpT {pTmin20 = 0, pT2030 = 1, pT3040 = 2, pT4050 = 3, pT50100 = 4};
 string sCategpT[nCatpT] = {
   "pT_min-20",
   "pT_20-30",
   "pT_30-40",
-  "pT_40_50",
-  "pT_50-60",
-  "pT_60-100"
+  "pT_40-50",
+  "pT_50-100"
 };
 
 // processes
 enum Process {Data=0, DY=1};
 
+//final state
+const int nFinalStates = 3;
+enum FinalState {fs4e = 0, fs4mu = 1, fs2e2mu = 2};
+string sFinalState[nFinalStates] = {
+  "fs_4e",
+  "fs_4mu",
+  "fs_2e2mu"
+};
+
+
+
+// // *** compute invariant mass function
+// float compute2lInvMass(float pTLep1, float etaLep1, float phiLep1, int IdLep1, float pTLep2, float etaLep2, float phiLep2, float var_pT1, float var_pT2, float var_eta1, float var_eta2)
+// {
+
+//   float mass_lep;
+//   // condition on 1st lepton is valid also for the 2nd since Z->ll
+//   if(int(fabs(IdLep1) == 11) mass_lep = mass_ele_nominalPDG;
+//   if(int(fabs(IdLep1) == 13) mass_lep = mass_mu_nominalPDG;
+
+//   TLorentzVector lep1, lep2;
+//   lep1.SetPtEtaPhiM(pTLep1 * (1.+ var_pT1), etaLep1 * (1.+ var_eta1), phiLep1, mass_lep);
+//   lep2.SetPtEtaPhiM(pTLep2 * (1.+ var_pT2), etaLep2 * (1.+ var_eta2), phiLep2, mass_lep);
+
+//   return (lep1 + lep2).M();
+
+// } // end of compute invariant mass function
+
 
 
 // *** read file and do histograms
-void do2lHistograms(string inputPathMC, string inputPathData, float lumi)
+void do2lHistograms(string inputPathMC_DY, string inputPathData, float lumi)
 {
 
   TH1::SetDefaultSumw2(true);
@@ -164,7 +196,7 @@ void do2lHistograms(string inputPathMC, string inputPathData, float lumi)
     if(datasets[d]=="DYJetsToLL_M50") currentProcess = DY;
 
 
-    string inputFileName = string(Form("%s%s/ZZ4lAnalysis.root",(currentProcess==Data?inputPathData:inputPathMC).c_str(),datasets[d].c_str()));
+    string inputFileName = string(Form("%s%s/ZZ4lAnalysis.root",(currentProcess==Data?inputPathData:inputPathMC_DY).c_str(),datasets[d].c_str()));
     inputFile[d] = TFile::Open(inputFileName.c_str());
 
 
@@ -177,8 +209,8 @@ void do2lHistograms(string inputPathMC, string inputPathData, float lumi)
     inputTree[d]->SetBranchAddress("RunNumber", &nRun);
     inputTree[d]->SetBranchAddress("EventNumber", &nEvent);
     inputTree[d]->SetBranchAddress("LumiNumber", &nLumi);
-    inputTree[d]->SetBranchAddress("Zsel", &Zsel);      // WARNING: this script works with the Z inclusive tree 
-    inputTree[d]->SetBranchAddress("ZMass", &ZMass);    // WARNING: this script works with the Z inclusive tree
+    inputTree[d]->SetBranchAddress("Zsel", &Zsel);      // WARNING: works with the Z inclusive tree 
+    inputTree[d]->SetBranchAddress("ZMass", &ZMass);    // WARNING: works with the Z inclusive tree
     inputTree[d]->SetBranchAddress("LepPt", &LepPt);
     inputTree[d]->SetBranchAddress("LepEta", &LepEta);
     inputTree[d]->SetBranchAddress("LepLepId", &LepLepId);
@@ -202,9 +234,34 @@ void do2lHistograms(string inputPathMC, string inputPathData, float lumi)
 
       // choose leading lepton to cut on lepton pT (>20 GeV) as in ZZ
       // and subleading lepton to divide events in pT categories 
-      Float_t LepPtLeading = std::max(LepPt->at(0),LepPt->at(1));
-      if(LepPtLeading < 20.) continue;  
-      Float_t LepPtsubLeading = std::min(LepPt->at(0),LepPt->at(1));
+      Float_t LepPtLeading = 0.;    
+      Float_t LepEtaLeading; 
+      int LepIDLeading;
+      Float_t LepPtSubLeading; 
+      Float_t LepEtaSubLeading;
+      int LepIDSubLeading; 
+
+      if(LepPt->at(0) >= LepPt->at(1)){
+
+        LepPtLeading  = LepPt->at(0);
+        LepEtaLeading = LepEta->at(0);
+        LepIDLeading  = LepLepId->at(0);
+        LepPtSubLeading  = LepPt->at(1);	
+        LepEtaSubLeading = LepEta->at(1);	
+        LepIDSubLeading  = LepLepId->at(1);
+
+      } else if (LepPt->at(0) < LepPt->at(1)){
+
+        LepPtLeading  = LepPt->at(1);
+        LepEtaLeading = LepEta->at(1);
+        LepIDLeading  = LepLepId->at(1);
+        LepPtSubLeading  = LepPt->at(0);	
+        LepEtaSubLeading = LepEta->at(0);	
+        LepIDSubLeading  = LepLepId->at(0);
+      }
+
+      if(LepPtLeading < 20.) continue;
+
       
 
       // define event weight 
@@ -215,31 +272,30 @@ void do2lHistograms(string inputPathMC, string inputPathData, float lumi)
       
       // Eta categories 
       //Z->ee histos 
-      if(int(fabs(LepLepId->at(0))) == 11 ){
+      if(int(fabs(LepIDSubLeading)) == 11 ){
       
-        if(fabs(LepEta->at(0)) >= 0. && fabs(LepEta->at(0)) < 0.8 ) currentCategEta = eleEta1st;
-        else if(fabs(LepEta->at(0)) >= 0.8 && fabs(LepEta->at(0)) < 1.5 ) currentCategEta = eleEta2nd;
-        else if(fabs(LepEta->at(0)) >= 1.5 && fabs(LepEta->at(0)) <= 2.5 ) currentCategEta = eleEta3rd;
+        if(fabs(LepEtaSubLeading) >= 0. && fabs(LepEtaSubLeading) < 0.8 ) currentCategEta = eleEta1st;
+        else if(fabs(LepEtaSubLeading) >= 0.8 && fabs(LepEtaSubLeading) < 1.5 ) currentCategEta = eleEta2nd;
+        else if(fabs(LepEtaSubLeading) >= 1.5 && fabs(LepEtaSubLeading) <= 2.5 ) currentCategEta = eleEta3rd;
         else cerr<<"error: wrong eta!"<<endl;
       }
 
-      //Z->ee histos 
-      if(int(fabs(LepLepId->at(0))) == 13 ){
+      //Z->mumu histos 
+      if(int(fabs(LepIDSubLeading)) == 13 ){
       
-        if(fabs(LepEta->at(0)) >= 0. && fabs(LepEta->at(0)) < 0.9 ) currentCategEta = muEta1st;
-        else if(fabs(LepEta->at(0)) >= 0.9 && fabs(LepEta->at(0)) < 1.4 ) currentCategEta = muEta2nd;
-        else if(fabs(LepEta->at(0)) >= 1.4 && fabs(LepEta->at(0)) <= 2.5 ) currentCategEta = muEta3rd;
+        if(fabs(LepEtaSubLeading) >= 0. && fabs(LepEtaSubLeading) < 0.9 ) currentCategEta = muEta1st;
+        else if(fabs(LepEtaSubLeading) >= 0.9 && fabs(LepEtaSubLeading) < 1.4 ) currentCategEta = muEta2nd;
+        else if(fabs(LepEtaSubLeading) >= 1.4 && fabs(LepEtaSubLeading) <= 2.4 ) currentCategEta = muEta3rd;
         else cerr<<"error: wrong eta!"<<endl;
       }
 
       
       // pT categories 
-      if(LepPtsubLeading < 20. ) currentCategPt = pTmin20;
-      else if(LepPtsubLeading >= 20. && LepPtsubLeading < 30. ) currentCategPt = pT2030;
-      else if(LepPtsubLeading >= 30. && LepPtsubLeading < 40. ) currentCategPt = pT3040;
-      else if(LepPtsubLeading >= 40. && LepPtsubLeading < 50. ) currentCategPt = pT4050;
-      else if(LepPtsubLeading >= 50. && LepPtsubLeading < 60. ) currentCategPt = pT5060;
-      else if(LepPtsubLeading >= 60. && LepPtsubLeading <= 100. ) currentCategPt = pT60100;
+      if(LepPtSubLeading < 20. ) currentCategPt = pTmin20;
+      else if(LepPtSubLeading >= 20. && LepPtSubLeading < 30. ) currentCategPt = pT2030;
+      else if(LepPtSubLeading >= 30. && LepPtSubLeading < 40. ) currentCategPt = pT3040;
+      else if(LepPtSubLeading >= 40. && LepPtSubLeading < 50. ) currentCategPt = pT4050;
+      else if(LepPtSubLeading >= 50. && LepPtSubLeading <= 100. ) currentCategPt = pT50100;
       else continue;
 
       
@@ -277,7 +333,7 @@ void do2lHistograms(string inputPathMC, string inputPathData, float lumi)
 
 
 // perform the fit 
-void doThe2lFit(string outputPathFitResultsPlots, string lumiText)
+void doThe2lFit(string outputPathFitResultsPlots, string lumiText) 
 {
 
   // define output file for fit result plots 
@@ -320,15 +376,7 @@ void doThe2lFit(string outputPathFitResultsPlots, string lumiText)
 	hfitResults_a2DCB[dat][catEta][catPt] = new TH1F(Form("hfitResults_a2DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()),Form("hfitResults_a2DCB_%s_%s_%s", datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()), 1,0,1);
 	hfitResults_n2DCB[dat][catEta][catPt] = new TH1F(Form("hfitResults_n2DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()),Form("hfitResults_n2DCB_%s_%s_%s", datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()), 1,0,1);
         
-        // hfitResults_poleBW[dat][catEta][catPt]->Sumw2(true);
-        // hfitResults_widthBW[dat][catEta][catPt]->Sumw2(true);
-        // hfitResults_meanDCB[dat][catEta][catPt]->Sumw2(true);
-        // hfitResults_sigmaDCB[dat][catEta][catPt]->Sumw2(true);
-        // hfitResults_a1DCB[dat][catEta][catPt]->Sumw2(true);
-        // hfitResults_n1DCB[dat][catEta][catPt]->Sumw2(true);
-        // hfitResults_a2DCB[dat][catEta][catPt]->Sumw2(true);
-        // hfitResults_n2DCB[dat][catEta][catPt]->Sumw2(true);
-
+       
 
         // define roofit variable for the fit
         RooRealVar mll = RooRealVar("mll","m_{l^{+}l^{-}}",60,120);
@@ -339,17 +387,18 @@ void doThe2lFit(string outputPathFitResultsPlots, string lumiText)
         // make roofit datasets from root histos
         RooDataHist dh("dh","dh",mll,Import(*inputhist[dat][catEta][catPt]));
 
+
         // define fit function: 
         // convolution of a BW function and a DoubleCrystalBall resolution function 
         // ---Breit-Wigner function (physical mass distribution)
         RooRealVar pole_BW("pole_BW","pole_BW",Zmass_nominalPDG);
         RooRealVar width_BW("width_BW","width_BW",Zwidth_nominalPDG);
 
-        pole_BW.setConstant(Zmass_nominalPDG);    //fix to physical value
-        width_BW.setConstant(Zwidth_nominalPDG);  //fix to physical value
-
         RooBreitWigner BW_pdf("BW_pdf","Breit-Wigner function",mll,pole_BW,width_BW);
 
+        pole_BW.setConstant(1);   //fix to physical value (setConstant take bool as argument, default is true)
+        width_BW.setConstant(1);  //fix to physical value
+        
         // ---Double Crystal Ball function (experimental resolution)
         RooRealVar mean_DCB("mean_DCB","mean_DCB",0.,-2.,2.);
         RooRealVar sigma_DCB("sigma_DCB","sigma_DCB",1.,0.0001,5.);
@@ -364,15 +413,30 @@ void doThe2lFit(string outputPathFitResultsPlots, string lumiText)
         RooNumConvPdf tot_pdf("tot_pdf","Total PDF",mll,DCBall_pdf,BW_pdf);
         
         
-        // do the fit 
-        tot_pdf.fitTo(dh,Range("range80100gev"));
+        // *** do the 1st fit 
+        tot_pdf.chi2FitTo(dh,Range("range80100gev")); //a binned ML fit (done with fitTo) always assume Poisson error interpretation of data data 
+                                                      //with non-unit wieghts can only be correctly fitted with a Chi2 fit (chi2FitTo) 
+
+        double fitres1[8] = {pole_BW.getVal(), width_BW.getVal(), mean_DCB.getVal(), sigma_DCB.getVal(), a1_DCB.getVal(), n1_DCB.getVal(), a2_DCB.getVal(), n2_DCB.getVal()};
+        double fitres1_err[8] = {pole_BW.getError(), width_BW.getError(), mean_DCB.getError(), sigma_DCB.getError(), a1_DCB.getError(), n1_DCB.getError(), a2_DCB.getError(), n2_DCB.getError()};
+
+
+        // *** do the 2nd fit
+        tot_pdf.chi2FitTo(dh,Range("range80100gev")); //a binned ML fit (done with fitTo) always assume Poisson error interpretation of data data 
+                                                      //with non-unit wieghts can only be correctly fitted with a Chi2 fit (chi2FitTo) 
+
+        double fitres2[8] = {pole_BW.getVal(), width_BW.getVal(), mean_DCB.getVal(), sigma_DCB.getVal(), a1_DCB.getVal(), n1_DCB.getVal(), a2_DCB.getVal(), n2_DCB.getVal()};
+        double fitres2_err[8] = {pole_BW.getError(), width_BW.getError(), mean_DCB.getError(), sigma_DCB.getError(), a1_DCB.getError(), n1_DCB.getError(), a2_DCB.getError(), n2_DCB.getError()};
+
+
                 
-        // plot data on the frame
+        // *** plot data on the frame
         RooPlot* frame = mll.frame();
         frame->SetName(inputhist[dat][catEta][catPt]->GetName());  // name is the name which appears in the root file
         frame->SetTitle(inputhist[dat][catEta][catPt]->GetName()); // title is the title on the canvas  
         dh.plotOn(frame,DataError(RooAbsData::SumW2)); 
-        tot_pdf.plotOn(frame,LineColor(dat==0?kBlue:kRed)); //blue line for data, red for MC 
+        tot_pdf.plotOn(frame, NormRange("range80100gev"), LineColor(dat==0?kBlue:kRed)); //blue line for data, red for MC 
+                                                                                         //NormRange needed to normalize pdf to data in the fitting range
 
 
         // plot on the canvas and save plots
@@ -380,22 +444,41 @@ void doThe2lFit(string outputPathFitResultsPlots, string lumiText)
         c->cd();
         frame->Draw();
 
-        // draw fit results on canvas
-        TPaveText* pv = new TPaveText(0.69,0.52,0.95,0.87,"brNDC");
-        pv->AddText(("BW pole: " + std::to_string(pole_BW.getVal())).c_str());
-        pv->AddText(("BW width: " + std::to_string(width_BW.getVal())).c_str());
-        pv->AddText(("DCB mean: " + std::to_string(mean_DCB.getVal())).c_str());
-        pv->AddText(("DCB sigma: " + std::to_string(sigma_DCB.getVal())).c_str());
-        pv->AddText(("DCB a1: " + std::to_string(a1_DCB.getVal())).c_str());
-        pv->AddText(("DCB n1: " + std::to_string(n1_DCB.getVal())).c_str());
-        pv->AddText(("DCB a2: " + std::to_string(a2_DCB.getVal())).c_str());
-        pv->AddText(("DCB n2: " + std::to_string(n2_DCB.getVal())).c_str());
-        pv->SetFillColor(kWhite);
-        pv->SetBorderSize(1);
-        pv->SetTextFont(42);
-        pv->SetTextSize(0.037);
-        pv->SetTextAlign(12); // text left aligned 
-        pv->Draw();
+        // draw 1st fit results on canvas
+        TPaveText* pv1 = new TPaveText(0.10,0.51,0.39,0.88,"brNDC");
+        pv1->AddText("1st fit: ");
+        pv1->AddText(Form("BW pole: %.3f #pm %.3f",   fitres1[0], fitres1_err[0]));
+        pv1->AddText(Form("BW width: %.3f #pm %.3f",  fitres1[1], fitres1_err[1]));
+        pv1->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres1[2], fitres1_err[2]));
+        pv1->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres1[3], fitres1_err[3]));
+        pv1->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres1[4], fitres1_err[4]));
+        pv1->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres1[5], fitres1_err[5]));
+        pv1->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres1[6], fitres1_err[6]));
+        pv1->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres1[7], fitres1_err[7]));
+        pv1->SetFillColor(kWhite);
+        pv1->SetBorderSize(1);
+        pv1->SetTextFont(42);
+        pv1->SetTextSize(0.037);
+        pv1->SetTextAlign(12); // text left aligned 
+        pv1->Draw();
+
+        // draw 2nd fit results on canvas
+        TPaveText* pv2 = new TPaveText(0.66,0.51,0.95,0.88,"brNDC");
+        pv2->AddText("2nd fit: ");
+        pv2->AddText(Form("BW pole: %.3f #pm %.3f",   fitres2[0], fitres2_err[0]));
+        pv2->AddText(Form("BW width: %.3f #pm %.3f",  fitres2[1], fitres2_err[1]));
+        pv2->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres2[2], fitres2_err[2]));
+        pv2->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres2[3], fitres2_err[3]));
+        pv2->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres2[4], fitres2_err[4]));
+        pv2->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres2[5], fitres2_err[5]));
+        pv2->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres2[6], fitres2_err[6]));
+        pv2->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres2[7], fitres2_err[7]));
+        pv2->SetFillColor(kWhite);
+        pv2->SetBorderSize(1);
+        pv2->SetTextFont(42);
+        pv2->SetTextSize(0.037);
+        pv2->SetTextAlign(12); // text left aligned 
+        pv2->Draw();
 
         // print official CMS label and lumi 
         writeExtraText = WRITEEXTRATEXTONPLOTS;
@@ -415,23 +498,23 @@ void doThe2lFit(string outputPathFitResultsPlots, string lumiText)
 
 
         // save fit values in histos 
-        hfitResults_poleBW[dat][catEta][catPt]->Fill(0.5,pole_BW.getVal());
-        hfitResults_poleBW[dat][catEta][catPt]->SetBinError(1,pole_BW.getError());
-        hfitResults_widthBW[dat][catEta][catPt]->Fill(0.5,width_BW.getVal());  
-        hfitResults_widthBW[dat][catEta][catPt]->SetBinError(1,width_BW.getError());
+        hfitResults_poleBW[dat][catEta][catPt]->Fill(0.5,fitres2[0]);
+        hfitResults_poleBW[dat][catEta][catPt]->SetBinError(1,fitres2_err[0]);
+        hfitResults_widthBW[dat][catEta][catPt]->Fill(0.5,fitres2[1]);  
+        hfitResults_widthBW[dat][catEta][catPt]->SetBinError(1,fitres2_err[1]);
 	                                                  
-	hfitResults_meanDCB[dat][catEta][catPt]->Fill(0.5,mean_DCB.getVal());  
-        hfitResults_meanDCB[dat][catEta][catPt]->SetBinError(1,mean_DCB.getError());
-	hfitResults_sigmaDCB[dat][catEta][catPt]->Fill(0.5,sigma_DCB.getVal()); 
-        hfitResults_sigmaDCB[dat][catEta][catPt]->SetBinError(1,sigma_DCB.getError());
-	hfitResults_a1DCB[dat][catEta][catPt]->Fill(0.5,a1_DCB.getVal());
-        hfitResults_a1DCB[dat][catEta][catPt]->SetBinError(1,a1_DCB.getError());
-	hfitResults_n1DCB[dat][catEta][catPt]->Fill(0.5,n1_DCB.getVal());
-        hfitResults_n1DCB[dat][catEta][catPt]->SetBinError(1,n1_DCB.getError());
-	hfitResults_a2DCB[dat][catEta][catPt]->Fill(0.5,a2_DCB.getVal());
-        hfitResults_a2DCB[dat][catEta][catPt]->SetBinError(1,a2_DCB.getError());
-	hfitResults_n2DCB[dat][catEta][catPt]->Fill(0.5,n2_DCB.getVal());    
-        hfitResults_n2DCB[dat][catEta][catPt]->SetBinError(1,n2_DCB.getError());    
+	hfitResults_meanDCB[dat][catEta][catPt]->Fill(0.5,fitres2[2]);  
+        hfitResults_meanDCB[dat][catEta][catPt]->SetBinError(1,fitres2_err[2]);
+	hfitResults_sigmaDCB[dat][catEta][catPt]->Fill(0.5,fitres2[3]); 
+        hfitResults_sigmaDCB[dat][catEta][catPt]->SetBinError(1,fitres2_err[3]);
+	hfitResults_a1DCB[dat][catEta][catPt]->Fill(0.5,fitres2[4]);
+        hfitResults_a1DCB[dat][catEta][catPt]->SetBinError(1,fitres2_err[4]);
+	hfitResults_n1DCB[dat][catEta][catPt]->Fill(0.5,fitres2[5]);
+        hfitResults_n1DCB[dat][catEta][catPt]->SetBinError(1,fitres2_err[5]);
+	hfitResults_a2DCB[dat][catEta][catPt]->Fill(0.5,fitres2[6]);
+        hfitResults_a2DCB[dat][catEta][catPt]->SetBinError(1,fitres2_err[6]);
+	hfitResults_n2DCB[dat][catEta][catPt]->Fill(0.5,fitres2[7]);    
+        hfitResults_n2DCB[dat][catEta][catPt]->SetBinError(1,fitres2_err[7]);    
 
 
         // write fit plot frame in a file 
@@ -526,11 +609,11 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
   // --- dilepton scale plots 
 
   // define x axis values: mean value of each pT bin 
-  Float_t vec_ptValues_ele[nCatpT] = {13.5, 25., 35., 45., 55., 80.}; // first bin for ele: 7-20 GeV
-  Float_t vec_ptValues_mu[nCatpT] = {12.5, 25., 35., 45., 55., 80.};  // first bin for mu: 5-20 GeV
+  Float_t vec_ptValues_ele[nCatpT] = {13.5, 25., 35., 45., 75.}; // first bin for ele: 7-20 GeV
+  Float_t vec_ptValues_mu[nCatpT] = {12.5, 25., 35., 45., 75.};  // first bin for mu: 5-20 GeV
   // define x axis uncertainties
-  Float_t vec_ptValues_ele_err[nCatpT] = {6.5, 5., 5., 5., 5., 20.};
-  Float_t vec_ptValues_mu_err[nCatpT] = {7.5, 5., 5., 5., 5., 20.};
+  Float_t vec_ptValues_ele_err[nCatpT] = {6.5, 5., 5., 5., 25.};
+  Float_t vec_ptValues_mu_err[nCatpT] = {7.5, 5., 5., 5., 25.};
 
   // define y axis values: dilepton scale for each Eta bin 
   Float_t vec_dileptonScale_eleCatEta0[nCatpT];
@@ -587,8 +670,8 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
   mg_ele->Add(graph_eleCatEta1);
   mg_ele->Add(graph_eleCatEta2);
 
-  mg_ele->SetMinimum(-0.02);
-  mg_ele->SetMaximum(0.02);
+  //mg_ele->SetMinimum(-0.01);
+  //mg_ele->SetMaximum(0.01);
 
   TCanvas* can_ele = new TCanvas("can_ele","can_ele",600,600);
   mg_ele->Draw("ap"); 
@@ -660,8 +743,8 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
   mg_mu->Add(graph_muCatEta4);
   mg_mu->Add(graph_muCatEta5);
 
-  mg_mu->SetMinimum(-0.02);
-  mg_mu->SetMaximum(0.02);
+  mg_mu->SetMinimum(-0.005);
+  mg_mu->SetMaximum(0.005);
  
   TCanvas* can_mu = new TCanvas("can_mu","can_mu",600,600);
   mg_mu->Draw("ap");
@@ -683,8 +766,8 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
 
   TLegend* legend_mu = new TLegend(0.58,0.15,0.8,0.35);
   legend_mu->AddEntry(graph_eleCatEta0,"Z,|#eta| 0.0-0.9","lp");
-  legend_mu->AddEntry(graph_eleCatEta1,"Z,|#eta| 0.9-1.5","lp");
-  legend_mu->AddEntry(graph_eleCatEta2,"Z,|#eta| 1.5-2.5","lp");
+  legend_mu->AddEntry(graph_eleCatEta1,"Z,|#eta| 0.9-1.4","lp");
+  legend_mu->AddEntry(graph_eleCatEta2,"Z,|#eta| 1.4-2.4","lp");
   legend_mu->SetTextFont(43);
   legend_mu->SetTextSize(14);
   legend_mu->SetLineColor(kWhite);
@@ -744,16 +827,53 @@ void compareDataMCfitPlots(string outputPathCompare2lDataMcFit, string lumiText)
 
 
 
+// compute 4l scale 
+void compute4lScale(string inputPathMC_ggH, string outputPath4lScaleFitPlots, string lumiText)
+{
+
+  TFile* inputFile;
+  TTree* inputTree;
+  TH1F* hCounters;
+  Double_t gen_sumWeights;
+  Float_t partialSampleWeight;
+
+  Int_t nRun;
+  Long64_t nEvent;
+  Int_t nLumi;
+
+  Short_t ZZsel;
+  Float_t ZZMass;
+  vector<Float_t> *LepPt = 0;
+  vector<Float_t> *LepEta = 0;
+  vector<Float_t> *LepLepId = 0;
+  Float_t xsec;
+  Float_t overallEventWeight;
+
+  
+  // define 4l histos 
+  TH1F* h_4lDistributions[nFinalStates]; //3 final states
+ 
+
+
+
+}// end compute 4l scale function
+
+
+
+
 // *** main function
 void ComputeLeptonScaleSyst()
 {
  
-  string inputPathMC = "/data3/Higgs/180416/MC_main/";
+  string inputPathMC_DY = "/data3/Higgs/180416/MC_main/";
   string inputPathData = "/data3/Higgs/180416/";
+  string inputPathMC_ggH = "/data3/Higgs/180416/MC_main/";
 
   string outputPathFitResultsPlots = "plotsSysts_FitResults";
   string outputPathDileptonScalePlots = "plotsSysts_DileptonScale";
   string outputPathCompare2lDataMcFit = "plotsSysts_CompareDataMC2lFit";
+  string outputPath4lScaleFitPlots = "plotsSysts_4leptonScaleFits";
+  
 
   float lumi = 41.30; //fb-1
   string lumiText = "41.30 fb^{-1}";
@@ -762,22 +882,26 @@ void ComputeLeptonScaleSyst()
   // create output directories
   if(REDOTHE2lFIT) gSystem->Exec(("mkdir -p "+outputPathFitResultsPlots).c_str());  //dir for fit results plots
 
-  gSystem->Exec(("mkdir -p "+outputPathDileptonScalePlots).c_str()); //dir for dilepton scale plots
+  if(COMPUTE2lSCALE) gSystem->Exec(("mkdir -p "+outputPathDileptonScalePlots).c_str()); //dir for dilepton scale plots
 
   if(COMPARE2lDATAMCFIT) gSystem->Exec(("mkdir -p "+outputPathCompare2lDataMcFit).c_str()); //dir for comparison between Data and MC 2l fit
 
+  if(COMPUTE4lSCALE) gSystem->Exec(("mkdir -p "+outputPath4lScaleFitPlots).c_str()); //dir for 4lepton scale fit plots
+
+
 
   // execute functions 
-  if(REDO2lHISTOS) do2lHistograms(inputPathMC, inputPathData, lumi);
+  if(REDO2lHISTOS) do2lHistograms(inputPathMC_DY, inputPathData, lumi);
 
   if(REDOTHE2lFIT) doThe2lFit(outputPathFitResultsPlots, lumiText);
 
-  computeDileptonScale(outputPathDileptonScalePlots, lumiText);
+  if(COMPUTE2lSCALE) computeDileptonScale(outputPathDileptonScalePlots, lumiText);
 
   if(COMPARE2lDATAMCFIT) compareDataMCfitPlots(outputPathCompare2lDataMcFit, lumiText);
 
-  
+  if(COMPUTE4lSCALE) compute4lScale(inputPathMC_ggH, outputPath4lScaleFitPlots, lumiText);
 
+  
 }
 
 
