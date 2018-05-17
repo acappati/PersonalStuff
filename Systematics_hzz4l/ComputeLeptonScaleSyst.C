@@ -137,24 +137,7 @@ string sVariations4lDistr[nVariations4lDistr] = {
 
 
 
-// // *** compute invariant mass function
-// float compute2lInvMass(float pTLep1, float etaLep1, float phiLep1, int IdLep1, float pTLep2, float etaLep2, float phiLep2, float var_pT1, float var_pT2, float var_eta1, float var_eta2)
-// {
-
-//   float mass_lep;
-//   // condition on 1st lepton is valid also for the 2nd since Z->ll
-//   if(int(fabs(IdLep1) == 11) mass_lep = mass_ele_nominalPDG;
-//   if(int(fabs(IdLep1) == 13) mass_lep = mass_mu_nominalPDG;
-
-//   TLorentzVector lep1, lep2;
-//   lep1.SetPtEtaPhiM(pTLep1 * (1.+ var_pT1), etaLep1 * (1.+ var_eta1), phiLep1, mass_lep);
-//   lep2.SetPtEtaPhiM(pTLep2 * (1.+ var_pT2), etaLep2 * (1.+ var_eta2), phiLep2, mass_lep);
-
-//   return (lep1 + lep2).M();
-
-// } // end of compute invariant mass function
-
-
+//************************************************
 
 // *** read file and do histograms
 void do2lHistograms(string inputPathMC_DY, string inputPathData, float lumi)
@@ -956,6 +939,29 @@ void compareDataMCfitPlots(string outputPathCompare2lDataMcFit, string lumiText)
 
 
 
+
+// *** compute invariant mass function
+float compute4lInvMass(vector<Float_t> *LepPt, vector<Float_t> *LepEta, vector<Float_t> *LepPhi, float* vec_lepMass, float* vec_scale2l, float* vec_scale2l_err, int varErrSign)
+{
+  
+  TLorentzVector lep0;
+  TLorentzVector lep1;
+  TLorentzVector lep2;
+  TLorentzVector lep3;
+
+  lep0.SetPtEtaPhiM( LepPt->at(0) * (1. + (vec_scale2l[0] + (varErrSign * vec_scale2l_err[0]))), LepEta->at(0), LepPhi->at(0), vec_lepMass[0] );
+  lep1.SetPtEtaPhiM( LepPt->at(1) * (1. + (vec_scale2l[1] + (varErrSign * vec_scale2l_err[1]))), LepEta->at(1), LepPhi->at(1), vec_lepMass[1] );
+  lep2.SetPtEtaPhiM( LepPt->at(2) * (1. + (vec_scale2l[2] + (varErrSign * vec_scale2l_err[2]))), LepEta->at(2), LepPhi->at(2), vec_lepMass[2] );
+  lep3.SetPtEtaPhiM( LepPt->at(3) * (1. + (vec_scale2l[3] + (varErrSign * vec_scale2l_err[3]))), LepEta->at(3), LepPhi->at(3), vec_lepMass[3] );
+
+  return (lep0 + lep1 + lep2 + lep3).M();
+
+} // end of compute invariant mass function
+
+
+
+
+
 // do 4l ggH histos  
 void do4lHistograms(string inputPathMC_ggH, float lumi)
 {
@@ -993,7 +999,20 @@ void do4lHistograms(string inputPathMC_ggH, float lumi)
       h4lDistrib[var][fs]->Sumw2(true);
     }
   }
- 
+
+
+  // read file with dilepton scale
+  TFile* fIn_dileptonScale = TFile::Open("file_DileptonScale.root");
+
+  TH1F* hIn_2lscale[nCatEta][nCatpT];
+  
+  for(int catEta=0; catEta<nCatEta; catEta++){
+    for(int catPt=0; catPt<nCatpT; catPt++){
+
+      hIn_2lscale[catEta][catPt] = (TH1F*)fIn_dileptonScale->Get(Form("h_dileptonScale_%s_%s",sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+    }
+  }
+
  
   int currentFinalState = -1;
   int currentCategEta = -1;
@@ -1046,7 +1065,7 @@ void do4lHistograms(string inputPathMC_ggH, float lumi)
     Double_t eventWeight = partialSampleWeight * xsec * overallEventWeight ;
 
 
-    //find final state 
+    //*** find final state 
     if(Z1Flav==-121){
 	if(Z2Flav==-121)
 	  currentFinalState = fs4e;
@@ -1063,14 +1082,66 @@ void do4lHistograms(string inputPathMC_ggH, float lumi)
 	  cerr<<"error in event "<<nRun<<":"<<nLumi<<":"<<nEvent<<", Z2Flav="<<Z2Flav<<endl;
       }else{
 	cerr<<"error in event "<<nRun<<":"<<nLumi<<":"<<nEvent<<", Z1Flav="<<Z1Flav<<endl;
-     }
+    }
      
+    
+    if(currentFinalState < 0) continue;
 
+    //*** classify 4 leptons and assign variations
+    float vec_scale2l[4] = {0.,0.,0.,0.};
+    float vec_scale2l_err[4] = {0.,0.,0.,0.};
+    float vec_lepMass[4];
+
+    for(int l=0; l<4; l++){
+
+      // eta categories and lep mass 
+      if(int(fabs(LepLepId->at(l))) == 11 ){
+
+        vec_lepMass[l] = mass_ele_nominalPDG;
+
+        if(fabs(LepEta->at(l)) >= 0. && fabs(LepEta->at(l)) < 0.8 ) currentCategEta = eleEta1st;
+        else if(fabs(LepEta->at(l)) >= 0.8 && fabs(LepEta->at(l)) < 1.5 ) currentCategEta = eleEta2nd;
+        else if(fabs(LepEta->at(l)) >= 1.5 && fabs(LepEta->at(l)) <= 2.5 ) currentCategEta = eleEta3rd;
+        else cerr<<"error: wrong eta!"<<endl;
+      }
+
+      if(int(fabs(LepLepId->at(l))) == 13 ){
+
+        vec_lepMass[l] = mass_mu_nominalPDG;
       
-    //fill 4l histos 
-    h4lDistrib[distrNominal][currentFinalState]->Fill(ZZMass,eventWeight);
-    h4lDistrib[distrVarUp][currentFinalState]->Fill(ZZMass,eventWeight);
-    h4lDistrib[distrVarDn][currentFinalState]->Fill(ZZMass,eventWeight);
+        if(fabs(LepEta->at(l)) >= 0. && fabs(LepEta->at(l)) < 0.9 ) currentCategEta = muEta1st;
+        else if(fabs(LepEta->at(l)) >= 0.9 && fabs(LepEta->at(l)) < 1.4 ) currentCategEta = muEta2nd;
+        else if(fabs(LepEta->at(l)) >= 1.4 && fabs(LepEta->at(l)) <= 2.4 ) currentCategEta = muEta3rd;
+        else cerr<<"error: wrong eta!"<<endl;  
+      } 
+
+      // pT categories 
+      if(LepPt->at(l) < 20. ) currentCategPt = pTmin20;
+      else if(LepPt->at(l) >= 20. && LepPt->at(l) < 30. ) currentCategPt = pT2030;
+      else if(LepPt->at(l) >= 30. && LepPt->at(l) < 40. ) currentCategPt = pT3040;
+      else if(LepPt->at(l) >= 40. && LepPt->at(l) < 50. ) currentCategPt = pT4050;
+      else if(LepPt->at(l) >= 50. && LepPt->at(l) <= 100. ) currentCategPt = pT50100;
+
+
+      if(currentCategEta < 0 || currentCategPt < 0) continue;
+           
+      vec_scale2l[l]     = hIn_2lscale[currentCategEta][currentCategPt]->GetBinContent(1);
+      vec_scale2l_err[l] = hIn_2lscale[currentCategEta][currentCategPt]->GetBinError(1);
+    }
+
+       
+    //define ZZmass with lep pT scale variations  
+    float ZZMass_nominal = compute4lInvMass(LepPt, LepEta, LepPhi, vec_lepMass, vec_scale2l, vec_scale2l_err,  0); //nominal variation: apply to lepton pT the 2lscale
+    float ZZMass_up      = compute4lInvMass(LepPt, LepEta, LepPhi, vec_lepMass, vec_scale2l, vec_scale2l_err, +1); //up variation:      apply to lepton pT the 2lscale + 2lscale error
+    float ZZMass_dn      = compute4lInvMass(LepPt, LepEta, LepPhi, vec_lepMass, vec_scale2l, vec_scale2l_err, -1); //dn variation:      apply to lepton pT the 2lscale - 2lscale error
+
+    //cout<<ZZMass<<" "<<ZZMass_nominal<<" "<<ZZMass_up<<" "<<ZZMass_dn<<endl;
+      
+
+    //*** fill 4l histos 
+    h4lDistrib[distrNominal][currentFinalState]->Fill(ZZMass_nominal,eventWeight);
+    h4lDistrib[distrVarUp][currentFinalState]->Fill(ZZMass_up,eventWeight);
+    h4lDistrib[distrVarDn][currentFinalState]->Fill(ZZMass_dn,eventWeight);
 
 
   } //end loop over tree entries
