@@ -67,7 +67,7 @@ using namespace std;
 using namespace RooFit ;
 
 #define REDO2lHISTOS 1
-#define REDOTHE2lFIT 0
+#define REDOTHE2lFIT 1
 #define COMPUTE2lSCALE 0
 #define COMPARE2lDATAMCFIT 0
 
@@ -146,7 +146,199 @@ float compute2lInvMass(float pTLep1, float etaLep1, float phiLep1, int IdLep1, f
 
 
 
-// *** read file and do histograms (with cut on leading lepton and categories based on subleading lepton pT and eta)
+
+// *** read file and do histograms (events separated into categories based on pT and Eta of 1 of the 2 leptons, 
+//     determined randomly, and integrating over the other) as explained in AN2016_442 (Section 9)
+void do2lHistograms_AN(string inputPathMC_DY, string inputPathData, float lumi)
+{
+
+  TH1::SetDefaultSumw2(true);
+
+  
+  TFile* inputFile[nDatasets];
+  TTree* inputTree[nDatasets];
+  TH1F* hCounters[nDatasets];
+  Double_t gen_sumWeights[nDatasets];
+  Float_t partialSampleWeight[nDatasets];
+
+  Int_t nRun;
+  Long64_t nEvent;
+  Int_t nLumi;
+
+  Short_t Zsel;
+  Float_t ZMass;
+  vector<Float_t> *LepPt = 0;
+  vector<Float_t> *LepEta = 0;
+  vector<Float_t> *LepPhi = 0;
+  vector<Float_t> *LepLepId = 0;
+  Float_t xsec;
+  Float_t overallEventWeight;
+
+  
+  // define histos 
+  TH1F* hist[nDatasets][nCatEta][nCatpT];
+  for(int dat=0; dat<nDatasets; dat++){
+    for(int catEta=0; catEta<nCatEta; catEta++){
+      for(int catPt=0; catPt<nCatpT; catPt++){
+        hist[dat][catEta][catPt] = new TH1F(Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()),Form("hist_%s_%s_%s", datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()), 120, 60.,120.);
+        hist[dat][catEta][catPt]->Sumw2(true);
+      }
+    }
+  }
+  
+
+  int currentProcess = DY;
+  int currentCategEta = -1;
+  int currentCategPt = -1;
+
+
+  // loop over datasets (only 1 dataset by now: DY MC)
+  for(int d=0; d<nDatasets; d++){
+
+
+    string inputFileName = string(Form("%s%s/ZZ4lAnalysis.root",inputPathMC_DY.c_str(),datasets[d].c_str()));
+    inputFile[d] = TFile::Open(inputFileName.c_str());
+
+
+    hCounters[d] = (TH1F*)inputFile[d]->Get("ZZTree/Counters");    
+    gen_sumWeights[d] = (Long64_t)hCounters[d]->GetBinContent(40);
+    partialSampleWeight[d] = lumi * 1000 / gen_sumWeights[d];
+
+
+    inputTree[d] = (TTree*)inputFile[d]->Get("ZTree/candTree");
+    inputTree[d]->SetBranchAddress("RunNumber", &nRun);
+    inputTree[d]->SetBranchAddress("EventNumber", &nEvent);
+    inputTree[d]->SetBranchAddress("LumiNumber", &nLumi);
+    inputTree[d]->SetBranchAddress("Zsel", &Zsel);      // WARNING: works with the Z inclusive tree 
+    inputTree[d]->SetBranchAddress("ZMass", &ZMass);    // WARNING: works with the Z inclusive tree
+    inputTree[d]->SetBranchAddress("LepPt", &LepPt);
+    inputTree[d]->SetBranchAddress("LepEta", &LepEta);
+    inputTree[d]->SetBranchAddress("LepPhi", &LepPhi);
+    inputTree[d]->SetBranchAddress("LepLepId", &LepLepId);
+    inputTree[d]->SetBranchAddress("xsec", &xsec); 
+    inputTree[d]->SetBranchAddress("overallEventWeight", &overallEventWeight);
+
+    
+    // process tree 
+    Long64_t entries = inputTree[d]->GetEntries();
+    cout<<"Processing dataset "<<datasets[d]<<" ("<<entries<<" entries) ..."<<endl;
+    
+    for (Long64_t z=0; z<entries; ++z){
+      
+      inputTree[d]->GetEntry(z);
+      
+      if( Zsel < 0. ) continue;  // skip events that do not pass the trigger 
+      
+
+      // *********************************************************************************************
+      // *********************************************************************************************
+      // intro known distorsion on the leptons pT  (choose which distorsion introduce)
+      
+      // no distorsion
+      float LepPt0 = LepPt->at(0);
+      float LepPt1 = LepPt->at(1);
+
+      // uniform up distorsion of 0.001
+      if(false){
+        LepPt0 = LepPt->at(0) * (1.+ 0.001);
+        LepPt1 = LepPt->at(1) * (1.+ 0.001);
+      }
+      
+      // pT dependent distorsion (stair)
+      if(false){
+        if(LepPt->at(0) < 20. ) { LepPt0 = LepPt->at(0) * (1.- 0.002);}
+        else if(LepPt->at(0) >= 20. && LepPt->at(0) < 30.   ) {LepPt0 = LepPt->at(0) * (1.- 0.001);}
+        else if(LepPt->at(0) >= 30. && LepPt->at(0) < 40.   ) {LepPt0 = LepPt->at(0) * (1.+ 0.000);}
+        else if(LepPt->at(0) >= 40. && LepPt->at(0) < 50.   ) {LepPt0 = LepPt->at(0) * (1.+ 0.001);}
+        else if(LepPt->at(0) >= 50. && LepPt->at(0) <= 100. ) {LepPt0 = LepPt->at(0) * (1.+ 0.002);}
+        else {LepPt0 = LepPt->at(0);}
+
+        if(LepPt->at(1) < 20. ) { LepPt1 = LepPt->at(1) * (1.- 0.002);}
+        else if(LepPt->at(1) >= 20. && LepPt->at(1) < 30.   ) {LepPt1 = LepPt->at(1) * (1.- 0.001);}
+        else if(LepPt->at(1) >= 30. && LepPt->at(1) < 40.   ) {LepPt1 = LepPt->at(1) * (1.+ 0.000);}
+        else if(LepPt->at(1) >= 40. && LepPt->at(1) < 50.   ) {LepPt1 = LepPt->at(1) * (1.+ 0.001);}
+        else if(LepPt->at(1) >= 50. && LepPt->at(1) <= 100. ) {LepPt1 = LepPt->at(1) * (1.+ 0.002);}
+        else {LepPt1 = LepPt->at(1);}
+      }
+      // **********************************************************************************************
+      // **********************************************************************************************
+
+
+
+      // define event weight 
+      Double_t eventWeight = partialSampleWeight[d] * xsec * overallEventWeight ;
+
+      
+      // Eta categories 
+      //Z->ee histos 
+      if(int(fabs(LepLepId->at(0))) == 11 ){
+      
+        if(fabs(LepEta->at(0)) >= 0. && fabs(LepEta->at(0)) < 0.8 ) currentCategEta = eleEta1st;
+        else if(fabs(LepEta->at(0)) >= 0.8 && fabs(LepEta->at(0)) < 1.5 ) currentCategEta = eleEta2nd;
+        else if(fabs(LepEta->at(0)) >= 1.5 && fabs(LepEta->at(0)) <= 2.5 ) currentCategEta = eleEta3rd;
+        else cerr<<"error: wrong eta!"<<endl;
+      }
+
+      //Z->mumu histos 
+      if(int(fabs(LepLepId->at(0))) == 13 ){
+      
+        if(fabs(LepEta->at(0)) >= 0. && fabs(LepEta->at(0)) < 0.9 ) currentCategEta = muEta1st;
+        else if(fabs(LepEta->at(0)) >= 0.9 && fabs(LepEta->at(0)) < 1.4 ) currentCategEta = muEta2nd;
+        else if(fabs(LepEta->at(0)) >= 1.4 && fabs(LepEta->at(0)) <= 2.4 ) currentCategEta = muEta3rd;
+        else cerr<<"error: wrong eta!"<<endl;  
+      }
+
+      
+      // pT categories 
+      if(LepPt0 < 20. ) currentCategPt = pTmin20;
+      else if(LepPt0 >= 20. && LepPt0 < 30. ) currentCategPt = pT2030;
+      else if(LepPt0 >= 30. && LepPt0 < 40. ) currentCategPt = pT3040;
+      else if(LepPt0 >= 40. && LepPt0 < 50. ) currentCategPt = pT4050;
+      else if(LepPt0 >= 50. && LepPt0 <= 100. ) currentCategPt = pT50100;
+      else continue;
+
+      
+      
+      if(currentCategEta < 0 || currentCategPt < 0) continue;
+
+      
+      
+      // new mass: pTLep1, etaLep1, phiLep1, IdLep1, pTLep2, etaLep2, phiLep2
+      float ZMass_new = compute2lInvMass(LepPt0, LepEta->at(0), LepPhi->at(0), LepLepId->at(0), LepPt1, LepEta->at(1), LepPhi->at(1));
+      cout<<ZMass<<" "<<ZMass_new<<endl;
+
+      // fill histos
+      hist[currentProcess][currentCategEta][currentCategPt]->Fill(ZMass_new,eventWeight);
+
+      
+    } //end loop over tree entries 
+
+    
+  }//end loop over datasets
+
+
+  // write histos in a file 
+  TFile* fOutHistos = new TFile("file_DataMCHistos_nominal.root","recreate");
+  fOutHistos->cd();
+  for(int d=0; d<nDatasets; d++){
+    for(int catEta=0; catEta<nCatEta; catEta++){
+      for(int catPt=0; catPt<nCatpT; catPt++){
+        hist[d][catEta][catPt]->Write(hist[d][catEta][catPt]->GetName());
+        delete hist[d][catEta][catPt];
+      }
+    }
+  }
+  fOutHistos->Close();
+  delete fOutHistos;
+
+
+} // end doHistograms_AN function 
+
+
+
+
+// *** read file and do histograms (with cut on leading lepton (pT > 20 GeV) and on ZMass (> 40 GeV) 
+//     and categories based on subleading lepton pT and eta)
 void do2lHistograms_cutsOnLeadingLep(string inputPathMC_DY, string inputPathData, float lumi)
 {
 
@@ -381,7 +573,7 @@ void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText)
 {
 
   // read file with histos
-  TFile* fInHistos = TFile::Open("file_DataMCHistos_varStair.root");
+  TFile* fInHistos = TFile::Open("file_DataMCHistos_nominal.root");
 
   // define input histos
   TH1F* inputhist[nDatasets][nCatEta][nCatpT];
@@ -576,7 +768,7 @@ void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText)
 
   
   // write fit results histos in a file 
-  TFile* fOutFitResults = new TFile("file_FitResults_varStair.root","recreate");
+  TFile* fOutFitResults = new TFile("file_FitResults_nominal.root","recreate");
   fOutFitResults->cd();
   for(int dat=0; dat<nDatasets; dat++){
     for(int catEta=0; catEta<nCatEta; catEta++){
@@ -792,7 +984,7 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
 
   //***********************************************
   // *** read file with fit results with variations
-  TFile* fInFitResults2 = TFile::Open("file_FitResults_varStair.root");
+  TFile* fInFitResults2 = TFile::Open("file_FitResults_varUnif001.root");
 
   // define input histos 
   TH1F* hinput_meanFitResults2[nDatasets][nCatEta][nCatpT];  
@@ -1141,8 +1333,8 @@ void ComputeLeptonScaleSyst_ControlStudyOnMC()
   string inputPathData = "/data3/Higgs/180416/";
   string inputPathMC_ggH = "/data3/Higgs/180416/MC_main/";
 
-  string outputPathFitResultsPlots = "plotsSysts_FitResults_varStair";
-  string outputPathDileptonScalePlots = "plotsSysts_DileptonScale_varStair";
+  string outputPathFitResultsPlots = "plotsSysts_FitResults_nominal";
+  string outputPathDileptonScalePlots = "plotsSysts_DileptonScale_varUnif001";
   string outputPathCompare2lDataMcFit = "plotsSysts_CompareDataMC2lFit_varStair";
   
   
@@ -1151,7 +1343,7 @@ void ComputeLeptonScaleSyst_ControlStudyOnMC()
   string lumiText = "41.30 fb^{-1}";
 
 
-  // create output directories
+  // *** create output directories
   if(REDOTHE2lFIT) gSystem->Exec(("mkdir -p "+outputPathFitResultsPlots).c_str());  //dir for fit results plots
 
   if(COMPUTE2lSCALE) gSystem->Exec(("mkdir -p "+outputPathDileptonScalePlots).c_str()); //dir for dilepton scale plots
@@ -1161,10 +1353,16 @@ void ComputeLeptonScaleSyst_ControlStudyOnMC()
  
 
 
-  // execute functions 
-  if(REDO2lHISTOS) do2lHistograms_cutsOnLeadingLep(inputPathMC_DY, inputPathData, lumi); //read MC file and do histos separating events in categories
-                                                                                         //cut leading lep pT>20 GeV; categories based on subleading lepton pT and eta
+  // *** execute functions 
 
+  //if(REDO2lHISTOS) do2lHistograms_cutsOnLeadingLep(inputPathMC_DY, inputPathData, lumi); //read MC file and do histos separating events in categories
+                                                                                           //cut leading lep pT>20 GeV; ZMass > 40 GeV; 
+                                                                                           //categories based on subleading lepton pT and eta
+
+  if(REDO2lHISTOS) do2lHistograms_AN(inputPathMC_DY, inputPathData, lumi); //read MC file and do histograms (events separated into categories 
+                                                                           //based on pT and Eta of 1 of the 2 leptons, determined randomly, and integrating
+                                                                           //over the other) as explained in AN2016_442 (Section 9)
+                                            
   if(REDOTHE2lFIT) doThe2lFit_DCBfit(outputPathFitResultsPlots, lumiText); // do fit with DCBxBW 
 
   //if(REDOTHE2lFIT) doThe2lFit_gaussFit(outputPathFitResultsPlots, lumiText);  // do gaussian fit
