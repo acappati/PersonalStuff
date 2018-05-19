@@ -68,7 +68,7 @@ using namespace RooFit ;
 
 #define REDO2lHISTOS 1
 #define REDOTHE2lFIT 1
-#define COMPUTE2lSCALE 0
+#define COMPUTE2lSCALE 1
 #define COMPARE2lDATAMCFIT 0
 
 #define WRITEEXTRATEXTONPLOTS 1 // draw Preliminary on Plots
@@ -245,7 +245,7 @@ void do2lHistograms_AN(string inputPathMC_DY, string inputPathData, float lumi)
       }
       
       // pT dependent distorsion (stair)
-      if(false){
+      if(true){
         if(LepPt->at(0) < 20. ) { LepPt0 = LepPt->at(0) * (1.- 0.002);}
         else if(LepPt->at(0) >= 20. && LepPt->at(0) < 30.   ) {LepPt0 = LepPt->at(0) * (1.- 0.001);}
         else if(LepPt->at(0) >= 30. && LepPt->at(0) < 40.   ) {LepPt0 = LepPt->at(0) * (1.+ 0.000);}
@@ -318,7 +318,7 @@ void do2lHistograms_AN(string inputPathMC_DY, string inputPathData, float lumi)
 
 
   // write histos in a file 
-  TFile* fOutHistos = new TFile("file_DataMCHistos_nominal.root","recreate");
+  TFile* fOutHistos = new TFile("file_DataMCHistos_varStair.root","recreate");
   fOutHistos->cd();
   for(int d=0; d<nDatasets; d++){
     for(int catEta=0; catEta<nCatEta; catEta++){
@@ -573,7 +573,7 @@ void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText)
 {
 
   // read file with histos
-  TFile* fInHistos = TFile::Open("file_DataMCHistos_nominal.root");
+  TFile* fInHistos = TFile::Open("file_DataMCHistos_varStair.root");
 
   // define input histos
   TH1F* inputhist[nDatasets][nCatEta][nCatpT];
@@ -768,7 +768,7 @@ void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText)
 
   
   // write fit results histos in a file 
-  TFile* fOutFitResults = new TFile("file_FitResults_nominal.root","recreate");
+  TFile* fOutFitResults = new TFile("file_FitResults_varStair.root","recreate");
   fOutFitResults->cd();
   for(int dat=0; dat<nDatasets; dat++){
     for(int catEta=0; catEta<nCatEta; catEta++){
@@ -984,7 +984,7 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
 
   //***********************************************
   // *** read file with fit results with variations
-  TFile* fInFitResults2 = TFile::Open("file_FitResults_varUnif001.root");
+  TFile* fInFitResults2 = TFile::Open("file_FitResults_varStair.root");
 
   // define input histos 
   TH1F* hinput_meanFitResults2[nDatasets][nCatEta][nCatpT];  
@@ -1333,8 +1333,8 @@ void ComputeLeptonScaleSyst_ControlStudyOnMC()
   string inputPathData = "/data3/Higgs/180416/";
   string inputPathMC_ggH = "/data3/Higgs/180416/MC_main/";
 
-  string outputPathFitResultsPlots = "plotsSysts_FitResults_nominal";
-  string outputPathDileptonScalePlots = "plotsSysts_DileptonScale_varUnif001";
+  string outputPathFitResultsPlots = "plotsSysts_FitResults_varStair";
+  string outputPathDileptonScalePlots = "plotsSysts_DileptonScale_varStair";
   string outputPathCompare2lDataMcFit = "plotsSysts_CompareDataMC2lFit_varStair";
   
   
