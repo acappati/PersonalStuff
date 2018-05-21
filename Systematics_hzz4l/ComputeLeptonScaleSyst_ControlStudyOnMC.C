@@ -2,6 +2,7 @@
 // 
 // usage:
 //     - specify parameters (input/output directory, luminosity) at the end of this file
+//     - specify the sample type (nominal, uniform variation up of 001, stair variation) at the beginning of the file 
 //     - run with:
 //                 root -l -b -q ComputeLeptonScaleSyst_ControlStudyOnMC.C++
 //
@@ -64,14 +65,20 @@
 
 
 using namespace std;
-using namespace RooFit ;
+using namespace RooFit;
 
-#define REDO2lHISTOS 1
-#define REDOTHE2lFIT 1
-#define COMPUTE2lSCALE 1
-#define COMPARE2lDATAMCFIT 0
 
 #define WRITEEXTRATEXTONPLOTS 1 // draw Preliminary on Plots
+
+
+// ********************************************
+// *** bool for choosing sample type
+// *** choose their value to change sample type
+bool sampletype_nominal = true;
+bool sampletype_varUnif001 = false;
+bool sampletype_varStair = false;
+
+// ********************************************
 
 
 // *** global definitions
@@ -149,7 +156,7 @@ float compute2lInvMass(float pTLep1, float etaLep1, float phiLep1, int IdLep1, f
 
 // *** read file and do histograms (events separated into categories based on pT and Eta of 1 of the 2 leptons, 
 //     determined randomly, and integrating over the other) as explained in AN2016_442 (Section 9)
-void do2lHistograms_AN(string inputPathMC_DY, string inputPathData, float lumi)
+void do2lHistograms_AN(string inputPathMC_DY, string inputPathData, float lumi, string sampletype_name)
 {
 
   TH1::SetDefaultSumw2(true);
@@ -234,18 +241,14 @@ void do2lHistograms_AN(string inputPathMC_DY, string inputPathData, float lumi)
       // *********************************************************************************************
       // intro known distorsion on the leptons pT  (choose which distorsion introduce)
       
-      // no distorsion
-      float LepPt0 = LepPt->at(0);
-      float LepPt1 = LepPt->at(1);
-
-      // uniform up distorsion of 0.001
-      if(false){
+      float LepPt0; 
+      float LepPt1; 
+      
+      if(sampletype_varUnif001){        // uniform up distorsion of 0.001
         LepPt0 = LepPt->at(0) * (1.+ 0.001);
         LepPt1 = LepPt->at(1) * (1.+ 0.001);
       }
-      
-      // pT dependent distorsion (stair)
-      if(true){
+      else if(sampletype_varStair){     // pT dependent distorsion (stair)
         if(LepPt->at(0) < 20. ) { LepPt0 = LepPt->at(0) * (1.- 0.002);}
         else if(LepPt->at(0) >= 20. && LepPt->at(0) < 30.   ) {LepPt0 = LepPt->at(0) * (1.- 0.001);}
         else if(LepPt->at(0) >= 30. && LepPt->at(0) < 40.   ) {LepPt0 = LepPt->at(0) * (1.+ 0.000);}
@@ -259,6 +262,10 @@ void do2lHistograms_AN(string inputPathMC_DY, string inputPathData, float lumi)
         else if(LepPt->at(1) >= 40. && LepPt->at(1) < 50.   ) {LepPt1 = LepPt->at(1) * (1.+ 0.001);}
         else if(LepPt->at(1) >= 50. && LepPt->at(1) <= 100. ) {LepPt1 = LepPt->at(1) * (1.+ 0.002);}
         else {LepPt1 = LepPt->at(1);}
+      }
+      else{     // no distorsion
+        LepPt0 = LepPt->at(0);
+	LepPt1 = LepPt->at(1);
       }
       // **********************************************************************************************
       // **********************************************************************************************
@@ -318,7 +325,7 @@ void do2lHistograms_AN(string inputPathMC_DY, string inputPathData, float lumi)
 
 
   // write histos in a file 
-  TFile* fOutHistos = new TFile("file_DataMCHistos_varStair.root","recreate");
+  TFile* fOutHistos = new TFile(string(Form("file_DataMCHistos_%s.root",sampletype_name.c_str())).c_str(),"recreate");
   fOutHistos->cd();
   for(int d=0; d<nDatasets; d++){
     for(int catEta=0; catEta<nCatEta; catEta++){
@@ -337,243 +344,15 @@ void do2lHistograms_AN(string inputPathMC_DY, string inputPathData, float lumi)
 
 
 
-// *** read file and do histograms (with cut on leading lepton (pT > 20 GeV) and on ZMass (> 40 GeV) 
-//     and categories based on subleading lepton pT and eta)
-void do2lHistograms_cutsOnLeadingLep(string inputPathMC_DY, string inputPathData, float lumi)
-{
-
-  TH1::SetDefaultSumw2(true);
-
-  
-  TFile* inputFile[nDatasets];
-  TTree* inputTree[nDatasets];
-  TH1F* hCounters[nDatasets];
-  Double_t gen_sumWeights[nDatasets];
-  Float_t partialSampleWeight[nDatasets];
-
-  Int_t nRun;
-  Long64_t nEvent;
-  Int_t nLumi;
-
-  Short_t Zsel;
-  Float_t ZMass;
-  vector<Float_t> *LepPt = 0;
-  vector<Float_t> *LepEta = 0;
-  vector<Float_t> *LepPhi = 0;
-  vector<Float_t> *LepLepId = 0;
-  Float_t xsec;
-  Float_t overallEventWeight;
-
-  
-  
-  // define histos 
-  TH1F* hist[nDatasets][nCatEta][nCatpT];
-  for(int dat=0; dat<nDatasets; dat++){
-    for(int catEta=0; catEta<nCatEta; catEta++){
-      for(int catPt=0; catPt<nCatpT; catPt++){
-        hist[dat][catEta][catPt] = new TH1F(Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()),Form("hist_%s_%s_%s", datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()), 120, 60.,120.);
-        hist[dat][catEta][catPt]->Sumw2(true);
-      }
-    }
-  }
-  
-
-  int currentProcess = DY;
-  int currentCategEta = -1;
-  int currentCategPt = -1;
-
-
-  // loop over datasets (only 1 dataset by now: DY MC)
-  for(int d=0; d<nDatasets; d++){
-
-
-    string inputFileName = string(Form("%s%s/ZZ4lAnalysis.root",inputPathMC_DY.c_str(),datasets[d].c_str()));
-    inputFile[d] = TFile::Open(inputFileName.c_str());
-
-
-    hCounters[d] = (TH1F*)inputFile[d]->Get("ZZTree/Counters");    
-    gen_sumWeights[d] = (Long64_t)hCounters[d]->GetBinContent(40);
-    partialSampleWeight[d] = lumi * 1000 / gen_sumWeights[d];
-
-
-    inputTree[d] = (TTree*)inputFile[d]->Get("ZTree/candTree");
-    inputTree[d]->SetBranchAddress("RunNumber", &nRun);
-    inputTree[d]->SetBranchAddress("EventNumber", &nEvent);
-    inputTree[d]->SetBranchAddress("LumiNumber", &nLumi);
-    inputTree[d]->SetBranchAddress("Zsel", &Zsel);      // WARNING: works with the Z inclusive tree 
-    inputTree[d]->SetBranchAddress("ZMass", &ZMass);    // WARNING: works with the Z inclusive tree
-    inputTree[d]->SetBranchAddress("LepPt", &LepPt);
-    inputTree[d]->SetBranchAddress("LepEta", &LepEta);
-    inputTree[d]->SetBranchAddress("LepPhi", &LepPhi);
-    inputTree[d]->SetBranchAddress("LepLepId", &LepLepId);
-    inputTree[d]->SetBranchAddress("xsec", &xsec); 
-    inputTree[d]->SetBranchAddress("overallEventWeight", &overallEventWeight);
-
-    
-    // process tree 
-    Long64_t entries = inputTree[d]->GetEntries();
-    cout<<"Processing dataset "<<datasets[d]<<" ("<<entries<<" entries) ..."<<endl;
-    
-    for (Long64_t z=0; z<entries; ++z){
-      
-      inputTree[d]->GetEntry(z);
-      
-      if( Zsel < 0. ) continue;  // skip events that do not pass the trigger 
-      if(ZMass < 40.) continue;  // applying Z1 mass request 
-
-
-      // *********************************************************************************************
-      // *********************************************************************************************
-      // intro known distorsion on the leptons pT  (choose which distorsion introduce)
-      
-      // no distorsion
-      float LepPt0 = LepPt->at(0);
-      float LepPt1 = LepPt->at(1);
-
-      // uniform up distorsion of 0.001
-      if(false){
-        LepPt0 = LepPt->at(0) * (1.+ 0.001);
-        LepPt1 = LepPt->at(1) * (1.+ 0.001);
-      }
-      
-      // pT dependent distorsion (stair)
-      if(false){
-        if(LepPt->at(0) < 20. ) { LepPt0 = LepPt->at(0) * (1.- 0.002);}
-        else if(LepPt->at(0) >= 20. && LepPt->at(0) < 30.   ) {LepPt0 = LepPt->at(0) * (1.- 0.001);}
-        else if(LepPt->at(0) >= 30. && LepPt->at(0) < 40.   ) {LepPt0 = LepPt->at(0) * (1.+ 0.000);}
-        else if(LepPt->at(0) >= 40. && LepPt->at(0) < 50.   ) {LepPt0 = LepPt->at(0) * (1.+ 0.001);}
-        else if(LepPt->at(0) >= 50. && LepPt->at(0) <= 100. ) {LepPt0 = LepPt->at(0) * (1.+ 0.002);}
-        else {LepPt0 = LepPt->at(0);}
-
-        if(LepPt->at(1) < 20. ) { LepPt1 = LepPt->at(1) * (1.- 0.002);}
-        else if(LepPt->at(1) >= 20. && LepPt->at(1) < 30.   ) {LepPt1 = LepPt->at(1) * (1.- 0.001);}
-        else if(LepPt->at(1) >= 30. && LepPt->at(1) < 40.   ) {LepPt1 = LepPt->at(1) * (1.+ 0.000);}
-        else if(LepPt->at(1) >= 40. && LepPt->at(1) < 50.   ) {LepPt1 = LepPt->at(1) * (1.+ 0.001);}
-        else if(LepPt->at(1) >= 50. && LepPt->at(1) <= 100. ) {LepPt1 = LepPt->at(1) * (1.+ 0.002);}
-        else {LepPt1 = LepPt->at(1);}
-      }
-      // **********************************************************************************************
-      // **********************************************************************************************
-
-
-      // CUTS PROPOSED TO REDUCE BKG 
-      // (leading lep pT > 20 GeV, ZMass > 40 GeV , categ made according to subleading lep pT and Eta)
-      // choose leading lepton to cut on lepton pT (>20 GeV) as in ZZ
-      // and subleading lepton to divide events in pT categories 
-      float LepPtLeading = 0.;    
-      float LepEtaLeading; 
-      float LepPhiLeading;
-      int LepIDLeading;
-      float LepPtSubLeading; 
-      float LepEtaSubLeading;
-      float LepPhiSubLeading;
-      int LepIDSubLeading; 
-      
-      if(LepPt0 >= LepPt1){
-        
-        LepPtLeading  = LepPt0;
-        LepEtaLeading = LepEta->at(0);
-        LepPhiLeading = LepPhi->at(0);
-        LepIDLeading  = LepLepId->at(0);
-        LepPtSubLeading  = LepPt1;	
-        LepEtaSubLeading = LepEta->at(1);
-        LepPhiSubLeading = LepPhi->at(1);	
-        LepIDSubLeading  = LepLepId->at(1);
-
-      } else if (LepPt0 < LepPt1){
-        
-        LepPtLeading  = LepPt1;
-        LepEtaLeading = LepEta->at(1);
-        LepPhiLeading = LepPhi->at(1);
-        LepIDLeading  = LepLepId->at(1);
-        LepPtSubLeading  = LepPt0;	
-        LepEtaSubLeading = LepEta->at(0);
-        LepPhiSubLeading = LepPhi->at(0);	
-        LepIDSubLeading  = LepLepId->at(0);
-      }
-      
-      if(LepPtLeading < 20.) continue;  
-      
-      
-
-      // define event weight 
-      Double_t eventWeight = partialSampleWeight[d] * xsec * overallEventWeight ;
-
-      
-      // Eta categories 
-      //Z->ee histos 
-      if(int(fabs(LepIDSubLeading)) == 11 ){
-      
-        if(fabs(LepEtaSubLeading) >= 0. && fabs(LepEtaSubLeading) < 0.8 ) currentCategEta = eleEta1st;
-        else if(fabs(LepEtaSubLeading) >= 0.8 && fabs(LepEtaSubLeading) < 1.5 ) currentCategEta = eleEta2nd;
-        else if(fabs(LepEtaSubLeading) >= 1.5 && fabs(LepEtaSubLeading) <= 2.5 ) currentCategEta = eleEta3rd;
-        else cerr<<"error: wrong eta!"<<endl;
-      }
-
-      //Z->mumu histos 
-      if(int(fabs(LepIDSubLeading)) == 13 ){
-      
-        if(fabs(LepEtaSubLeading) >= 0. && fabs(LepEtaSubLeading) < 0.9 ) currentCategEta = muEta1st;
-        else if(fabs(LepEtaSubLeading) >= 0.9 && fabs(LepEtaSubLeading) < 1.4 ) currentCategEta = muEta2nd;
-        else if(fabs(LepEtaSubLeading) >= 1.4 && fabs(LepEtaSubLeading) <= 2.4 ) currentCategEta = muEta3rd;
-        else cerr<<"error: wrong eta!"<<endl;  
-      }
-
-      
-      // pT categories 
-      if(LepPtSubLeading < 20. ) currentCategPt = pTmin20;
-      else if(LepPtSubLeading >= 20. && LepPtSubLeading < 30. ) currentCategPt = pT2030;
-      else if(LepPtSubLeading >= 30. && LepPtSubLeading < 40. ) currentCategPt = pT3040;
-      else if(LepPtSubLeading >= 40. && LepPtSubLeading < 50. ) currentCategPt = pT4050;
-      else if(LepPtSubLeading >= 50. && LepPtSubLeading <= 100. ) currentCategPt = pT50100;
-      else continue;
-
-      
-      
-      if(currentCategEta < 0 || currentCategPt < 0) continue;
-
-      
-      
-      // new mass: pTLep1, etaLep1, phiLep1, IdLep1, pTLep2, etaLep2, phiLep2
-      float ZMass_new = compute2lInvMass(LepPtLeading, LepEtaLeading, LepPhiLeading, LepIDLeading, LepPtSubLeading, LepEtaSubLeading, LepPhiSubLeading);
-      cout<<ZMass<<" "<<ZMass_new<<endl;
-
-      // fill histos
-      hist[currentProcess][currentCategEta][currentCategPt]->Fill(ZMass_new,eventWeight);
-
-      
-    } //end loop over tree entries 
-
-    
-  }//end loop over datasets
-
-
-  // write histos in a file 
-  TFile* fOutHistos = new TFile("file_DataMCHistos_varStair.root","recreate");
-  fOutHistos->cd();
-  for(int d=0; d<nDatasets; d++){
-    for(int catEta=0; catEta<nCatEta; catEta++){
-      for(int catPt=0; catPt<nCatpT; catPt++){
-        hist[d][catEta][catPt]->Write(hist[d][catEta][catPt]->GetName());
-        delete hist[d][catEta][catPt];
-      }
-    }
-  }
-  fOutHistos->Close();
-  delete fOutHistos;
-
-
-}// end doHistograms function 
-
-
-
-
 // perform the fit with DCBxBW (double fit) 
-void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText) 
+void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText, string sampletype_name) 
 {
+
+  // define output file for fit result plots 
+  TFile* fOutFitResults_plotFrame = new TFile(string(Form("file_FitResultsPlots_%s.root",sampletype_name.c_str())).c_str(),"recreate");
 
   // read file with histos
-  TFile* fInHistos = TFile::Open("file_DataMCHistos_varStair.root");
+  TFile* fInHistos = TFile::Open(string(Form("file_DataMCHistos_%s.root",sampletype_name.c_str())).c_str());
 
   // define input histos
   TH1F* inputhist[nDatasets][nCatEta][nCatpT];
@@ -622,6 +401,7 @@ void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText)
 
         
         // *** FIT ***  
+       
         // convolution of a BW function and a DoubleCrystalBall resolution function 
         // ---Breit-Wigner function (physical mass distribution)
         RooRealVar pole_BW("pole_BW","pole_BW",Zmass_nominalPDG);
@@ -634,52 +414,49 @@ void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText)
 
         // ---Double Crystal Ball function (experimental resolution)
         RooRealVar mean_DCB("mean_DCB","mean_DCB",0.,-2.,2.); 
-        RooRealVar sigma_DCB("sigma_DCB","sigma_DCB",1.,0.0001,5.);
-        RooRealVar a1_DCB("a1_DCB","a1_DCB",1.,0.,10);
-        RooRealVar n1_DCB("n1_DCB","n1_DCB",2.,0.,10);
-        RooRealVar a2_DCB("a2_DCB","a2_DCB",1.,0.,10);
-        RooRealVar n2_DCB("n2_DCB","n2_DCB",2.,0.,10);
+        RooRealVar sigma_DCB("sigma_DCB","sigma_DCB",1.,0.0001,10.);
+        RooRealVar a1_DCB("a1_DCB","a1_DCB",1.,0.,50);
+        RooRealVar n1_DCB("n1_DCB","n1_DCB",2.,0.,50);
+        RooRealVar a2_DCB("a2_DCB","a2_DCB",1.,0.,50);
+        RooRealVar n2_DCB("n2_DCB","n2_DCB",2.,0.,50);
             
         RooDoubleCB DCBall_pdf("DCBall_pdf","Double Crystal ball function",mll,mean_DCB,sigma_DCB,a1_DCB,n1_DCB,a2_DCB,n2_DCB);
 
-        //---Convolution function
+        //---Convolution function 
         RooNumConvPdf tot_pdf("tot_pdf","Total PDF",mll,DCBall_pdf,BW_pdf);
                 
 
-
-        // do the 1st fit 
-        //mean_DCB.setConstant(1);
-                
-        tot_pdf.chi2FitTo(dh, Range("range80100gev"));
         
 
+        // do the 1st fit                 
+        tot_pdf.chi2FitTo(dh, Range("range80100gev"));
+        
         double fitres1[8] = {pole_BW.getVal(), width_BW.getVal(), mean_DCB.getVal(), sigma_DCB.getVal(), a1_DCB.getVal(), n1_DCB.getVal(), a2_DCB.getVal(), n2_DCB.getVal()};
         double fitres1_err[8] = {pole_BW.getError(), width_BW.getError(), mean_DCB.getError(), sigma_DCB.getError(), a1_DCB.getError(), n1_DCB.getError(), a2_DCB.getError(), n2_DCB.getError()};
 
         // do the 2nd fit 
-        //mean_DCB.setConstant(0);
-        //a1_DCB.setConstant(1);
-        //n1_DCB.setConstant(1);
-        //a2_DCB.setConstant(1);
-        //n2_DCB.setConstant(1);
-                
-        //RooNumConvPdf tot_pdf("tot_pdf","Total PDF",mll,DCBall_pdf,BW_pdf);
         tot_pdf.chi2FitTo(dh, Range("range80100gev"));
-        
-
+       
         double fitres2[8] = {pole_BW.getVal(), width_BW.getVal(), mean_DCB.getVal(), sigma_DCB.getVal(), a1_DCB.getVal(), n1_DCB.getVal(), a2_DCB.getVal(), n2_DCB.getVal()};
         double fitres2_err[8] = {pole_BW.getError(), width_BW.getError(), mean_DCB.getError(), sigma_DCB.getError(), a1_DCB.getError(), n1_DCB.getError(), a2_DCB.getError(), n2_DCB.getError()};
 
+        // do the 3rd fit 
+        tot_pdf.chi2FitTo(dh, Range("range80100gev"));
+
+        double fitres3[8] = {pole_BW.getVal(), width_BW.getVal(), mean_DCB.getVal(), sigma_DCB.getVal(), a1_DCB.getVal(), n1_DCB.getVal(), a2_DCB.getVal(), n2_DCB.getVal()};
+        double fitres3_err[8] = {pole_BW.getError(), width_BW.getError(), mean_DCB.getError(), sigma_DCB.getError(), a1_DCB.getError(), n1_DCB.getError(), a2_DCB.getError(), n2_DCB.getError()};
+       
 
                 
         // plot data on the frame
         RooPlot* frame = mll.frame();
         frame->SetName(inputhist[dat][catEta][catPt]->GetName());  // name is the name which appears in the root file
-        frame->SetTitle(inputhist[dat][catEta][catPt]->GetName()); // title is the title on the canvas  
-        dh.plotOn(frame,DataError(RooAbsData::SumW2)); 
-        tot_pdf.plotOn(frame, NormRange("range80100gev"), LineColor(kBlue)); //NormRange needed to normalize pdf to data in the fitting range 
+        frame->SetTitle(""); // title is the title on the canvas  
+        dh.plotOn(frame,DataError(RooAbsData::SumW2), MarkerStyle(sampletype_nominal?kOpenCircle:kFullCircle)); //open circle marker for nominal distrib 
+        tot_pdf.plotOn(frame, NormRange("range80100gev"), LineColor(sampletype_nominal?kBlue:kRed)); //NormRange to normalize pdf to data in the fitting range 
+                                                                                                     //blue line for nominal distrib
+                                                                                                     
         
-
 
         // plot on the canvas and save plots
         TCanvas* c = new TCanvas(inputhist[dat][catEta][catPt]->GetName(),inputhist[dat][catEta][catPt]->GetName()); 
@@ -703,23 +480,7 @@ void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText)
         pv->SetTextAlign(12); // text left aligned 
         pv->Draw();
 
-        // draw fit results on canvas
-        TPaveText* pv1 = new TPaveText(0.10,0.52,0.39,0.87,"brNDC");
-        pv1->AddText(Form("BW pole: %.3f #pm %.3f", fitres1[0], fitres1_err[0]));
-        pv1->AddText(Form("BW width: %.3f #pm %.3f", fitres1[1], fitres1_err[1]));
-        pv1->AddText(Form("DCB mean: %.3f #pm %.3f", fitres1[2], fitres1_err[2]));
-        pv1->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres1[3], fitres1_err[3]));
-        pv1->AddText(Form("DCB a1: %.3f #pm %.3f", fitres1[4], fitres1_err[4]));
-        pv1->AddText(Form("DCB n1: %.3f #pm %.3f", fitres1[5], fitres1_err[5]));
-        pv1->AddText(Form("DCB a2: %.3f #pm %.3f", fitres1[6], fitres1_err[6]));
-        pv1->AddText(Form("DCB n2: %.3f #pm %.3f", fitres1[7], fitres1_err[7]));
-        pv1->SetFillColor(kWhite);
-        pv1->SetBorderSize(1);
-        pv1->SetTextFont(42);
-        pv1->SetTextSize(0.037);
-        pv1->SetTextAlign(12); // text left aligned 
-        pv1->Draw();
-
+        
         // print official CMS label and lumi 
         writeExtraText = WRITEEXTRATEXTONPLOTS;
         extraText  = "Preliminary";
@@ -758,9 +519,9 @@ void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText)
         hfitResults_n2DCB[dat][catEta][catPt]->SetBinError(1,n2_DCB.getError());    
 
 
-        // // write fit plot frame in a file 
-        // fOutFitResults_plotFrame->cd();
-        // frame->Write();
+        // write fit plot frame in a file 
+        fOutFitResults_plotFrame->cd();
+        frame->Write();
 
       }
     }
@@ -768,7 +529,7 @@ void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText)
 
   
   // write fit results histos in a file 
-  TFile* fOutFitResults = new TFile("file_FitResults_varStair.root","recreate");
+  TFile* fOutFitResults = new TFile(string(Form("file_FitResults_%s.root",sampletype_name.c_str())).c_str(),"recreate");
   fOutFitResults->cd();
   for(int dat=0; dat<nDatasets; dat++){
     for(int catEta=0; catEta<nCatEta; catEta++){
@@ -795,8 +556,8 @@ void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText)
   fOutFitResults->Close();
   delete fOutFitResults;
   
-  // fOutFitResults_plotFrame->Close();
-  // delete fOutFitResults_plotFrame;
+  fOutFitResults_plotFrame->Close();
+  delete fOutFitResults_plotFrame;
 
 
 }// end doTheFit DCB with prefit function 
@@ -804,163 +565,11 @@ void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText)
 
 
 
-// perform the fit 
-void doThe2lFit_gaussFit(string outputPathFitResultsPlots, string lumiText) 
-{
-
-  // read file with histos
-  TFile* fInHistos = TFile::Open("file_DataMCHistos_varUp_frompT0_varpT001_CUT.root");
-
-  // define input histos
-  TH1F* inputhist[nDatasets][nCatEta][nCatpT];
-
-  // define histos to store fit results 
-  TH1F* hfitResults_meanDCB[nDatasets][nCatEta][nCatpT];
-  TH1F* hfitResults_sigmaDCB[nDatasets][nCatEta][nCatpT];
-  
-  
-  // loop over datasets, eta cat and pt cat 
-  for(int dat=0; dat<nDatasets; dat++){
-    for(int catEta=0; catEta<nCatEta; catEta++){
-      for(int catPt=0; catPt<nCatpT; catPt++){
-
-        // take histos from file
-        inputhist[dat][catEta][catPt] = (TH1F*)fInHistos->Get(Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
-        //cout<<inputhist[dat][catEta][catPt]->GetName()<<endl; //debug
-
-        // define histos to store fit results
-        hfitResults_meanDCB[dat][catEta][catPt] = new TH1F(Form("hfitResults_meanDCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()),Form("hfitResults_meanDCB_%s_%s_%s", datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()), 1,0,1);
-	hfitResults_sigmaDCB[dat][catEta][catPt] = new TH1F(Form("hfitResults_sigmaDCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()),Form("hfitResults_sigmaDCB_%s_%s_%s", datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()), 1,0,1); 
-    
-
-        // define roofit variable for the fit
-        RooRealVar mll = RooRealVar("mll","m_{l^{+}l^{-}}",60,120);
-
-        // make roofit datasets from root histos
-        RooDataHist dh("dh","dh",mll,Import(*inputhist[dat][catEta][catPt]));
-        
-
-        // **** PREFIT ****
-        // set range for the prefit
-        mll.setRange("range80100gev",80,100); 
-
-        // define prefit function: gaussian
-        RooRealVar mean_prefit_DCB("mean_prefit_DCB","mean_DCB",Zmass_nominalPDG,80.,100.);
-        RooRealVar sigma_prefit_DCB("sigma_prefit_DCB","sigma_DCB",Zwidth_nominalPDG,0.0001,5.);
-        
-        RooGaussian gauss_prefit_pdf("gauss_prefit_pdf","gaussian function",mll,mean_prefit_DCB,sigma_prefit_DCB);
-
-        // do the fit 
-        gauss_prefit_pdf.chi2FitTo(dh,Range("range80100gev"));
-
-
-
-        // **** FIT ****
-        // define fit range 
-        float fitRange_min = mean_prefit_DCB.getVal() - sigma_prefit_DCB.getVal();
-        float fitRange_max = mean_prefit_DCB.getVal() + sigma_prefit_DCB.getVal();
-
-        // set range for the fit
-	mll.setRange("range_fit", fitRange_min, fitRange_max); 
-        
-        // define fit function: gaussian
-        RooRealVar mean_DCB("mean_DCB","mean_DCB",Zmass_nominalPDG, fitRange_min, fitRange_max);
-        RooRealVar sigma_DCB("sigma_DCB","sigma_DCB",Zwidth_nominalPDG, 0.0001, 5.);
-        
-        RooGaussian gauss_pdf("gauss_pdf","gaussian function",mll,mean_DCB,sigma_DCB);
-
-        // do the fit 
-        gauss_pdf.chi2FitTo(dh,Range("range_fit"));
-                
-
-
-        // plot data on the frame
-        RooPlot* frame = mll.frame();
-        frame->SetName(inputhist[dat][catEta][catPt]->GetName());  // name is the name which appears in the root file
-        frame->SetTitle(inputhist[dat][catEta][catPt]->GetName()); // title is the title on the canvas  
-
-        dh.plotOn(frame,DataError(RooAbsData::SumW2));
-        gauss_prefit_pdf.plotOn(frame,LineColor(kBlue)); 
-        gauss_pdf.plotOn(frame,LineColor(kRed)); 
-
-
-
-        // plot on the canvas and save plots
-        TCanvas* c = new TCanvas(inputhist[dat][catEta][catPt]->GetName(),inputhist[dat][catEta][catPt]->GetName()); 
-        c->cd();
-        frame->Draw();
-
-        // draw fit results on canvas
-        TPaveText* pv = new TPaveText(0.64,0.65,0.95,0.87,"brNDC");
-        pv->AddText(Form("mean prefit: %.3f #pm %.3f", mean_prefit_DCB.getVal(), mean_prefit_DCB.getError())); ((TText*)pv->GetListOfLines()->Last())->SetTextColor(kBlue);
-        pv->AddText(Form("sigma prefit: %.3f #pm %.3f", sigma_prefit_DCB.getVal(), sigma_prefit_DCB.getError())); ((TText*)pv->GetListOfLines()->Last())->SetTextColor(kBlue);
-        pv->AddText(Form("mean fit: %.3f #pm %.3f", mean_DCB.getVal(), mean_DCB.getError())); ((TText*)pv->GetListOfLines()->Last())->SetTextColor(kRed);
-        pv->AddText(Form("sigma fit: %.3f #pm %.3f", sigma_DCB.getVal(), sigma_DCB.getError())); ((TText*)pv->GetListOfLines()->Last())->SetTextColor(kRed);
-        pv->SetFillColor(kWhite);
-        pv->SetBorderSize(1);
-        pv->SetTextFont(42);
-        pv->SetTextSize(0.037);
-        pv->SetTextAlign(12); // text left aligned 
-        pv->Draw();
-
-        // print official CMS label and lumi 
-        writeExtraText = WRITEEXTRATEXTONPLOTS;
-        extraText  = "Preliminary";
-        lumi_sqrtS = lumiText + " (13 TeV)";
-        cmsTextSize = 0.42;
-        lumiTextSize = 0.35;
-        extraOverCmsTextSize = 0.72;
-        relPosX = 0.12;
-        CMS_lumi(c,0,0);
-
-
-        c->Update();
-
-        c->SaveAs((outputPathFitResultsPlots + "/" + Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()) + ".pdf").c_str());
-        c->SaveAs((outputPathFitResultsPlots + "/" + Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()) + ".png").c_str());
-
-
-        // save fit values in histos 
-      	hfitResults_meanDCB[dat][catEta][catPt]->Fill(0.5,mean_DCB.getVal());  
-        hfitResults_meanDCB[dat][catEta][catPt]->SetBinError(1,mean_DCB.getError());
-	hfitResults_sigmaDCB[dat][catEta][catPt]->Fill(0.5,sigma_DCB.getVal()); 
-        hfitResults_sigmaDCB[dat][catEta][catPt]->SetBinError(1,sigma_DCB.getError());
-	
-        // // write fit plot frame in a file 
-        // fOutFitResults_plotFrame->cd();
-        // frame->Write();
-
-      }
-    }
-  }
-
-  
-  // write fit results histos in a file 
-  TFile* fOutFitResults = new TFile("file_FitResults_varUp_frompT0_varpT001_CUT_chi2fit_gauss.root","recreate");
-  fOutFitResults->cd();
-  for(int dat=0; dat<nDatasets; dat++){
-    for(int catEta=0; catEta<nCatEta; catEta++){
-      for(int catPt=0; catPt<nCatpT; catPt++){
-        hfitResults_meanDCB[dat][catEta][catPt]->Write(hfitResults_meanDCB[dat][catEta][catPt]->GetName());
-        hfitResults_sigmaDCB[dat][catEta][catPt]->Write(hfitResults_sigmaDCB[dat][catEta][catPt]->GetName());
-        delete hfitResults_meanDCB[dat][catEta][catPt];
-        delete hfitResults_sigmaDCB[dat][catEta][catPt];
-      }
-    }
-  }
-  fOutFitResults->Close();
-  delete fOutFitResults;
-  
-  // fOutFitResults_plotFrame->Close();
-  // delete fOutFitResults_plotFrame;
-
-
-}// end doTheFit_gaussFit function 
 
 
 
 // take fit results and compute dilepton scale 
-void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
+void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText, string sampletype_name)
 {
   
  //***********************************************
@@ -984,7 +593,7 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
 
   //***********************************************
   // *** read file with fit results with variations
-  TFile* fInFitResults2 = TFile::Open("file_FitResults_varStair.root");
+  TFile* fInFitResults2 = TFile::Open(string(Form("file_FitResults_%s.root",sampletype_name.c_str())).c_str());
 
   // define input histos 
   TH1F* hinput_meanFitResults2[nDatasets][nCatEta][nCatpT];  
@@ -1224,73 +833,162 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
 
 
 // comparison between Data and MC 2l fit
-void compareDataMCfitPlots(string outputPathCompare2lDataMcFit, string lumiText)
+void compareDataMCfitPlots(string outputPathCompare2lDataMcFit, string lumiText, string sampletype_name)
 {
 
   //***********************************************
-  // *** read file with fit results nominal
-  TFile* fIn_nominal = TFile::Open("file_DataMCHistos_nominal.root");
+  // *** read file with rooplots
+  TFile* fIn_nominal = TFile::Open("file_FitResultsPlots_nominal.root");
 
-  // define input histos 
-  TH1F* hinput_nominal[nDatasets][nCatEta][nCatpT];   
+  // define input rooplots 
+  RooPlot* inputFrame_nominal[nDatasets][nCatEta][nCatpT];   
 
-  // read histos with fit results from file 
+  // read rooplots from file 
   for(int dat=0; dat<nDatasets; dat++){
     for(int catEta=0; catEta<nCatEta; catEta++){
       for(int catPt=0; catPt<nCatpT; catPt++){
 
-        hinput_nominal[dat][catEta][catPt] = (TH1F*)fIn_nominal->Get(Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
-        //cout<<hinput_nominal[dat][catEta][catPt]->GetName()<<endl; // debug
+        inputFrame_nominal[dat][catEta][catPt] = (RooPlot*)fIn_nominal->Get(Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
 
       }
     }
   }
 
   //***********************************************
-  // *** read file with fit results with variations
-  TFile* fIn_var = TFile::Open("file_DataMCHistos_varStair.root");
+  // *** read file with rooplots
+  TFile* fIn_var = TFile::Open(string(Form("file_FitResultsPlots_%s.root",sampletype_name.c_str())).c_str());
+
+  // define input rooplots 
+  RooPlot* inputFrame_var[nDatasets][nCatEta][nCatpT];   
+
+  // read rooplots from file 
+  for(int dat=0; dat<nDatasets; dat++){
+    for(int catEta=0; catEta<nCatEta; catEta++){
+      for(int catPt=0; catPt<nCatpT; catPt++){
+
+        inputFrame_var[dat][catEta][catPt] = (RooPlot*)fIn_var->Get(Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+       
+      }
+    }
+  }
+
+
+  //***********************************************
+  // *** read file with fit results
+  TFile* fInFitRes_nominal = TFile::Open("file_FitResults_nominal.root");
 
   // define input histos 
-  TH1F* hinput_var[nDatasets][nCatEta][nCatpT];   
-
+  TH1F* hin_nom_poleBW[nDatasets][nCatEta][nCatpT];
+  TH1F* hin_nom_widthBW[nDatasets][nCatEta][nCatpT];  
+  TH1F* hin_nom_meanDCB[nDatasets][nCatEta][nCatpT];
+  TH1F* hin_nom_sigmaDCB[nDatasets][nCatEta][nCatpT]; 
+  TH1F* hin_nom_a1DCB[nDatasets][nCatEta][nCatpT]; 
+  TH1F* hin_nom_n1DCB[nDatasets][nCatEta][nCatpT];  
+  TH1F* hin_nom_a2DCB[nDatasets][nCatEta][nCatpT]; 
+  TH1F* hin_nom_n2DCB[nDatasets][nCatEta][nCatpT]; 
+  
   // read histos with fit results from file 
   for(int dat=0; dat<nDatasets; dat++){
     for(int catEta=0; catEta<nCatEta; catEta++){
       for(int catPt=0; catPt<nCatpT; catPt++){
 
-        hinput_var[dat][catEta][catPt] = (TH1F*)fIn_var->Get(Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
-        //cout<<hinput_var[dat][catEta][catPt]->GetName()<<endl; // debug
+        hin_nom_poleBW[dat][catEta][catPt] = (TH1F*)fInFitRes_nominal->Get(Form("hfitResults_poleBW_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_nom_widthBW[dat][catEta][catPt] = (TH1F*)fInFitRes_nominal->Get(Form("hfitResults_widthBW_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_nom_meanDCB[dat][catEta][catPt] = (TH1F*)fInFitRes_nominal->Get(Form("hfitResults_meanDCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_nom_sigmaDCB[dat][catEta][catPt] = (TH1F*)fInFitRes_nominal->Get(Form("hfitResults_sigmaDCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_nom_a1DCB[dat][catEta][catPt] = (TH1F*)fInFitRes_nominal->Get(Form("hfitResults_a1DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_nom_n1DCB[dat][catEta][catPt] = (TH1F*)fInFitRes_nominal->Get(Form("hfitResults_n1DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_nom_a2DCB[dat][catEta][catPt] = (TH1F*)fInFitRes_nominal->Get(Form("hfitResults_a2DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_nom_n2DCB[dat][catEta][catPt] = (TH1F*)fInFitRes_nominal->Get(Form("hfitResults_n2DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        
+      }
+    }
+  }
 
+  //***********************************************
+  // *** read file with fit results
+  TFile* fInFitRes_var = TFile::Open(string(Form("file_FitResults_%s.root",sampletype_name.c_str())).c_str());
+
+  // define input histos 
+  TH1F* hin_var_poleBW[nDatasets][nCatEta][nCatpT];
+  TH1F* hin_var_widthBW[nDatasets][nCatEta][nCatpT];  
+  TH1F* hin_var_meanDCB[nDatasets][nCatEta][nCatpT];
+  TH1F* hin_var_sigmaDCB[nDatasets][nCatEta][nCatpT]; 
+  TH1F* hin_var_a1DCB[nDatasets][nCatEta][nCatpT]; 
+  TH1F* hin_var_n1DCB[nDatasets][nCatEta][nCatpT];  
+  TH1F* hin_var_a2DCB[nDatasets][nCatEta][nCatpT]; 
+  TH1F* hin_var_n2DCB[nDatasets][nCatEta][nCatpT]; 
+  
+  // read histos with fit results from file 
+  for(int dat=0; dat<nDatasets; dat++){
+    for(int catEta=0; catEta<nCatEta; catEta++){
+      for(int catPt=0; catPt<nCatpT; catPt++){
+
+        hin_var_poleBW[dat][catEta][catPt] = (TH1F*)fInFitRes_var->Get(Form("hfitResults_poleBW_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_var_widthBW[dat][catEta][catPt] = (TH1F*)fInFitRes_var->Get(Form("hfitResults_widthBW_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_var_meanDCB[dat][catEta][catPt] = (TH1F*)fInFitRes_var->Get(Form("hfitResults_meanDCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_var_sigmaDCB[dat][catEta][catPt] = (TH1F*)fInFitRes_var->Get(Form("hfitResults_sigmaDCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_var_a1DCB[dat][catEta][catPt] = (TH1F*)fInFitRes_var->Get(Form("hfitResults_a1DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_var_n1DCB[dat][catEta][catPt] = (TH1F*)fInFitRes_var->Get(Form("hfitResults_n1DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_var_a2DCB[dat][catEta][catPt] = (TH1F*)fInFitRes_var->Get(Form("hfitResults_a2DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        hin_var_n2DCB[dat][catEta][catPt] = (TH1F*)fInFitRes_var->Get(Form("hfitResults_n2DCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        
       }
     }
   }
 
   
+  // *************************************  
   //plot
   for(int dat=0; dat<nDatasets; dat++){
     for(int catEta=0; catEta<nCatEta; catEta++){
       for(int catPt=0; catPt<nCatpT; catPt++){
 
-        TCanvas *can = new TCanvas(hinput_var[dat][catEta][catPt]->GetName(),hinput_var[dat][catEta][catPt]->GetName());
+        TCanvas *can = new TCanvas("can","can");
         can->cd();
 
-        hinput_nominal[dat][catEta][catPt]->SetLineColor(kBlue);
-        hinput_nominal[dat][catEta][catPt]->Draw("hist");
-
-        hinput_var[dat][catEta][catPt]->SetLineColor(kRed);
-        hinput_var[dat][catEta][catPt]->Draw("samel");
-
-        gStyle->SetOptStat(0);
+        inputFrame_nominal[dat][catEta][catPt]->Draw();
+        inputFrame_var[dat][catEta][catPt]->Draw("same");
 
         
-        TLegend* legend = new TLegend(0.74,0.68,0.94,0.87);
-        legend->AddEntry(hinput_nominal[dat][catEta][catPt],"nominal","f");
-        legend->AddEntry(hinput_var[dat][catEta][catPt],"var","l");
-        legend->SetTextFont(43);
-        legend->SetTextSize(14);
-        legend->SetLineColor(kBlack);
-        legend->SetFillColor(kWhite);
-        legend->Draw();
+        // nominal fit results
+        TPaveText* pv1 = new TPaveText(0.10,0.51,0.39,0.88,"brNDC");
+        pv1->AddText("nominal ");
+        pv1->AddText(Form("BW pole: %.3f #pm %.3f",   hin_nom_poleBW[1][catEta][catPt]->GetBinContent(1),   hin_nom_poleBW[1][catEta][catPt]->GetBinError(1)));
+        pv1->AddText(Form("BW width: %.3f #pm %.3f",  hin_nom_widthBW[1][catEta][catPt]->GetBinContent(1),  hin_nom_widthBW[1][catEta][catPt]->GetBinError(1)));
+        pv1->AddText(Form("DCB mean: %.3f #pm %.3f",  hin_nom_meanDCB[1][catEta][catPt]->GetBinContent(1),  hin_nom_meanDCB[1][catEta][catPt]->GetBinError(1)));
+        pv1->AddText(Form("DCB sigma: %.3f #pm %.3f", hin_nom_sigmaDCB[1][catEta][catPt]->GetBinContent(1), hin_nom_sigmaDCB[1][catEta][catPt]->GetBinError(1)));
+        pv1->AddText(Form("DCB a1: %.3f #pm %.3f",    hin_nom_a1DCB[1][catEta][catPt]->GetBinContent(1),    hin_nom_a1DCB[1][catEta][catPt]->GetBinError(1)));
+        pv1->AddText(Form("DCB n1: %.3f #pm %.3f",    hin_nom_n1DCB[1][catEta][catPt]->GetBinContent(1),    hin_nom_n1DCB[1][catEta][catPt]->GetBinError(1)));
+        pv1->AddText(Form("DCB a2: %.3f #pm %.3f",    hin_nom_a2DCB[1][catEta][catPt]->GetBinContent(1),    hin_nom_a2DCB[1][catEta][catPt]->GetBinError(1)));
+        pv1->AddText(Form("DCB n2: %.3f #pm %.3f",    hin_nom_n2DCB[1][catEta][catPt]->GetBinContent(1),    hin_nom_n2DCB[1][catEta][catPt]->GetBinError(1)));
+        pv1->SetFillColor(kWhite);
+        pv1->SetBorderSize(1);
+        pv1->SetTextColor(kBlue);
+        pv1->SetTextFont(42);
+        pv1->SetTextSize(0.037);
+        pv1->SetTextAlign(12); // text left aligned 
+        pv1->Draw();
+
+        // data fit results
+        TPaveText* pv2 = new TPaveText(0.66,0.51,0.95,0.88,"brNDC");
+        pv2->AddText(sampletype_name.c_str());
+        pv2->AddText(Form("BW pole: %.3f #pm %.3f",   hin_var_poleBW[0][catEta][catPt]->GetBinContent(1),   hin_var_poleBW[0][catEta][catPt]->GetBinError(1)));
+        pv2->AddText(Form("BW width: %.3f #pm %.3f",  hin_var_widthBW[0][catEta][catPt]->GetBinContent(1),  hin_var_widthBW[0][catEta][catPt]->GetBinError(1)));
+        pv2->AddText(Form("DCB mean: %.3f #pm %.3f",  hin_var_meanDCB[0][catEta][catPt]->GetBinContent(1),  hin_var_meanDCB[0][catEta][catPt]->GetBinError(1)));
+        pv2->AddText(Form("DCB sigma: %.3f #pm %.3f", hin_var_sigmaDCB[0][catEta][catPt]->GetBinContent(1), hin_var_sigmaDCB[0][catEta][catPt]->GetBinError(1)));
+        pv2->AddText(Form("DCB a1: %.3f #pm %.3f",    hin_var_a1DCB[0][catEta][catPt]->GetBinContent(1),    hin_var_a1DCB[0][catEta][catPt]->GetBinError(1)));
+        pv2->AddText(Form("DCB n1: %.3f #pm %.3f",    hin_var_n1DCB[0][catEta][catPt]->GetBinContent(1),    hin_var_n1DCB[0][catEta][catPt]->GetBinError(1)));
+        pv2->AddText(Form("DCB a2: %.3f #pm %.3f",    hin_var_a2DCB[0][catEta][catPt]->GetBinContent(1),    hin_var_a2DCB[0][catEta][catPt]->GetBinError(1)));
+        pv2->AddText(Form("DCB n2: %.3f #pm %.3f",    hin_var_n2DCB[0][catEta][catPt]->GetBinContent(1),    hin_var_n2DCB[0][catEta][catPt]->GetBinError(1)));
+        pv2->SetFillColor(kWhite);
+        pv2->SetBorderSize(1);
+        pv2->SetTextColor(kRed);
+        pv2->SetTextFont(42);
+        pv2->SetTextSize(0.037);
+        pv2->SetTextAlign(12); // text left aligned 
+        pv2->Draw();
+
 
         
         // print official CMS label and lumi 
@@ -1328,17 +1026,54 @@ void compareDataMCfitPlots(string outputPathCompare2lDataMcFit, string lumiText)
 // *** main function
 void ComputeLeptonScaleSyst_ControlStudyOnMC()
 {
+
+  // *** bool for executing functions
+  bool REDO2lHISTOS;
+  bool REDOTHE2lFIT;
+  bool COMPUTE2lSCALE;
+  bool COMPARE2lDATAMCFIT;
+
+  string sampletype_name;
+
+  if(sampletype_varUnif001){
+
+    REDO2lHISTOS = 1;
+    REDOTHE2lFIT = 1;
+    COMPUTE2lSCALE = 1;
+    COMPARE2lDATAMCFIT = 1;
+    sampletype_name = "varUnif001";
+
+  } else if(sampletype_varStair){
+
+    REDO2lHISTOS = 1;
+    REDOTHE2lFIT = 1;
+    COMPUTE2lSCALE = 1;
+    COMPARE2lDATAMCFIT = 1;
+    sampletype_name = "varStair";
+
+  } else{
+
+    REDO2lHISTOS = 1;
+    REDOTHE2lFIT = 1;
+    COMPUTE2lSCALE = 0;
+    COMPARE2lDATAMCFIT = 0;
+    sampletype_name = "nominal";
+
+  }
+  // ***
+
  
+  // *** choose data/mc input path 
   string inputPathMC_DY = "/data3/Higgs/180416/MC_main/";
   string inputPathData = "/data3/Higgs/180416/";
   string inputPathMC_ggH = "/data3/Higgs/180416/MC_main/";
 
-  string outputPathFitResultsPlots = "plotsSysts_FitResults_varStair";
-  string outputPathDileptonScalePlots = "plotsSysts_DileptonScale_varStair";
-  string outputPathCompare2lDataMcFit = "plotsSysts_CompareDataMC2lFit_varStair";
+  string outputPathFitResultsPlots = string(Form("plotsSysts_FitResults_%s",sampletype_name.c_str())).c_str();
+  string outputPathDileptonScalePlots = string(Form("plotsSysts_DileptonScale_%s",sampletype_name.c_str())).c_str();
+  string outputPathCompare2lDataMcFit = string(Form("plotsSysts_CompareDataMC2lFit_%s",sampletype_name.c_str())).c_str();
   
   
-
+  // *** define luminosity
   float lumi = 41.30; //fb-1
   string lumiText = "41.30 fb^{-1}";
 
@@ -1355,21 +1090,16 @@ void ComputeLeptonScaleSyst_ControlStudyOnMC()
 
   // *** execute functions 
 
-  //if(REDO2lHISTOS) do2lHistograms_cutsOnLeadingLep(inputPathMC_DY, inputPathData, lumi); //read MC file and do histos separating events in categories
-                                                                                           //cut leading lep pT>20 GeV; ZMass > 40 GeV; 
-                                                                                           //categories based on subleading lepton pT and eta
-
-  if(REDO2lHISTOS) do2lHistograms_AN(inputPathMC_DY, inputPathData, lumi); //read MC file and do histograms (events separated into categories 
+  
+  if(REDO2lHISTOS) do2lHistograms_AN(inputPathMC_DY, inputPathData, lumi, sampletype_name); //read MC file and do histograms (events separated into categories 
                                                                            //based on pT and Eta of 1 of the 2 leptons, determined randomly, and integrating
                                                                            //over the other) as explained in AN2016_442 (Section 9)
                                             
-  if(REDOTHE2lFIT) doThe2lFit_DCBfit(outputPathFitResultsPlots, lumiText); // do fit with DCBxBW 
+  if(REDOTHE2lFIT) doThe2lFit_DCBfit(outputPathFitResultsPlots, lumiText, sampletype_name); // do fit with DCBxBW 
 
-  //if(REDOTHE2lFIT) doThe2lFit_gaussFit(outputPathFitResultsPlots, lumiText);  // do gaussian fit
+  if(COMPUTE2lSCALE) computeDileptonScale(outputPathDileptonScalePlots, lumiText, sampletype_name);
 
-  if(COMPUTE2lSCALE) computeDileptonScale(outputPathDileptonScalePlots, lumiText);
-
-  if(COMPARE2lDATAMCFIT) compareDataMCfitPlots(outputPathCompare2lDataMcFit, lumiText);
+  if(COMPARE2lDATAMCFIT) compareDataMCfitPlots(outputPathCompare2lDataMcFit, lumiText, sampletype_name);
 
   
 
