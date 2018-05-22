@@ -70,7 +70,7 @@ using namespace RooFit ;
 #define REDOTHE2lFIT 1
 #define COMPUTE2lSCALE 1
 #define COMPARE2lDATAMCFIT 1
-#define REDO4lHISTOS 1
+#define REDO4lHISTOS 0
 #define COMPUTE4lSCALE 0
 
 #define WRITEEXTRATEXTONPLOTS 1 // draw Preliminary on Plots
@@ -127,12 +127,11 @@ string sFinalState[nFinalStates] = {
 
 
 //variations of the 4l distribution 
-const int nVariations4lDistr = 3;
-enum variations4lDistr {distrNominal = 0, distrVarUp = 1, distrVarDn = 2};
+const int nVariations4lDistr = 2;
+enum variations4lDistr {distrNominal = 0, distrVar = 1};
 string sVariations4lDistr[nVariations4lDistr] = {
   "distr_nominal",
-  "distr_varUp",
-  "distr_varDn"
+  "distr_var"
 };
 
 
@@ -223,40 +222,8 @@ void do2lHistograms(string inputPathMC_DY, string inputPathData, float lumi)
       inputTree[d]->GetEntry(z);
 
       if( Zsel < 0. ) continue;  // skip events that do not pass the trigger
-      if(ZMass < 40.) continue;  // applying Z1 mass request 
-
-
-      // choose leading lepton to cut on lepton pT (>20 GeV) as in ZZ
-      // and subleading lepton to divide events in pT categories 
-      Float_t LepPtLeading = 0.;    
-      Float_t LepEtaLeading; 
-      int LepIDLeading;
-      Float_t LepPtSubLeading; 
-      Float_t LepEtaSubLeading;
-      int LepIDSubLeading; 
-
-      if(LepPt->at(0) >= LepPt->at(1)){
-
-        LepPtLeading  = LepPt->at(0);
-        LepEtaLeading = LepEta->at(0);
-        LepIDLeading  = LepLepId->at(0);
-        LepPtSubLeading  = LepPt->at(1);	
-        LepEtaSubLeading = LepEta->at(1);	
-        LepIDSubLeading  = LepLepId->at(1);
-
-      } else if (LepPt->at(0) < LepPt->at(1)){
-
-        LepPtLeading  = LepPt->at(1);
-        LepEtaLeading = LepEta->at(1);
-        LepIDLeading  = LepLepId->at(1);
-        LepPtSubLeading  = LepPt->at(0);	
-        LepEtaSubLeading = LepEta->at(0);	
-        LepIDSubLeading  = LepLepId->at(0);
-      }
-
-      if(LepPtLeading < 20.) continue;
-
       
+     
 
       // define event weight 
       Double_t eventWeight;
@@ -266,30 +233,30 @@ void do2lHistograms(string inputPathMC_DY, string inputPathData, float lumi)
       
       // Eta categories 
       //Z->ee histos 
-      if(int(fabs(LepIDSubLeading)) == 11 ){
+      if(int(fabs(LepLepId->at(0))) == 11 ){
       
-        if(fabs(LepEtaSubLeading) >= 0. && fabs(LepEtaSubLeading) < 0.8 ) currentCategEta = eleEta1st;
-        else if(fabs(LepEtaSubLeading) >= 0.8 && fabs(LepEtaSubLeading) < 1.5 ) currentCategEta = eleEta2nd;
-        else if(fabs(LepEtaSubLeading) >= 1.5 && fabs(LepEtaSubLeading) <= 2.5 ) currentCategEta = eleEta3rd;
+        if(fabs(LepEta->at(0)) >= 0. && fabs(LepEta->at(0)) < 0.8 ) currentCategEta = eleEta1st;
+        else if(fabs(LepEta->at(0)) >= 0.8 && fabs(LepEta->at(0)) < 1.5 ) currentCategEta = eleEta2nd;
+        else if(fabs(LepEta->at(0)) >= 1.5 && fabs(LepEta->at(0)) <= 2.5 ) currentCategEta = eleEta3rd;
         else cerr<<"error: wrong eta!"<<endl;
       }
 
       //Z->mumu histos 
-      if(int(fabs(LepIDSubLeading)) == 13 ){
+      if(int(fabs(LepLepId->at(0))) == 13 ){
       
-        if(fabs(LepEtaSubLeading) >= 0. && fabs(LepEtaSubLeading) < 0.9 ) currentCategEta = muEta1st;
-        else if(fabs(LepEtaSubLeading) >= 0.9 && fabs(LepEtaSubLeading) < 1.4 ) currentCategEta = muEta2nd;
-        else if(fabs(LepEtaSubLeading) >= 1.4 && fabs(LepEtaSubLeading) <= 2.4 ) currentCategEta = muEta3rd;
+        if(fabs(LepEta->at(0)) >= 0. && fabs(LepEta->at(0)) < 0.9 ) currentCategEta = muEta1st;
+        else if(fabs(LepEta->at(0)) >= 0.9 && fabs(LepEta->at(0)) < 1.4 ) currentCategEta = muEta2nd;
+        else if(fabs(LepEta->at(0)) >= 1.4 && fabs(LepEta->at(0)) <= 2.4 ) currentCategEta = muEta3rd;
         else cerr<<"error: wrong eta!"<<endl;
       }
 
       
       // pT categories 
-      if(LepPtSubLeading < 20. ) currentCategPt = pTmin20;
-      else if(LepPtSubLeading >= 20. && LepPtSubLeading < 30. ) currentCategPt = pT2030;
-      else if(LepPtSubLeading >= 30. && LepPtSubLeading < 40. ) currentCategPt = pT3040;
-      else if(LepPtSubLeading >= 40. && LepPtSubLeading < 50. ) currentCategPt = pT4050;
-      else if(LepPtSubLeading >= 50. && LepPtSubLeading <= 100. ) currentCategPt = pT50100;
+      if(LepPt->at(0) < 20. ) currentCategPt = pTmin20;
+      else if(LepPt->at(0) >= 20. && LepPt->at(0) < 30. ) currentCategPt = pT2030;
+      else if(LepPt->at(0) >= 30. && LepPt->at(0) < 40. ) currentCategPt = pT3040;
+      else if(LepPt->at(0) >= 40. && LepPt->at(0) < 50. ) currentCategPt = pT4050;
+      else if(LepPt->at(0) >= 50. && LepPt->at(0) <= 100. ) currentCategPt = pT50100;
       else continue;
 
       
@@ -941,7 +908,7 @@ void compareDataMCfitPlots(string outputPathCompare2lDataMcFit, string lumiText)
 
 
 // *** compute invariant mass function
-float compute4lInvMass(vector<Float_t> *LepPt, vector<Float_t> *LepEta, vector<Float_t> *LepPhi, float* vec_lepMass, float* vec_scale2l, float* vec_scale2l_err, int varErrSign)
+float compute4lInvMass(vector<Float_t> *LepPt, vector<Float_t> *LepEta, vector<Float_t> *LepPhi, float* vec_lepMass, float* vec_scale2l)
 {
   
   TLorentzVector lep0;
@@ -949,10 +916,10 @@ float compute4lInvMass(vector<Float_t> *LepPt, vector<Float_t> *LepEta, vector<F
   TLorentzVector lep2;
   TLorentzVector lep3;
 
-  lep0.SetPtEtaPhiM( LepPt->at(0) * (1. + (vec_scale2l[0] + (varErrSign * vec_scale2l_err[0]))), LepEta->at(0), LepPhi->at(0), vec_lepMass[0] );
-  lep1.SetPtEtaPhiM( LepPt->at(1) * (1. + (vec_scale2l[1] + (varErrSign * vec_scale2l_err[1]))), LepEta->at(1), LepPhi->at(1), vec_lepMass[1] );
-  lep2.SetPtEtaPhiM( LepPt->at(2) * (1. + (vec_scale2l[2] + (varErrSign * vec_scale2l_err[2]))), LepEta->at(2), LepPhi->at(2), vec_lepMass[2] );
-  lep3.SetPtEtaPhiM( LepPt->at(3) * (1. + (vec_scale2l[3] + (varErrSign * vec_scale2l_err[3]))), LepEta->at(3), LepPhi->at(3), vec_lepMass[3] );
+  lep0.SetPtEtaPhiM( LepPt->at(0) * (1. + vec_scale2l[0]), LepEta->at(0), LepPhi->at(0), vec_lepMass[0] );
+  lep1.SetPtEtaPhiM( LepPt->at(1) * (1. + vec_scale2l[1]), LepEta->at(1), LepPhi->at(1), vec_lepMass[1] );
+  lep2.SetPtEtaPhiM( LepPt->at(2) * (1. + vec_scale2l[2]), LepEta->at(2), LepPhi->at(2), vec_lepMass[2] );
+  lep3.SetPtEtaPhiM( LepPt->at(3) * (1. + vec_scale2l[3]), LepEta->at(3), LepPhi->at(3), vec_lepMass[3] );
 
   return (lep0 + lep1 + lep2 + lep3).M();
 
@@ -1089,7 +1056,6 @@ void do4lHistograms(string inputPathMC_ggH, float lumi)
 
     //*** classify 4 leptons and assign variations
     float vec_scale2l[4] = {0.,0.,0.,0.};
-    float vec_scale2l_err[4] = {0.,0.,0.,0.};
     float vec_lepMass[4];
 
     for(int l=0; l<4; l++){
@@ -1126,23 +1092,18 @@ void do4lHistograms(string inputPathMC_ggH, float lumi)
       if(currentCategEta < 0 || currentCategPt < 0) continue;
            
       vec_scale2l[l]     = hIn_2lscale[currentCategEta][currentCategPt]->GetBinContent(1);
-      vec_scale2l_err[l] = hIn_2lscale[currentCategEta][currentCategPt]->GetBinError(1);
     }
 
        
     //define ZZmass with lep pT scale variations  
-    float ZZMass_nominal = compute4lInvMass(LepPt, LepEta, LepPhi, vec_lepMass, vec_scale2l, vec_scale2l_err,  0); //nominal variation: apply to lepton pT the 2lscale
-    float ZZMass_up      = compute4lInvMass(LepPt, LepEta, LepPhi, vec_lepMass, vec_scale2l, vec_scale2l_err, +1); //up variation:      apply to lepton pT the 2lscale + 2lscale error
-    float ZZMass_dn      = compute4lInvMass(LepPt, LepEta, LepPhi, vec_lepMass, vec_scale2l, vec_scale2l_err, -1); //dn variation:      apply to lepton pT the 2lscale - 2lscale error
-
-    //cout<<ZZMass<<" "<<ZZMass_nominal<<" "<<ZZMass_up<<" "<<ZZMass_dn<<endl;
+    float ZZMass_var = compute4lInvMass(LepPt, LepEta, LepPhi, vec_lepMass, vec_scale2l); //apply to lepton pT the 2lscale 
+    
+    cout<<ZZMass<<" "<<ZZMass_var<<endl;
       
 
     //*** fill 4l histos 
-    h4lDistrib[distrNominal][currentFinalState]->Fill(ZZMass_nominal,eventWeight);
-    h4lDistrib[distrVarUp][currentFinalState]->Fill(ZZMass_up,eventWeight);
-    h4lDistrib[distrVarDn][currentFinalState]->Fill(ZZMass_dn,eventWeight);
-
+    h4lDistrib[distrNominal][currentFinalState]->Fill(ZZMass,eventWeight);
+    h4lDistrib[distrVar][currentFinalState]->Fill(ZZMass_var,eventWeight);
 
   } //end loop over tree entries
 
@@ -1168,10 +1129,38 @@ void do4lHistograms(string inputPathMC_ggH, float lumi)
 
 
 
-
 void compute4lScale(string outputPath4lScaleFitPlots, string lumiText)
 { 
 
+  // read file with 4l histos 
+  TFile* fin4lhist = TFile::Open("file_MC4lHistos.root");
+
+  // input histos
+  TH1F* hin4l[nVariations4lDistr][nFinalStates]; 
+
+  for(int var=0; var<nVariations4lDistr; var++){
+    for(int fs=0; fs<nFinalStates; fs++){
+
+      hin4l[var][fs] = (TH1F*)fin4lhist->Get(Form("h4lDistrib_%s_%s",sVariations4lDistr[var].c_str(),sFinalState[fs].c_str()));
+
+      
+      //*** FIT ***
+      RooRealVar m4l = RooRealVar("m4l","m4l",105,140);
+      
+      RooDataHist dhm4l("dhm4l","dhm4l",m4l,Import(*hin4l[var][fs]));      
+
+      RooRealVar mean_4lDCB("mean_4lDCB","mean_4lDCB",125.,120.,130.);
+      RooRealVar sigma_4lDCB("sigma_4lDCB","sigma_4lDCB",1.,0.001,5.);
+      RooRealVar a1_4lDCB("a1_4lDCB","a1_4lDCB",1.,0.,10.);   
+      RooRealVar n1_4lDCB("n1_4lDCB","n1_4lDCB",2.,0.,10.);
+      RooRealVar a2_4lDCB("a2_4lDCB","a2_4lDCB",1.,0.,10.);
+      RooRealVar n2_4lDCB("n2_4lDCB","n2_4lDCB",2.,0.,10.);
+
+      
+
+
+    }
+  }
 
 
 } // end compute 4l scale function
