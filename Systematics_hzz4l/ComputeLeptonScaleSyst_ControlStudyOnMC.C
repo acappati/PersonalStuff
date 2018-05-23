@@ -440,12 +440,7 @@ void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText, string
         double fitres2[8] = {pole_BW.getVal(), width_BW.getVal(), mean_DCB.getVal(), sigma_DCB.getVal(), a1_DCB.getVal(), n1_DCB.getVal(), a2_DCB.getVal(), n2_DCB.getVal()};
         double fitres2_err[8] = {pole_BW.getError(), width_BW.getError(), mean_DCB.getError(), sigma_DCB.getError(), a1_DCB.getError(), n1_DCB.getError(), a2_DCB.getError(), n2_DCB.getError()};
 
-        // do the 3rd fit 
-        tot_pdf.chi2FitTo(dh, Range("range80100gev"));
-
-        double fitres3[8] = {pole_BW.getVal(), width_BW.getVal(), mean_DCB.getVal(), sigma_DCB.getVal(), a1_DCB.getVal(), n1_DCB.getVal(), a2_DCB.getVal(), n2_DCB.getVal()};
-        double fitres3_err[8] = {pole_BW.getError(), width_BW.getError(), mean_DCB.getError(), sigma_DCB.getError(), a1_DCB.getError(), n1_DCB.getError(), a2_DCB.getError(), n2_DCB.getError()};
-       
+               
 
                 
         // plot data on the frame
@@ -463,22 +458,41 @@ void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText, string
         c->cd();
         frame->Draw();
 
-        // draw fit results on canvas
-        TPaveText* pv = new TPaveText(0.64,0.52,0.95,0.87,"brNDC");
-        pv->AddText(Form("BW pole: %.3f #pm %.3f", pole_BW.getVal(), pole_BW.getError()));
-        pv->AddText(Form("BW width: %.3f #pm %.3f", width_BW.getVal(), width_BW.getError()));
-        pv->AddText(Form("DCB mean: %.3f #pm %.3f", mean_DCB.getVal(), mean_DCB.getError()));
-        pv->AddText(Form("DCB sigma: %.3f #pm %.3f", sigma_DCB.getVal(), sigma_DCB.getError()));
-        pv->AddText(Form("DCB a1: %.3f #pm %.3f", a1_DCB.getVal(), a1_DCB.getError()));
-        pv->AddText(Form("DCB n1: %.3f #pm %.3f", n1_DCB.getVal(), n1_DCB.getError()));
-        pv->AddText(Form("DCB a2: %.3f #pm %.3f", a2_DCB.getVal(), a2_DCB.getError()));
-        pv->AddText(Form("DCB n2: %.3f #pm %.3f", n2_DCB.getVal(), n2_DCB.getError()));
-        pv->SetFillColor(kWhite);
-        pv->SetBorderSize(1);
-        pv->SetTextFont(42);
-        pv->SetTextSize(0.037);
-        pv->SetTextAlign(12); // text left aligned 
-        pv->Draw();
+        // draw 1st fit results on canvas
+        TPaveText* pv1 = new TPaveText(0.10,0.51,0.39,0.88,"brNDC");
+        pv1->AddText("1st fit: ");
+        pv1->AddText(Form("BW pole: %.3f #pm %.3f",   fitres1[0], fitres1_err[0]));
+        pv1->AddText(Form("BW width: %.3f #pm %.3f",  fitres1[1], fitres1_err[1]));
+        pv1->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres1[2], fitres1_err[2]));
+        pv1->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres1[3], fitres1_err[3]));
+        pv1->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres1[4], fitres1_err[4]));
+        pv1->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres1[5], fitres1_err[5]));
+        pv1->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres1[6], fitres1_err[6]));
+        pv1->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres1[7], fitres1_err[7]));
+        pv1->SetFillColor(kWhite);
+        pv1->SetBorderSize(1);
+        pv1->SetTextFont(42);
+        pv1->SetTextSize(0.037);
+        pv1->SetTextAlign(12); // text left aligned 
+        pv1->Draw();
+
+        // draw 2nd fit results on canvas
+        TPaveText* pv2 = new TPaveText(0.66,0.51,0.95,0.88,"brNDC");
+        pv2->AddText("2nd fit: ");
+        pv2->AddText(Form("BW pole: %.3f #pm %.3f",   fitres2[0], fitres2_err[0]));
+        pv2->AddText(Form("BW width: %.3f #pm %.3f",  fitres2[1], fitres2_err[1]));
+        pv2->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres2[2], fitres2_err[2]));
+        pv2->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres2[3], fitres2_err[3]));
+        pv2->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres2[4], fitres2_err[4]));
+        pv2->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres2[5], fitres2_err[5]));
+        pv2->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres2[6], fitres2_err[6]));
+        pv2->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres2[7], fitres2_err[7]));
+        pv2->SetFillColor(kWhite);
+        pv2->SetBorderSize(1);
+        pv2->SetTextFont(42);
+        pv2->SetTextSize(0.037);
+        pv2->SetTextAlign(12); // text left aligned 
+        pv2->Draw();
 
         
         // print official CMS label and lumi 
