@@ -70,8 +70,8 @@ using namespace RooFit ;
 #define REDOTHE2lFIT 1
 #define COMPUTE2lSCALE 1
 #define COMPARE2lDATAMCFIT 1
-#define REDO4lHISTOS 0
-#define COMPUTE4lSCALE 0
+#define REDO4lHISTOS 1
+#define COMPUTE4lSCALE 1
 
 #define WRITEEXTRATEXTONPLOTS 1 // draw Preliminary on Plots
 
@@ -395,7 +395,7 @@ void doThe2lFit(string outputPathFitResultsPlots, string lumiText)
         RooPlot* frame = mll.frame();
         frame->SetName(inputhist[dat][catEta][catPt]->GetName());  // name is the name which appears in the root file
         frame->SetTitle(""); // title is the title on the canvas  
-        dh.plotOn(frame,DataError(RooAbsData::SumW2)); 
+        dh.plotOn(frame,DataError(RooAbsData::SumW2), MarkerStyle(dat==0?kOpenCircle:kFullCircle)); 
         tot_pdf.plotOn(frame, NormRange("range80100gev"), LineColor(dat==0?kBlue:kRed)); //blue line for data, red for MC 
                                                                                          //NormRange needed to normalize pdf to data in the fitting range
 
@@ -1091,7 +1091,7 @@ void do4lHistograms(string inputPathMC_ggH, float lumi)
 
       if(currentCategEta < 0 || currentCategPt < 0) continue;
            
-      vec_scale2l[l]     = hIn_2lscale[currentCategEta][currentCategPt]->GetBinContent(1);
+      vec_scale2l[l] = hIn_2lscale[currentCategEta][currentCategPt]->GetBinContent(1);
     }
 
        
@@ -1138,6 +1138,10 @@ void compute4lScale(string outputPath4lScaleFitPlots, string lumiText)
   // input histos
   TH1F* hin4l[nVariations4lDistr][nFinalStates]; 
 
+  // vec for store fit results and computing 4l scale
+  float vec_4lfitRes[nVariations4lDistr][nFinalStates];
+  
+
   for(int var=0; var<nVariations4lDistr; var++){
     for(int fs=0; fs<nFinalStates; fs++){
 
@@ -1150,17 +1154,86 @@ void compute4lScale(string outputPath4lScaleFitPlots, string lumiText)
       RooDataHist dhm4l("dhm4l","dhm4l",m4l,Import(*hin4l[var][fs]));      
 
       RooRealVar mean_4lDCB("mean_4lDCB","mean_4lDCB",125.,120.,130.);
-      RooRealVar sigma_4lDCB("sigma_4lDCB","sigma_4lDCB",1.,0.001,5.);
-      RooRealVar a1_4lDCB("a1_4lDCB","a1_4lDCB",1.,0.,10.);   
-      RooRealVar n1_4lDCB("n1_4lDCB","n1_4lDCB",2.,0.,10.);
-      RooRealVar a2_4lDCB("a2_4lDCB","a2_4lDCB",1.,0.,10.);
-      RooRealVar n2_4lDCB("n2_4lDCB","n2_4lDCB",2.,0.,10.);
+      RooRealVar sigma_4lDCB("sigma_4lDCB","sigma_4lDCB",1.6,0.001,30.);
+      RooRealVar a1_4lDCB("a1_4lDCB","a1_4lDCB",1.46,0.5,50.);   
+      RooRealVar n1_4lDCB("n1_4lDCB","n1_4lDCB",1.92,0.,50.);
+      RooRealVar a2_4lDCB("a2_4lDCB","a2_4lDCB",1.46,0.,50.);
+      RooRealVar n2_4lDCB("n2_4lDCB","n2_4lDCB",20.,0.,50.);
+
+      RooDoubleCB DCB4l_pdf("DCB4l_pdf","Double Crystal ball function",m4l,mean_4lDCB,sigma_4lDCB,a1_4lDCB,n1_4lDCB,a2_4lDCB,n2_4lDCB);
+
+      m4l.setRange("range115130gev",115,130);
+   
+      // do the fit
+      DCB4l_pdf.chi2FitTo(dhm4l, Range("range115130gev"));
+
+      double fitres1[6] = {mean_4lDCB.getVal(), sigma_4lDCB.getVal(), a1_4lDCB.getVal(), n1_4lDCB.getVal(), a2_4lDCB.getVal(), n2_4lDCB.getVal()};
+      double fitres1_err[6] = {mean_4lDCB.getError(), sigma_4lDCB.getError(), a1_4lDCB.getError(), n1_4lDCB.getError(), a2_4lDCB.getError(), n2_4lDCB.getError()};
 
       
 
+      // plot on frame 
+      RooPlot* frame4l = m4l.frame();
+      frame4l->SetName(hin4l[var][fs]->GetName());
+      frame4l->SetTitle("");
+      dhm4l.plotOn(frame4l,DataError(RooAbsData::SumW2), MarkerStyle(var==distrNominal?kOpenCircle:kFullCircle));
+      DCB4l_pdf.plotOn(frame4l, NormRange("range115130gev"), LineColor(var==distrNominal?kBlue:kRed));
+
+      
+      TCanvas* c = new TCanvas(hin4l[var][fs]->GetName(),hin4l[var][fs]->GetName()); 
+      c->cd();
+      frame4l->Draw();
+
+      // draw 1st fit results on canvas
+      TPaveText* pv1 = new TPaveText(0.10,0.55,0.41,0.88,"brNDC");
+      pv1->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres1[0], fitres1_err[0]));
+      pv1->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres1[1], fitres1_err[1]));
+      pv1->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres1[2], fitres1_err[2]));
+      pv1->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres1[3], fitres1_err[3]));
+      pv1->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres1[4], fitres1_err[4]));
+      pv1->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres1[5], fitres1_err[5]));
+      pv1->SetFillColor(kWhite);
+      pv1->SetBorderSize(1);
+      pv1->SetTextFont(42);
+      pv1->SetTextSize(0.037);
+      pv1->SetTextAlign(12); // text left aligned 
+      pv1->Draw();
+
+      
+      // print official CMS label and lumi 
+      writeExtraText = WRITEEXTRATEXTONPLOTS;
+      extraText  = "Preliminary";
+      lumi_sqrtS = lumiText + " (13 TeV)";
+      cmsTextSize = 0.42;
+      lumiTextSize = 0.35;
+      extraOverCmsTextSize = 0.72;
+      relPosX = 0.12;
+      CMS_lumi(c,0,0);
+
+      
+      c->Update();
+
+      c->SaveAs((outputPath4lScaleFitPlots + "/" + hin4l[var][fs]->GetName() + ".pdf").c_str());
+      c->SaveAs((outputPath4lScaleFitPlots + "/" + hin4l[var][fs]->GetName() + ".png").c_str());
+
+      
+      // store 4l fit res 
+      vec_4lfitRes[var][fs] = mean_4lDCB.getVal(); 
 
     }
   }
+
+
+  //***********************************************************
+  // compute 4l scale 
+  float vec_4lScale[nFinalStates];
+  for(int fs=0; fs<nFinalStates; fs++){
+
+    vec_4lScale[fs] = ( vec_4lfitRes[distrVar][fs] - vec_4lfitRes[distrNominal][fs] ) / vec_4lfitRes[distrNominal][fs];
+
+    cout<< sFinalState[fs] <<": "<<vec_4lScale[fs]<<endl;
+  }
+   //***********************************************************
 
 
 } // end compute 4l scale function
