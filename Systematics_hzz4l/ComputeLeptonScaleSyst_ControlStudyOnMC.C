@@ -968,14 +968,14 @@ void compareDataMCfitPlots(string outputPathCompare2lDataMcFit, string lumiText,
         // nominal fit results
         TPaveText* pv1 = new TPaveText(0.10,0.51,0.39,0.88,"brNDC");
         pv1->AddText("nominal ");
-        pv1->AddText(Form("BW pole: %.3f #pm %.3f",   hin_nom_poleBW[1][catEta][catPt]->GetBinContent(1),   hin_nom_poleBW[1][catEta][catPt]->GetBinError(1)));
-        pv1->AddText(Form("BW width: %.3f #pm %.3f",  hin_nom_widthBW[1][catEta][catPt]->GetBinContent(1),  hin_nom_widthBW[1][catEta][catPt]->GetBinError(1)));
-        pv1->AddText(Form("DCB mean: %.3f #pm %.3f",  hin_nom_meanDCB[1][catEta][catPt]->GetBinContent(1),  hin_nom_meanDCB[1][catEta][catPt]->GetBinError(1)));
-        pv1->AddText(Form("DCB sigma: %.3f #pm %.3f", hin_nom_sigmaDCB[1][catEta][catPt]->GetBinContent(1), hin_nom_sigmaDCB[1][catEta][catPt]->GetBinError(1)));
-        pv1->AddText(Form("DCB a1: %.3f #pm %.3f",    hin_nom_a1DCB[1][catEta][catPt]->GetBinContent(1),    hin_nom_a1DCB[1][catEta][catPt]->GetBinError(1)));
-        pv1->AddText(Form("DCB n1: %.3f #pm %.3f",    hin_nom_n1DCB[1][catEta][catPt]->GetBinContent(1),    hin_nom_n1DCB[1][catEta][catPt]->GetBinError(1)));
-        pv1->AddText(Form("DCB a2: %.3f #pm %.3f",    hin_nom_a2DCB[1][catEta][catPt]->GetBinContent(1),    hin_nom_a2DCB[1][catEta][catPt]->GetBinError(1)));
-        pv1->AddText(Form("DCB n2: %.3f #pm %.3f",    hin_nom_n2DCB[1][catEta][catPt]->GetBinContent(1),    hin_nom_n2DCB[1][catEta][catPt]->GetBinError(1)));
+        pv1->AddText(Form("BW pole: %.3f #pm %.3f",   hin_nom_poleBW[0][catEta][catPt]->GetBinContent(1),   hin_nom_poleBW[0][catEta][catPt]->GetBinError(1)));
+        pv1->AddText(Form("BW width: %.3f #pm %.3f",  hin_nom_widthBW[0][catEta][catPt]->GetBinContent(1),  hin_nom_widthBW[0][catEta][catPt]->GetBinError(1)));
+        pv1->AddText(Form("DCB mean: %.3f #pm %.3f",  hin_nom_meanDCB[0][catEta][catPt]->GetBinContent(1),  hin_nom_meanDCB[0][catEta][catPt]->GetBinError(1)));
+        pv1->AddText(Form("DCB sigma: %.3f #pm %.3f", hin_nom_sigmaDCB[0][catEta][catPt]->GetBinContent(1), hin_nom_sigmaDCB[0][catEta][catPt]->GetBinError(1)));
+        pv1->AddText(Form("DCB a1: %.3f #pm %.3f",    hin_nom_a1DCB[0][catEta][catPt]->GetBinContent(1),    hin_nom_a1DCB[0][catEta][catPt]->GetBinError(1)));
+        pv1->AddText(Form("DCB n1: %.3f #pm %.3f",    hin_nom_n1DCB[0][catEta][catPt]->GetBinContent(1),    hin_nom_n1DCB[0][catEta][catPt]->GetBinError(1)));
+        pv1->AddText(Form("DCB a2: %.3f #pm %.3f",    hin_nom_a2DCB[0][catEta][catPt]->GetBinContent(1),    hin_nom_a2DCB[0][catEta][catPt]->GetBinError(1)));
+        pv1->AddText(Form("DCB n2: %.3f #pm %.3f",    hin_nom_n2DCB[0][catEta][catPt]->GetBinContent(1),    hin_nom_n2DCB[0][catEta][catPt]->GetBinError(1)));
         pv1->SetFillColor(kWhite);
         pv1->SetBorderSize(1);
         pv1->SetTextColor(kBlue);
@@ -1106,8 +1106,8 @@ void ComputeLeptonScaleSyst_ControlStudyOnMC()
 
   
   if(REDO2lHISTOS) do2lHistograms_AN(inputPathMC_DY, inputPathData, lumi, sampletype_name); //read MC file and do histograms (events separated into categories 
-                                                                           //based on pT and Eta of 1 of the 2 leptons, determined randomly, and integrating
-                                                                           //over the other) as explained in AN2016_442 (Section 9)
+                                                                                            //based on pT and Eta of 1 of the 2 leptons, determined randomly, and integrating
+                                                                                            //over the other) as explained in AN2016_442 (Section 9)
                                             
   if(REDOTHE2lFIT) doThe2lFit_DCBfit(outputPathFitResultsPlots, lumiText, sampletype_name); // do fit with DCBxBW 
 
