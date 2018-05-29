@@ -842,6 +842,19 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText, 
   can_mu->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_muons.pdf").c_str());
 
 
+  // ---save dilepton scale into a file 
+  TFile* fOutDilepScale = new TFile(string(Form("file_DileptonScale_%s.root",sampletype_name.c_str())).c_str(),"recreate");
+  fOutDilepScale->cd();
+  for(int catEta=0; catEta<nCatEta; catEta++){
+    for(int catPt=0; catPt<nCatpT; catPt++){
+      h_dileptonScale[catEta][catPt]->Write(h_dileptonScale[catEta][catPt]->GetName());
+      delete h_dileptonScale[catEta][catPt];
+    }
+  }
+  fOutDilepScale->Close();
+  delete fOutDilepScale;
+  
+  
 }// end computeDileptonScale function
 
 
@@ -1116,6 +1129,7 @@ void ComputeLeptonScaleSyst_ControlStudyOnMC()
   if(COMPARE2lDATAMCFIT) compareDataMCfitPlots(outputPathCompare2lDataMcFit, lumiText, sampletype_name);
 
   
+
 
   
 }
