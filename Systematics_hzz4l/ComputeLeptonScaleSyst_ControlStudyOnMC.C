@@ -574,8 +574,340 @@ void doThe2lFit_DCBfit(string outputPathFitResultsPlots, string lumiText, string
   delete fOutFitResults_plotFrame;
 
 
-}// end doTheFit DCB with prefit function 
+}// end doTheFit DCB 
 
+
+
+
+// perform the fit with gauss (double fit) 
+void doThe2lFit_Gaussfit(string outputPathFitResultsPlots, string lumiText, string sampletype_name) 
+{
+
+  // read file with histos
+  TFile* fInHistos = TFile::Open(string(Form("file_DataMCHistos_%s.root",sampletype_name.c_str())).c_str());
+
+  // define input histos
+  TH1F* inputhist[nDatasets][nCatEta][nCatpT];
+
+  // define histos to store fit results 
+  TH1F* hfitResults_meanDCB[nDatasets][nCatEta][nCatpT];
+  TH1F* hfitResults_sigmaDCB[nDatasets][nCatEta][nCatpT];
+  
+  
+  // loop over datasets, eta cat and pt cat 
+  for(int dat=0; dat<nDatasets; dat++){
+    for(int catEta=0; catEta<nCatEta; catEta++){
+      for(int catPt=0; catPt<nCatpT; catPt++){
+
+        // take histos from file
+        inputhist[dat][catEta][catPt] = (TH1F*)fInHistos->Get(Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        //cout<<inputhist[dat][catEta][catPt]->GetName()<<endl; //debug
+
+        // define histos to store fit results
+	hfitResults_meanDCB[dat][catEta][catPt] = new TH1F(Form("hfitResults_meanDCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()),Form("hfitResults_meanDCB_%s_%s_%s", datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()), 1,0,1);
+	hfitResults_sigmaDCB[dat][catEta][catPt] = new TH1F(Form("hfitResults_sigmaDCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()),Form("hfitResults_sigmaDCB_%s_%s_%s", datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()), 1,0,1); 
+	        
+        
+
+        // define roofit variable for the fit
+        RooRealVar mll = RooRealVar("mll","m_{l^{+}l^{-}}",60,120);
+
+        // set fit range
+        mll.setRange("range80100gev",80,100); 
+
+        // make roofit datasets from root histos
+        RooDataHist dh("dh","dh",mll,Import(*inputhist[dat][catEta][catPt]));
+
+        
+        // *** FIT ***  
+        // ---gaussian function 
+        RooRealVar mean("mean","mean",Zmass_nominalPDG,80.,100.); 
+        RooRealVar sigma("sigma","sigma",Zwidth_nominalPDG,0.0001,10.);
+                    
+        RooGaussian gauss_pdf("gauss_pdf","gauss function",mll,mean,sigma);
+            
+
+        // do the 1st fit                 
+        gauss_pdf.chi2FitTo(dh, Range("range80100gev"));
+        
+        double fitres1[2] = {mean.getVal(), sigma.getVal()};
+        double fitres1_err[2] = { mean.getError(), sigma.getError()};
+
+        // do the 2nd fit 
+        float min = mean.getVal() - sigma.getVal();
+        float max = mean.getVal() + sigma.getVal();
+        mll.setRange("range2",min,max);
+
+        gauss_pdf.chi2FitTo(dh, Range("range2"));
+       
+        double fitres2[2] = {mean.getVal(), sigma.getVal()};
+        double fitres2_err[2] = { mean.getError(), sigma.getError()};
+               
+
+                
+        // plot data on the frame
+        RooPlot* frame = mll.frame();
+        frame->SetName(inputhist[dat][catEta][catPt]->GetName());  // name is the name which appears in the root file
+        frame->SetTitle(""); // title is the title on the canvas  
+        dh.plotOn(frame,DataError(RooAbsData::SumW2), MarkerStyle(sampletype_nominal?kOpenCircle:kFullCircle)); //open circle marker for nominal distrib 
+        gauss_pdf.plotOn(frame, NormRange("range2"), LineColor(sampletype_nominal?kBlue:kRed)); //NormRange to normalize pdf to data in the fitting range 
+                                                                                                     //blue line for nominal distrib
+                                                                                                     
+        
+
+        // plot on the canvas and save plots
+        TCanvas* c = new TCanvas(inputhist[dat][catEta][catPt]->GetName(),inputhist[dat][catEta][catPt]->GetName()); 
+        c->cd();
+        frame->Draw();
+
+        // draw 1st fit results on canvas
+        TPaveText* pv1 = new TPaveText(0.10,0.78,0.39,0.88,"brNDC");
+        pv1->AddText("1st fit: ");
+        pv1->AddText(Form("mean: %.3f #pm %.3f",  fitres1[0], fitres1_err[0]));
+        pv1->AddText(Form("sigma: %.3f #pm %.3f", fitres1[1], fitres1_err[1]));
+        pv1->SetFillColor(kWhite);
+        pv1->SetBorderSize(1);
+        pv1->SetTextFont(42);
+        pv1->SetTextSize(0.037);
+        pv1->SetTextAlign(12); // text left aligned 
+        pv1->Draw();
+
+        // draw 2nd fit results on canvas
+        TPaveText* pv2 = new TPaveText(0.66,0.78,0.95,0.88,"brNDC");
+        pv2->AddText("2nd fit: ");
+        pv2->AddText(Form("mean: %.3f #pm %.3f",  fitres2[0], fitres2_err[0]));
+        pv2->AddText(Form("sigma: %.3f #pm %.3f", fitres2[1], fitres2_err[1]));
+        pv2->SetFillColor(kWhite);
+        pv2->SetBorderSize(1);
+        pv2->SetTextFont(42);
+        pv2->SetTextSize(0.037);
+        pv2->SetTextAlign(12); // text left aligned 
+        pv2->Draw();
+
+        
+        // print official CMS label and lumi 
+        writeExtraText = WRITEEXTRATEXTONPLOTS;
+        extraText  = "Preliminary";
+        lumi_sqrtS = lumiText + " (13 TeV)";
+        cmsTextSize = 0.42;
+        lumiTextSize = 0.35;
+        extraOverCmsTextSize = 0.72;
+        relPosX = 0.12;
+        CMS_lumi(c,0,0);
+
+
+        c->Update();
+
+        c->SaveAs((outputPathFitResultsPlots + "/" + Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()) + ".pdf").c_str());
+        c->SaveAs((outputPathFitResultsPlots + "/" + Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()) + ".png").c_str());
+
+        
+
+        // save fit values in histos 
+	hfitResults_meanDCB[dat][catEta][catPt]->Fill(0.5,mean.getVal());  
+        hfitResults_meanDCB[dat][catEta][catPt]->SetBinError(1,mean.getError());
+	hfitResults_sigmaDCB[dat][catEta][catPt]->Fill(0.5,sigma.getVal()); 
+        hfitResults_sigmaDCB[dat][catEta][catPt]->SetBinError(1,sigma.getError());
+
+
+      }
+    }
+  }
+
+  
+  // write fit results histos in a file 
+  TFile* fOutFitResults = new TFile(string(Form("file_FitResults_%s.root",sampletype_name.c_str())).c_str(),"recreate");
+  fOutFitResults->cd();
+  for(int dat=0; dat<nDatasets; dat++){
+    for(int catEta=0; catEta<nCatEta; catEta++){
+      for(int catPt=0; catPt<nCatpT; catPt++){
+        
+        hfitResults_meanDCB[dat][catEta][catPt]->Write(hfitResults_meanDCB[dat][catEta][catPt]->GetName());
+        hfitResults_sigmaDCB[dat][catEta][catPt]->Write(hfitResults_sigmaDCB[dat][catEta][catPt]->GetName());
+        delete hfitResults_meanDCB[dat][catEta][catPt];
+        delete hfitResults_sigmaDCB[dat][catEta][catPt];
+       
+      }
+    }
+  }
+  fOutFitResults->Close();
+  delete fOutFitResults;
+  
+  
+
+}// end doTheFit gauss with roofit  
+
+
+
+
+
+// perform the fit with root 
+void doThe2lFit_root(string outputPathFitResultsPlots, string lumiText, string sampletype_name)
+{
+
+ 
+  // read file with histos
+  TFile* fInHistos = TFile::Open(string(Form("file_DataMCHistos_%s.root",sampletype_name.c_str())).c_str());
+
+  // define input histos
+  TH1F* inputhist[nDatasets][nCatEta][nCatpT];
+
+  // define histos to store fit results
+  TH1F* hfitResults_meanDCB[nDatasets][nCatEta][nCatpT];
+  TH1F* hfitResults_sigmaDCB[nDatasets][nCatEta][nCatpT];
+   
+
+  
+  // loop over datasets, eta cat and pt cat 
+  for(int dat=0; dat<nDatasets; dat++){
+    for(int catEta=0; catEta<nCatEta; catEta++){
+      for(int catPt=0; catPt<nCatpT; catPt++){
+
+        // take histos from file
+        inputhist[dat][catEta][catPt] = (TH1F*)fInHistos->Get(Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+        //cout<<inputhist[dat][catEta][catPt]->GetName()<<endl; //debug
+
+        // define histos to store fit results
+        
+	hfitResults_meanDCB[dat][catEta][catPt] = new TH1F(Form("hfitResults_meanDCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()),Form("hfitResults_meanDCB_%s_%s_%s", datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()), 1,0,1);
+	hfitResults_sigmaDCB[dat][catEta][catPt] = new TH1F(Form("hfitResults_sigmaDCB_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()),Form("hfitResults_sigmaDCB_%s_%s_%s", datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()), 1,0,1); 
+
+	
+        
+        
+
+        //1st FIT 
+        TF1* g1 = new TF1("g1","gaus(0) + pol2(3)", 85., 95.);
+        g1->SetParameter(0,inputhist[dat][catEta][catPt]->GetMaximum());
+        g1->SetParameter(1,Zmass_nominalPDG);
+        g1->SetParameter(2,Zwidth_nominalPDG);
+        g1->SetParameter(3,0.);
+        g1->SetParameter(4,0.);
+        g1->SetParameter(5,0.);
+        g1->SetLineColor(kBlue);
+  
+        // do the fit 
+        inputhist[dat][catEta][catPt]->Fit("g1", "R");
+
+       
+        double fitres1[5]     = {g1->GetParameter(1),g1->GetParameter(2),g1->GetParameter(3),g1->GetParameter(4),g1->GetParameter(5)};
+        double fitres1_err[5] = {g1->GetParError(1),g1->GetParError(2),g1->GetParError(3),g1->GetParError(4),g1->GetParError(5)};
+
+
+        // 2nd FIT
+        float fitRange_min = g1->GetParameter(1) - 2.*fabs(g1->GetParameter(2)); //param 0 = norm, param 1 = mean, param 2 = sigma 
+        float fitRange_max = g1->GetParameter(1) + 2.*fabs(g1->GetParameter(2));
+    
+        TF1* g2 = new TF1("g2","gaus(0)+pol2(3)", fitRange_min, fitRange_max);
+        g2->SetParameter(0,g1->GetParameter(0));
+        g2->SetParameter(1,g1->GetParameter(1));
+        g2->SetParameter(2,g1->GetParameter(2));
+        g2->SetParameter(3,g1->GetParameter(3));
+        g2->SetParameter(4,g1->GetParameter(4));
+        g2->SetParameter(5,g1->GetParameter(5));
+        g2->SetLineColor(kRed);
+                
+        // do the fit 
+        inputhist[dat][catEta][catPt]->Fit("g2", "R"); 
+
+        double fitres2[5]     = {g2->GetParameter(1),g2->GetParameter(2),g2->GetParameter(3),g2->GetParameter(4),g2->GetParameter(5)};
+        double fitres2_err[5] = {g2->GetParError(1),g2->GetParError(2),g2->GetParError(3),g2->GetParError(4),g2->GetParError(5)};
+
+                       
+
+        // plot on the canvas and save plots
+        TCanvas* c = new TCanvas(inputhist[dat][catEta][catPt]->GetName(),inputhist[dat][catEta][catPt]->GetName()); 
+        c->cd();
+        inputhist[dat][catEta][catPt]->SetMarkerStyle(20);
+        inputhist[dat][catEta][catPt]->Draw("pe");
+        g1->Draw("samel");
+        g2->Draw("samel");
+
+        gStyle->SetOptStat(0);
+
+        // draw 1st fit results on canvas
+        TPaveText* pv1 = new TPaveText(0.10,0.51,0.39,0.88,"brNDC");
+        pv1->AddText("1st fit: ");
+        pv1->AddText(Form("gauss mean: %.3f #pm %.3f",  fitres1[0], fitres1_err[0]));
+        pv1->AddText(Form("gauss sigma: %.3f #pm %.3f", fitres1[1], fitres1_err[1]));
+        pv1->AddText(Form("pol a0: %.3f #pm %.3f",      fitres1[2], fitres1_err[2]));
+        pv1->AddText(Form("pol a1: %.3f #pm %.3f",      fitres1[3], fitres1_err[3]));
+        pv1->AddText(Form("pol a2: %.3f #pm %.3f",      fitres1[4], fitres1_err[4]));
+        pv1->SetFillColor(kWhite);
+        pv1->SetBorderSize(1);
+        pv1->SetTextFont(42);
+        pv1->SetTextSize(0.037);
+        pv1->SetTextAlign(12); // text left aligned 
+        pv1->Draw();
+
+        // draw 2nd fit results on canvas
+        TPaveText* pv2 = new TPaveText(0.66,0.51,0.95,0.88,"brNDC");
+        pv2->AddText("2nd fit: ");
+        pv2->AddText(Form("gauss mean: %.3f #pm %.3f",  fitres2[0], fitres2_err[0]));
+        pv2->AddText(Form("gauss sigma: %.3f #pm %.3f", fitres2[1], fitres2_err[1]));
+        pv2->AddText(Form("pol a0: %.3f #pm %.3f",      fitres2[2], fitres2_err[2]));
+        pv2->AddText(Form("pol a1: %.3f #pm %.3f",      fitres2[3], fitres2_err[3]));
+        pv2->AddText(Form("pol a2: %.3f #pm %.3f",      fitres2[4], fitres2_err[4]));
+        pv2->SetFillColor(kWhite);
+        pv2->SetBorderSize(1);
+        pv2->SetTextFont(42);
+        pv2->SetTextSize(0.037);
+        pv2->SetTextAlign(12); // text left aligned 
+        pv2->Draw();
+
+        
+        // print official CMS label and lumi 
+        writeExtraText = WRITEEXTRATEXTONPLOTS;
+        extraText  = "Preliminary";
+        lumi_sqrtS = lumiText + " (13 TeV)";
+        cmsTextSize = 0.42;
+        lumiTextSize = 0.35;
+        extraOverCmsTextSize = 0.72;
+        relPosX = 0.12;
+        CMS_lumi(c,0,0);
+
+
+        c->Update();
+
+        c->SaveAs((outputPathFitResultsPlots + "/" + Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()) + ".pdf").c_str());
+        c->SaveAs((outputPathFitResultsPlots + "/" + Form("hist_%s_%s_%s",datasets[dat].c_str(),sCategEta[catEta].c_str(),sCategpT[catPt].c_str()) + ".png").c_str());
+
+        
+
+        // save fit values in histos 	                                                  
+	hfitResults_meanDCB[dat][catEta][catPt]->Fill(0.5,fitres2[0]);  
+        hfitResults_meanDCB[dat][catEta][catPt]->SetBinError(1,fitres2_err[0]);
+	hfitResults_sigmaDCB[dat][catEta][catPt]->Fill(0.5,fitres2[1]); 
+        hfitResults_sigmaDCB[dat][catEta][catPt]->SetBinError(1,fitres2_err[1]);
+        
+      }
+    }
+  }
+
+  
+  // write fit results histos in a file 
+  TFile* fOutFitResults = new TFile(string(Form("file_FitResults_%s.root",sampletype_name.c_str())).c_str(),"recreate");
+  fOutFitResults->cd();
+  for(int dat=0; dat<nDatasets; dat++){
+    for(int catEta=0; catEta<nCatEta; catEta++){
+      for(int catPt=0; catPt<nCatpT; catPt++){
+        
+        hfitResults_meanDCB[dat][catEta][catPt]->Write(hfitResults_meanDCB[dat][catEta][catPt]->GetName());
+        hfitResults_sigmaDCB[dat][catEta][catPt]->Write(hfitResults_sigmaDCB[dat][catEta][catPt]->GetName());
+        delete hfitResults_meanDCB[dat][catEta][catPt];
+        delete hfitResults_sigmaDCB[dat][catEta][catPt];
+        
+      }
+    }
+  }
+  fOutFitResults->Close();
+  delete fOutFitResults;
+  
+  
+
+
+}// end doTheFit with root 
+//**************************
 
 
 
@@ -767,7 +1099,7 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText, 
 
   can_ele->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_electrons.png").c_str());
   can_ele->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_electrons.pdf").c_str());
-
+  can_ele->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_electrons.root").c_str());
    
 
   // muon plots
@@ -840,6 +1172,7 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText, 
 
   can_mu->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_muons.png").c_str());
   can_mu->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_muons.pdf").c_str());
+  can_mu->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_muons.root").c_str());
 
 
   // ---save dilepton scale into a file 
@@ -856,6 +1189,9 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText, 
   
   
 }// end computeDileptonScale function
+
+
+
 
 
 
@@ -1039,7 +1375,6 @@ void compareDataMCfitPlots(string outputPathCompare2lDataMcFit, string lumiText,
   }
   
 
-
 }// end compareDataMCfitPlots function
 
 
@@ -1050,6 +1385,8 @@ void compareDataMCfitPlots(string outputPathCompare2lDataMcFit, string lumiText,
 
 
 
+
+//************************************************************************
 // *** main function
 void ComputeLeptonScaleSyst_ControlStudyOnMC()
 {
@@ -1114,23 +1451,33 @@ void ComputeLeptonScaleSyst_ControlStudyOnMC()
 
  
 
+  //**************************
+  // *** execute functions ***
+  //**************************
 
-  // *** execute functions 
-
-  
+  // do histos function
   if(REDO2lHISTOS) do2lHistograms_AN(inputPathMC_DY, inputPathData, lumi, sampletype_name); //read MC file and do histograms (events separated into categories 
                                                                                             //based on pT and Eta of 1 of the 2 leptons, determined randomly, and integrating
                                                                                             //over the other) as explained in AN2016_442 (Section 9)
                                             
-  if(REDOTHE2lFIT) doThe2lFit_DCBfit(outputPathFitResultsPlots, lumiText, sampletype_name); // do fit with DCBxBW 
 
+  // fitting functions 
+  if(REDOTHE2lFIT) doThe2lFit_DCBfit(outputPathFitResultsPlots, lumiText, sampletype_name);     // do fit with DCBxBW with roofit 
+  //if(REDOTHE2lFIT) doThe2lFit_Gaussfit(outputPathFitResultsPlots, lumiText, sampletype_name); // do fit with gaussian with roofit 
+  //if(REDOTHE2lFIT) doThe2lFit_root(outputPathFitResultsPlots, lumiText, sampletype_name);     // do fit with root 
+
+
+  // function for computing dilepton scale 
   if(COMPUTE2lSCALE) computeDileptonScale(outputPathDileptonScalePlots, lumiText, sampletype_name);
 
-  if(COMPARE2lDATAMCFIT) compareDataMCfitPlots(outputPathCompare2lDataMcFit, lumiText, sampletype_name);
+
+  // function for comparing fit results of DCB roofit fits 
+  // compare nominal distributions fit with varied distributions fits 
+  // implemented only for roofit fits done with DCBxBW (doThe2lFit_DCBfit function) 
+  if(COMPARE2lDATAMCFIT) compareDataMCfitPlots(outputPathCompare2lDataMcFit, lumiText, sampletype_name);  
 
   
-
-
+ 
   
 }
 
