@@ -126,12 +126,21 @@ string sFinalState[nFinalStates] = {
 };
 
 
-//variations of the 4l distribution 
+//variations of the 4l distribution (per category variation)
 const int nVariations4lDistr = 2;
 enum variations4lDistr {distrNominal = 0, distrVar = 1};
 string sVariations4lDistr[nVariations4lDistr] = {
   "distr_nominal",
   "distr_var"
+};
+
+//variations of the 4l distribution (max variation)  
+const int nVariations4lDistr_maxVar = 3;
+enum variations4lDistr_maxVar {nominal = 0, upVar = 1, dnVar = 2};
+string sVariations4lDistr_maxVar[nVariations4lDistr_maxVar] = {
+  "nominal",
+  "upVar",
+  "dnVar"
 };
 
 
@@ -704,8 +713,8 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
   mg_mu->Add(graph_muCatEta4);
   mg_mu->Add(graph_muCatEta5);
 
-  mg_mu->SetMinimum(-0.005);
-  mg_mu->SetMaximum(0.005);
+  //mg_mu->SetMinimum(-0.005);
+  //mg_mu->SetMaximum(0.005);
  
   TCanvas* can_mu = new TCanvas("can_mu","can_mu",600,600);
   mg_mu->Draw("ap");
@@ -930,7 +939,7 @@ float compute4lInvMass(vector<Float_t> *LepPt, vector<Float_t> *LepEta, vector<F
 
 
 // do 4l ggH histos  
-void do4lHistograms(string inputPathMC_ggH, float lumi)
+void do4lHistograms_perCatVariation(string inputPathMC_ggH, float lumi)
 {
 
   TH1::SetDefaultSumw2(true);
@@ -1110,7 +1119,7 @@ void do4lHistograms(string inputPathMC_ggH, float lumi)
 
 
   // write histos in a file 
-  TFile* fOut4lhist = new TFile("file_MC4lHistos.root","recreate");
+  TFile* fOut4lhist = new TFile("file_MC4lHistos_perCatVariation.root","recreate");
   fOut4lhist->cd();
   for(int var=0; var<nVariations4lDistr; var++){
     for(int fs=0; fs<nFinalStates; fs++){
@@ -1129,17 +1138,24 @@ void do4lHistograms(string inputPathMC_ggH, float lumi)
 
 
 
-void compute4lScale(string outputPath4lScaleFitPlots, string lumiText)
+void compute4lScale_perCatVariation(string outputPath4lScaleFitPlots_perCat, string lumiText)
 { 
 
   // read file with 4l histos 
-  TFile* fin4lhist = TFile::Open("file_MC4lHistos.root");
+  TFile* fin4lhist = TFile::Open("file_MC4lHistos_perCatVariation.root");
 
   // input histos
   TH1F* hin4l[nVariations4lDistr][nFinalStates]; 
 
   // vec for store fit results and computing 4l scale
   float vec_4lfitRes[nVariations4lDistr][nFinalStates];
+
+  // vec with fit results 
+  double fitres[nVariations4lDistr][nFinalStates][6];
+  double fitres_err[nVariations4lDistr][nFinalStates][6];
+
+  // m4l rooplots 
+  RooPlot* frame4l[nVariations4lDistr][nFinalStates];
   
 
   for(int var=0; var<nVariations4lDistr; var++){
@@ -1167,31 +1183,42 @@ void compute4lScale(string outputPath4lScaleFitPlots, string lumiText)
       // do the fit
       DCB4l_pdf.chi2FitTo(dhm4l, Range("range115130gev"));
 
-      double fitres1[6] = {mean_4lDCB.getVal(), sigma_4lDCB.getVal(), a1_4lDCB.getVal(), n1_4lDCB.getVal(), a2_4lDCB.getVal(), n2_4lDCB.getVal()};
-      double fitres1_err[6] = {mean_4lDCB.getError(), sigma_4lDCB.getError(), a1_4lDCB.getError(), n1_4lDCB.getError(), a2_4lDCB.getError(), n2_4lDCB.getError()};
+      // store fir res 
+      fitres[var][fs][0] = mean_4lDCB.getVal();
+      fitres[var][fs][1] = sigma_4lDCB.getVal();
+      fitres[var][fs][2] = a1_4lDCB.getVal();
+      fitres[var][fs][3] = n1_4lDCB.getVal();
+      fitres[var][fs][4] = a2_4lDCB.getVal();
+      fitres[var][fs][5] = n2_4lDCB.getVal();
 
+      fitres_err[var][fs][0] = mean_4lDCB.getError();
+      fitres_err[var][fs][1] = sigma_4lDCB.getError();
+      fitres_err[var][fs][2] = a1_4lDCB.getError();
+      fitres_err[var][fs][3] = n1_4lDCB.getError();
+      fitres_err[var][fs][4] = a2_4lDCB.getError();
+      fitres_err[var][fs][5] = n2_4lDCB.getError();
       
 
       // plot on frame 
-      RooPlot* frame4l = m4l.frame();
-      frame4l->SetName(hin4l[var][fs]->GetName());
-      frame4l->SetTitle("");
-      dhm4l.plotOn(frame4l,DataError(RooAbsData::SumW2), MarkerStyle(var==distrNominal?kOpenCircle:kFullCircle));
-      DCB4l_pdf.plotOn(frame4l, NormRange("range115130gev"), LineColor(var==distrNominal?kBlue:kRed));
+      frame4l[var][fs] = m4l.frame();
+      frame4l[var][fs]->SetName(hin4l[var][fs]->GetName());
+      frame4l[var][fs]->SetTitle("");
+      dhm4l.plotOn(frame4l[var][fs],DataError(RooAbsData::SumW2), MarkerStyle(var==distrNominal?kOpenCircle:kFullCircle));
+      DCB4l_pdf.plotOn(frame4l[var][fs], NormRange("range115130gev"), LineColor(var==distrNominal?kBlue:kRed));
 
       
       TCanvas* c = new TCanvas(hin4l[var][fs]->GetName(),hin4l[var][fs]->GetName()); 
       c->cd();
-      frame4l->Draw();
+      frame4l[var][fs]->Draw();
 
-      // draw 1st fit results on canvas
+      // draw fit results on canvas
       TPaveText* pv1 = new TPaveText(0.10,0.55,0.41,0.88,"brNDC");
-      pv1->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres1[0], fitres1_err[0]));
-      pv1->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres1[1], fitres1_err[1]));
-      pv1->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres1[2], fitres1_err[2]));
-      pv1->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres1[3], fitres1_err[3]));
-      pv1->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres1[4], fitres1_err[4]));
-      pv1->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres1[5], fitres1_err[5]));
+      pv1->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres[var][fs][0], fitres_err[var][fs][0]));
+      pv1->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres[var][fs][1], fitres_err[var][fs][1]));
+      pv1->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres[var][fs][2], fitres_err[var][fs][2]));
+      pv1->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres[var][fs][3], fitres_err[var][fs][3]));
+      pv1->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres[var][fs][4], fitres_err[var][fs][4]));
+      pv1->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres[var][fs][5], fitres_err[var][fs][5]));
       pv1->SetFillColor(kWhite);
       pv1->SetBorderSize(1);
       pv1->SetTextFont(42);
@@ -1213,8 +1240,8 @@ void compute4lScale(string outputPath4lScaleFitPlots, string lumiText)
       
       c->Update();
 
-      c->SaveAs((outputPath4lScaleFitPlots + "/" + hin4l[var][fs]->GetName() + ".pdf").c_str());
-      c->SaveAs((outputPath4lScaleFitPlots + "/" + hin4l[var][fs]->GetName() + ".png").c_str());
+      c->SaveAs((outputPath4lScaleFitPlots_perCat + "/" + hin4l[var][fs]->GetName() + ".pdf").c_str());
+      c->SaveAs((outputPath4lScaleFitPlots_perCat + "/" + hin4l[var][fs]->GetName() + ".png").c_str());
 
       
       // store 4l fit res 
@@ -1231,10 +1258,84 @@ void compute4lScale(string outputPath4lScaleFitPlots, string lumiText)
 
     vec_4lScale[fs] = ( vec_4lfitRes[distrVar][fs] - vec_4lfitRes[distrNominal][fs] ) / vec_4lfitRes[distrNominal][fs];
 
-    cout<< sFinalState[fs] <<": "<<vec_4lScale[fs]<<endl;
+    cout<< sFinalState[fs] <<": "<<vec_4lScale[fs] <<endl;
   }
-   //***********************************************************
+  //***********************************************************
 
+
+  //**********************
+  // compare 4l fit plots 
+  for(int fs=0; fs<nFinalStates; fs++){
+
+    TCanvas *canv = new TCanvas("canv","canv");
+    canv->cd();
+  
+    frame4l[distrNominal][fs]->Draw();
+    frame4l[distrVar][fs]->Draw("same");
+
+    // draw fit results on canvas (nominal)
+    TPaveText* pv1 = new TPaveText(0.10,0.51,0.41,0.88,"brNDC");
+    pv1->AddText("Nominal distribution");
+    pv1->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres[distrNominal][fs][0], fitres_err[distrNominal][fs][0]));
+    pv1->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres[distrNominal][fs][1], fitres_err[distrNominal][fs][1]));
+    pv1->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres[distrNominal][fs][2], fitres_err[distrNominal][fs][2]));
+    pv1->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres[distrNominal][fs][3], fitres_err[distrNominal][fs][3]));
+    pv1->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres[distrNominal][fs][4], fitres_err[distrNominal][fs][4]));
+    pv1->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres[distrNominal][fs][5], fitres_err[distrNominal][fs][5]));
+    pv1->SetFillColor(kWhite);
+    pv1->SetBorderSize(1);
+    pv1->SetTextColor(kBlue);
+    pv1->SetTextFont(42);
+    pv1->SetTextSize(0.037);
+    pv1->SetTextAlign(12); // text left aligned 
+    pv1->Draw();
+
+    // draw fit results on canvas (var)
+    TPaveText* pv2 = new TPaveText(0.66,0.51,0.97,0.88,"brNDC");
+    pv2->AddText("var distribution");
+    pv2->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres[distrVar][fs][0], fitres_err[distrVar][fs][0]));
+    pv2->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres[distrVar][fs][1], fitres_err[distrVar][fs][1]));
+    pv2->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres[distrVar][fs][2], fitres_err[distrVar][fs][2]));
+    pv2->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres[distrVar][fs][3], fitres_err[distrVar][fs][3]));
+    pv2->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres[distrVar][fs][4], fitres_err[distrVar][fs][4]));
+    pv2->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres[distrVar][fs][5], fitres_err[distrVar][fs][5]));
+    pv2->SetFillColor(kWhite);
+    pv2->SetBorderSize(1);
+    pv2->SetTextColor(kRed);
+    pv2->SetTextFont(42);
+    pv2->SetTextSize(0.037);
+    pv2->SetTextAlign(12); // text left aligned 
+    pv2->Draw();
+        
+    // print official CMS label and lumi 
+    writeExtraText = WRITEEXTRATEXTONPLOTS;
+    extraText  = "Preliminary";
+    lumi_sqrtS = lumiText + " (13 TeV)";
+    cmsTextSize = 0.42;
+    lumiTextSize = 0.35;
+    extraOverCmsTextSize = 0.72;
+    relPosX = 0.12;
+    CMS_lumi(canv,0,0);
+
+    // write 4lepton scale on plots
+    TPaveText* pv3 = new TPaveText(0.75,0.3,0.95,0.4,"brNDC");
+    pv3->AddText((sFinalState[fs] + " scale:").c_str());
+    pv3->AddText(Form("%.6f",vec_4lScale[fs]));
+    pv3->SetFillColor(kWhite);
+    pv3->SetBorderSize(1);
+    pv3->SetTextFont(42);
+    pv3->SetTextSize(0.037);
+    pv3->SetTextAlign(12); // text left aligned 
+    pv3->Draw();
+
+    canv->Update();
+
+    canv->SaveAs((outputPath4lScaleFitPlots_perCat + "/scale_" + sFinalState[fs] + ".pdf").c_str());
+    canv->SaveAs((outputPath4lScaleFitPlots_perCat + "/scale_" + sFinalState[fs] + ".png").c_str());
+
+
+  } //end for on final states 
+  //**********************
 
 } // end compute 4l scale function
 
@@ -1252,7 +1353,8 @@ void ComputeLeptonScaleSyst()
   string outputPathFitResultsPlots = "plotsSysts_FitResults";
   string outputPathDileptonScalePlots = "plotsSysts_DileptonScale";
   string outputPathCompare2lDataMcFit = "plotsSysts_CompareDataMC2lFit";
-  string outputPath4lScaleFitPlots = "plotsSysts_4leptonScaleFits";
+  string outputPath4lScaleFitPlots_perCat = "plotsSysts_4leptonScaleFits_perCatVariation";
+  string outputPath4lScaleFitPlots_maxVar = "plotsSysts_4leptonScaleFits_maxVariation";
   
 
   float lumi = 41.30; //fb-1
@@ -1266,8 +1368,8 @@ void ComputeLeptonScaleSyst()
 
   if(COMPARE2lDATAMCFIT) gSystem->Exec(("mkdir -p "+outputPathCompare2lDataMcFit).c_str()); //dir for comparison between Data and MC 2l fit
 
-  if(COMPUTE4lSCALE) gSystem->Exec(("mkdir -p "+outputPath4lScaleFitPlots).c_str()); //dir for 4lepton scale fit plots
-
+  if(COMPUTE4lSCALE) gSystem->Exec(("mkdir -p "+outputPath4lScaleFitPlots_perCat).c_str()); //dir for 4lepton scale fit plots per categ
+  if(COMPUTE4lSCALE) gSystem->Exec(("mkdir -p "+outputPath4lScaleFitPlots_maxVar).c_str()); //dir for 4lepton scale fit plots max var 
 
 
   // execute functions 
@@ -1279,9 +1381,13 @@ void ComputeLeptonScaleSyst()
 
   if(COMPARE2lDATAMCFIT) compareDataMCfitPlots(outputPathCompare2lDataMcFit, lumiText);
 
-  if(REDO4lHISTOS) do4lHistograms(inputPathMC_ggH, lumi);
+  // compute 4l scale assigning lepton pT variation according to lep pT and eta 
+  if(REDO4lHISTOS) do4lHistograms_perCatVariation(inputPathMC_ggH, lumi);  
+  if(COMPUTE4lSCALE) compute4lScale_perCatVariation(outputPath4lScaleFitPlots_perCat, lumiText); 
 
-  if(COMPUTE4lSCALE) compute4lScale(outputPath4lScaleFitPlots, lumiText);
+  // compute 4l scale assigning as lepton pT variation the maximum value obtained per category  
+  // if(REDO4lHISTOS) do4lHistograms_maxVariation(inputPathMC_ggH, lumi); 
+  // if(COMPUTE4lSCALE) compute4lScale_maxVariation(outputPath4lScaleFitPlots_maxVar, lumiText); 
 
   
 }
