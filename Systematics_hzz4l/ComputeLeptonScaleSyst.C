@@ -116,7 +116,7 @@ string sCategpT[nCatpT] = {
 // processes
 enum Process {Data=0, DY=1};
 
-//final state
+//final state (per category variation)
 const int nFinalStates = 3;
 enum FinalState {fs4e = 0, fs4mu = 1, fs2e2mu = 2};
 string sFinalState[nFinalStates] = {
@@ -125,13 +125,20 @@ string sFinalState[nFinalStates] = {
   "fs_2e2mu"
 };
 
-
 //variations of the 4l distribution (per category variation)
 const int nVariations4lDistr = 2;
 enum variations4lDistr {distrNominal = 0, distrVar = 1};
 string sVariations4lDistr[nVariations4lDistr] = {
   "distr_nominal",
   "distr_var"
+};
+
+//final state (per max variation)
+const int nFinalStates_maxVar = 2;
+enum FinalState_maxVar {finalState4e = 0, finalState4mu = 1};
+string sFinalState_maxVar[nFinalStates_maxVar] = {
+  "fs_4e",
+  "fs_4mu"
 };
 
 //variations of the 4l distribution (max variation)  
@@ -914,10 +921,35 @@ void compareDataMCfitPlots(string outputPathCompare2lDataMcFit, string lumiText)
 
 
 
+// *** compute invariant mass function with max variation 
+float compute4lInvMass_maxVar(vector<Float_t> *LepPt, vector<Float_t> *LepEta, vector<Float_t> *LepPhi, float* vec_lepMass, float* vec_scale2l, bool dnVarBool)
+{
+  
+  TLorentzVector lep0;
+  TLorentzVector lep1;
+  TLorentzVector lep2;
+  TLorentzVector lep3;
+
+  if(dnVarBool){  // dn variation
+    lep0.SetPtEtaPhiM( LepPt->at(0) * (1. - vec_scale2l[0]), LepEta->at(0), LepPhi->at(0), vec_lepMass[0] );
+    lep1.SetPtEtaPhiM( LepPt->at(1) * (1. - vec_scale2l[1]), LepEta->at(1), LepPhi->at(1), vec_lepMass[1] );
+    lep2.SetPtEtaPhiM( LepPt->at(2) * (1. - vec_scale2l[2]), LepEta->at(2), LepPhi->at(2), vec_lepMass[2] );
+    lep3.SetPtEtaPhiM( LepPt->at(3) * (1. - vec_scale2l[3]), LepEta->at(3), LepPhi->at(3), vec_lepMass[3] );
+  }else{          // up variation
+    lep0.SetPtEtaPhiM( LepPt->at(0) * (1. + vec_scale2l[0]), LepEta->at(0), LepPhi->at(0), vec_lepMass[0] );
+    lep1.SetPtEtaPhiM( LepPt->at(1) * (1. + vec_scale2l[1]), LepEta->at(1), LepPhi->at(1), vec_lepMass[1] );
+    lep2.SetPtEtaPhiM( LepPt->at(2) * (1. + vec_scale2l[2]), LepEta->at(2), LepPhi->at(2), vec_lepMass[2] );
+    lep3.SetPtEtaPhiM( LepPt->at(3) * (1. + vec_scale2l[3]), LepEta->at(3), LepPhi->at(3), vec_lepMass[3] );
+  }
+
+  return (lep0 + lep1 + lep2 + lep3).M();
+
+} // end of compute invariant mass function
 
 
-// *** compute invariant mass function
-float compute4lInvMass(vector<Float_t> *LepPt, vector<Float_t> *LepEta, vector<Float_t> *LepPhi, float* vec_lepMass, float* vec_scale2l)
+
+// *** compute invariant mass function with variation per category 
+float compute4lInvMass_perCatVariation(vector<Float_t> *LepPt, vector<Float_t> *LepEta, vector<Float_t> *LepPhi, float* vec_lepMass, float* vec_scale2l)
 {
   
   TLorentzVector lep0;
@@ -1105,7 +1137,7 @@ void do4lHistograms_perCatVariation(string inputPathMC_ggH, float lumi)
 
        
     //define ZZmass with lep pT scale variations  
-    float ZZMass_var = compute4lInvMass(LepPt, LepEta, LepPhi, vec_lepMass, vec_scale2l); //apply to lepton pT the 2lscale 
+    float ZZMass_var = compute4lInvMass_perCatVariation(LepPt, LepEta, LepPhi, vec_lepMass, vec_scale2l); //apply to lepton pT the 2lscale 
     
     cout<<ZZMass<<" "<<ZZMass_var<<endl;
       
@@ -1337,7 +1369,487 @@ void compute4lScale_perCatVariation(string outputPath4lScaleFitPlots_perCat, str
   } //end for on final states 
   //**********************
 
-} // end compute 4l scale function
+} // end compute 4l scale function per cat variation
+
+
+
+//*****************
+// do 4l ggH histos max variation 
+void do4lHistograms_maxVariation(string inputPathMC_ggH, float lumi)
+{
+
+  TH1::SetDefaultSumw2(true);
+
+  TFile* inputFile;
+  TTree* inputTree;
+  TH1F* hCounters;
+  Double_t gen_sumWeights;
+  Float_t partialSampleWeight;
+
+  Int_t nRun;
+  Long64_t nEvent;
+  Int_t nLumi;
+
+  Short_t ZZsel;
+  Float_t ZZMass;
+  Short_t Z1Flav;
+  Short_t Z2Flav;
+  vector<Float_t> *LepPt = 0;
+  vector<Float_t> *LepEta = 0;
+  vector<Float_t> *LepPhi = 0;
+  vector<Float_t> *LepLepId = 0;
+  Float_t xsec;
+  Float_t overallEventWeight;
+
+  
+  // define 4l histos 
+  TH1F* h4lDistrib[nVariations4lDistr_maxVar][nFinalStates_maxVar]; 
+  for(int var=0; var<nVariations4lDistr_maxVar; var++){
+    for(int fs=0; fs<nFinalStates_maxVar; fs++){
+
+      h4lDistrib[var][fs] = new TH1F(Form("h4lDistrib_%s_%s",sVariations4lDistr_maxVar[var].c_str(),sFinalState_maxVar[fs].c_str()),Form("h4lDistrib_%s_%s",sVariations4lDistr_maxVar[var].c_str(),sFinalState_maxVar[fs].c_str()),70,105.,140.);
+      h4lDistrib[var][fs]->Sumw2(true);
+    }
+  }
+
+
+  // read file with dilepton scale
+  TFile* fIn_dileptonScale = TFile::Open("file_DileptonScale.root");
+
+  TH1F* hIn_2lscale[nCatEta][nCatpT];
+  
+  for(int catEta=0; catEta<nCatEta; catEta++){
+    for(int catPt=0; catPt<nCatpT; catPt++){
+
+      hIn_2lscale[catEta][catPt] = (TH1F*)fIn_dileptonScale->Get(Form("h_dileptonScale_%s_%s",sCategEta[catEta].c_str(),sCategpT[catPt].c_str()));
+    }
+  }
+
+  // ***
+  //find the largest variation in dilepton scale 
+  float dilepScale_ele_max = -1.;
+  float dilep_ele_temp;
+  float dilepScale_mu_max = -1.;
+  float dilep_mu_temp;
+  
+  
+  for(int catPt=0; catPt<nCatpT; catPt++){
+
+    // electrons (categ 0, 1, 2) 
+    for(int catEta=0; catEta<3; catEta++){
+
+      dilep_ele_temp = fabs(hIn_2lscale[catEta][catPt]->GetBinContent(1));
+      if(dilep_ele_temp < dilepScale_ele_max) continue;
+      dilepScale_ele_max = dilep_ele_temp; 
+    }
+
+    // muons (categ 3, 4, 5) 
+    for(int catEta=3; catEta<6; catEta++){
+
+      dilep_mu_temp = fabs(hIn_2lscale[catEta][catPt]->GetBinContent(1));
+      if(dilep_mu_temp < dilepScale_mu_max) continue;
+      dilepScale_mu_max = dilep_mu_temp; 
+    }
+  }
+  cout<<"max dilep scale ele: "<<dilepScale_ele_max<<endl;
+  cout<<"max dilep scale mu: "<<dilepScale_mu_max<<endl;
+  // ***
+
+ 
+  int currentFinalState = -1;
+ 
+
+  string dataset = "ggH125";
+  string inputFileName = string(Form("%s%s/ZZ4lAnalysis.root",inputPathMC_ggH.c_str(),dataset.c_str()));
+  inputFile = TFile::Open(inputFileName.c_str());
+
+  hCounters = (TH1F*)inputFile->Get("ZZTree/Counters");
+  gen_sumWeights = (Long64_t)hCounters->GetBinContent(40);
+  partialSampleWeight = lumi * 1000 / gen_sumWeights;
+
+
+  inputTree = (TTree*)inputFile->Get("ZZTree/candTree");
+  inputTree->SetBranchAddress("RunNumber", &nRun);
+  inputTree->SetBranchAddress("EventNumber", &nEvent);
+  inputTree->SetBranchAddress("LumiNumber", &nLumi);
+  inputTree->SetBranchAddress("ZZsel", &ZZsel);      
+  inputTree->SetBranchAddress("ZZMass", &ZZMass);   
+  inputTree->SetBranchAddress("Z1Flav", &Z1Flav);
+  inputTree->SetBranchAddress("Z2Flav", &Z2Flav);
+  inputTree->SetBranchAddress("LepPt", &LepPt);
+  inputTree->SetBranchAddress("LepEta", &LepEta);
+  inputTree->SetBranchAddress("LepPhi", &LepPhi);
+  inputTree->SetBranchAddress("LepLepId", &LepLepId);
+  inputTree->SetBranchAddress("xsec", &xsec); 
+  inputTree->SetBranchAddress("overallEventWeight", &overallEventWeight);
+  
+  
+  //process tree 
+  Long64_t entries = inputTree->GetEntries();
+  cout<<"Processing dataset "<<dataset<<" ("<<entries<<" entries) ..."<<endl;
+  
+  for(Long64_t z=0; z<entries; ++z){
+
+    inputTree->GetEntry(z);
+
+
+    if(LepEta->size()!=4){
+        cout<<"error in event "<<nRun<<":"<<nLumi<<":"<<nEvent<<", stored "<<LepEta->size()<<" leptons instead of 4"<<endl;
+        continue;
+    }
+
+
+    if( !(ZZsel>=90) ) continue;
+
+
+    Double_t eventWeight = partialSampleWeight * xsec * overallEventWeight ;
+
+
+    //*** find final state 
+    if(Z1Flav==-121){
+	if(Z2Flav==-121) currentFinalState = finalState4e;
+        else currentFinalState = -1;
+    }else if(Z1Flav==-169){
+	if(Z2Flav==-169) currentFinalState = finalState4mu;
+        else currentFinalState = -1;
+    }else currentFinalState = -1;
+     
+    
+    if(currentFinalState < 0) continue;
+
+    //*** assign variations to 4 leptons 
+    float vec_scale2l[4] = {0.,0.,0.,0.};
+    float vec_lepMass[4];
+
+    for(int l=0; l<4; l++){
+
+      if(int(fabs(LepLepId->at(l))) == 11 ){
+
+        vec_lepMass[l] = mass_ele_nominalPDG;
+        vec_scale2l[l] = dilepScale_ele_max;
+
+      }else if(int(fabs(LepLepId->at(l))) == 13 ){
+
+        vec_lepMass[l] = mass_mu_nominalPDG;
+        vec_scale2l[l] = dilepScale_mu_max;
+      } 
+    }
+
+       
+    //define ZZmass with lep pT scale variations  
+    float ZZMass_UpVar = compute4lInvMass_maxVar(LepPt, LepEta, LepPhi, vec_lepMass, vec_scale2l, 0);
+    float ZZMass_DnVar = compute4lInvMass_maxVar(LepPt, LepEta, LepPhi, vec_lepMass, vec_scale2l, 1);
+ 
+    
+    cout<<ZZMass<<" "<<ZZMass_UpVar<<" "<<ZZMass_DnVar<<endl;
+      
+
+    //*** fill 4l histos 
+    h4lDistrib[nominal][currentFinalState]->Fill(ZZMass,eventWeight);
+    h4lDistrib[upVar][currentFinalState]->Fill(ZZMass_UpVar,eventWeight);
+    h4lDistrib[dnVar][currentFinalState]->Fill(ZZMass_DnVar,eventWeight);
+
+  } //end loop over tree entries
+
+
+
+  // write histos in a file 
+  TFile* fOut4lhist = new TFile("file_MC4lHistos_maxVariation.root","recreate");
+  fOut4lhist->cd();
+  for(int var=0; var<nVariations4lDistr_maxVar; var++){
+    for(int fs=0; fs<nFinalStates_maxVar; fs++){
+       
+      h4lDistrib[var][fs]->Write(h4lDistrib[var][fs]->GetName());
+      delete h4lDistrib[var][fs];
+    }
+  }
+  fOut4lhist->Close();
+  delete fOut4lhist;
+
+
+
+}// end do4lHistograms function max variation
+
+
+void compute4lScale_maxVariation(string outputPath4lScaleFitPlots_maxVar, string lumiText)
+{ 
+
+  // read file with 4l histos 
+  TFile* fin4lhist = TFile::Open("file_MC4lHistos_maxVariation.root");
+
+  // input histos
+  TH1F* hin4l[nVariations4lDistr_maxVar][nFinalStates_maxVar]; 
+
+  // vec for store fit results and computing 4l scale
+  float vec_4lfitRes[nVariations4lDistr_maxVar][nFinalStates_maxVar];
+
+  // vec with fit results 
+  double fitres[nVariations4lDistr_maxVar][nFinalStates_maxVar][6];
+  double fitres_err[nVariations4lDistr_maxVar][nFinalStates_maxVar][6];
+
+  // m4l rooplots 
+  RooPlot* frame4l[nVariations4lDistr_maxVar][nFinalStates_maxVar];
+  
+
+  for(int var=0; var<nVariations4lDistr_maxVar; var++){
+    for(int fs=0; fs<nFinalStates_maxVar; fs++){
+
+      hin4l[var][fs] = (TH1F*)fin4lhist->Get(Form("h4lDistrib_%s_%s",sVariations4lDistr_maxVar[var].c_str(),sFinalState_maxVar[fs].c_str()));
+
+      
+      //*** FIT ***
+      RooRealVar m4l = RooRealVar("m4l","m4l",105,140);
+      
+      RooDataHist dhm4l("dhm4l","dhm4l",m4l,Import(*hin4l[var][fs]));      
+
+      RooRealVar mean_4lDCB("mean_4lDCB","mean_4lDCB",124.,120.,130.);
+      RooRealVar sigma_4lDCB("sigma_4lDCB","sigma_4lDCB",1.6,0.001,30.);
+      RooRealVar a1_4lDCB("a1_4lDCB","a1_4lDCB",1.46,0.5,50.);   
+      RooRealVar n1_4lDCB("n1_4lDCB","n1_4lDCB",1.92,0.,50.);
+      RooRealVar a2_4lDCB("a2_4lDCB","a2_4lDCB",1.46,0.,50.);
+      RooRealVar n2_4lDCB("n2_4lDCB","n2_4lDCB",20.,0.,50.);
+
+      RooDoubleCB DCB4l_pdf("DCB4l_pdf","Double Crystal ball function",m4l,mean_4lDCB,sigma_4lDCB,a1_4lDCB,n1_4lDCB,a2_4lDCB,n2_4lDCB);
+
+      m4l.setRange("range115130gev",115,130);
+   
+      // do the fit
+      DCB4l_pdf.chi2FitTo(dhm4l, Range("range115130gev"));
+
+      // store fir res 
+      fitres[var][fs][0] = mean_4lDCB.getVal();
+      fitres[var][fs][1] = sigma_4lDCB.getVal();
+      fitres[var][fs][2] = a1_4lDCB.getVal();
+      fitres[var][fs][3] = n1_4lDCB.getVal();
+      fitres[var][fs][4] = a2_4lDCB.getVal();
+      fitres[var][fs][5] = n2_4lDCB.getVal();
+
+      fitres_err[var][fs][0] = mean_4lDCB.getError();
+      fitres_err[var][fs][1] = sigma_4lDCB.getError();
+      fitres_err[var][fs][2] = a1_4lDCB.getError();
+      fitres_err[var][fs][3] = n1_4lDCB.getError();
+      fitres_err[var][fs][4] = a2_4lDCB.getError();
+      fitres_err[var][fs][5] = n2_4lDCB.getError();
+      
+
+      // plot on frame 
+      frame4l[var][fs] = m4l.frame();
+      frame4l[var][fs]->SetName(hin4l[var][fs]->GetName());
+      frame4l[var][fs]->SetTitle("");
+      dhm4l.plotOn(frame4l[var][fs],DataError(RooAbsData::SumW2), MarkerStyle(var==distrNominal?kOpenCircle:kFullCircle));
+      DCB4l_pdf.plotOn(frame4l[var][fs], NormRange("range115130gev"), LineColor(var==distrNominal?kBlue:kRed));
+
+      
+      TCanvas* c = new TCanvas(hin4l[var][fs]->GetName(),hin4l[var][fs]->GetName()); 
+      c->cd();
+      frame4l[var][fs]->Draw();
+
+      // draw fit results on canvas
+      TPaveText* pv1 = new TPaveText(0.10,0.55,0.41,0.88,"brNDC");
+      pv1->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres[var][fs][0], fitres_err[var][fs][0]));
+      pv1->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres[var][fs][1], fitres_err[var][fs][1]));
+      pv1->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres[var][fs][2], fitres_err[var][fs][2]));
+      pv1->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres[var][fs][3], fitres_err[var][fs][3]));
+      pv1->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres[var][fs][4], fitres_err[var][fs][4]));
+      pv1->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres[var][fs][5], fitres_err[var][fs][5]));
+      pv1->SetFillColor(kWhite);
+      pv1->SetBorderSize(1);
+      pv1->SetTextFont(42);
+      pv1->SetTextSize(0.037);
+      pv1->SetTextAlign(12); // text left aligned 
+      pv1->Draw();
+
+      
+      // print official CMS label and lumi 
+      writeExtraText = WRITEEXTRATEXTONPLOTS;
+      extraText  = "Preliminary";
+      lumi_sqrtS = lumiText + " (13 TeV)";
+      cmsTextSize = 0.42;
+      lumiTextSize = 0.35;
+      extraOverCmsTextSize = 0.72;
+      relPosX = 0.12;
+      CMS_lumi(c,0,0);
+
+      
+      c->Update();
+
+      c->SaveAs((outputPath4lScaleFitPlots_maxVar + "/" + hin4l[var][fs]->GetName() + ".pdf").c_str());
+      c->SaveAs((outputPath4lScaleFitPlots_maxVar + "/" + hin4l[var][fs]->GetName() + ".png").c_str());
+
+      
+      // store 4l fit res 
+      vec_4lfitRes[var][fs] = mean_4lDCB.getVal(); 
+
+    }
+  }
+
+
+  //***********************************************************
+  // compute 4l scale 
+  float vec_4lScaleUp[nFinalStates_maxVar];
+  float vec_4lScaleDn[nFinalStates_maxVar];
+  for(int fs=0; fs<nFinalStates_maxVar; fs++){
+
+    vec_4lScaleUp[fs] = ( vec_4lfitRes[upVar][fs] - vec_4lfitRes[nominal][fs] ) / vec_4lfitRes[nominal][fs];
+    vec_4lScaleDn[fs] = ( vec_4lfitRes[dnVar][fs] - vec_4lfitRes[nominal][fs] ) / vec_4lfitRes[nominal][fs];
+
+    cout<< sFinalState_maxVar[fs] <<": "<<vec_4lScaleUp[fs] <<": "<<vec_4lScaleDn[fs] <<endl;
+  }
+  //***********************************************************
+
+
+  //**********************
+  // compare 4l fit plots 
+  for(int fs=0; fs<nFinalStates_maxVar; fs++){
+
+    // ****************
+    // *** up variation 
+    TCanvas *canvUp = new TCanvas("canvUp","canvUp");
+    canvUp->cd();
+  
+    frame4l[nominal][fs]->Draw();
+    frame4l[upVar][fs]->Draw("same");
+
+    // draw fit results on canvas (nominal)
+    TPaveText* pv1 = new TPaveText(0.10,0.51,0.41,0.88,"brNDC");
+    pv1->AddText("Nominal distribution");
+    pv1->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres[distrNominal][fs][0], fitres_err[distrNominal][fs][0]));
+    pv1->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres[distrNominal][fs][1], fitres_err[distrNominal][fs][1]));
+    pv1->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres[distrNominal][fs][2], fitres_err[distrNominal][fs][2]));
+    pv1->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres[distrNominal][fs][3], fitres_err[distrNominal][fs][3]));
+    pv1->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres[distrNominal][fs][4], fitres_err[distrNominal][fs][4]));
+    pv1->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres[distrNominal][fs][5], fitres_err[distrNominal][fs][5]));
+    pv1->SetFillColor(kWhite);
+    pv1->SetBorderSize(1);
+    pv1->SetTextColor(kBlue);
+    pv1->SetTextFont(42);
+    pv1->SetTextSize(0.037);
+    pv1->SetTextAlign(12); // text left aligned 
+    pv1->Draw();
+
+    // draw fit results on canvas (up var)
+    TPaveText* pv2 = new TPaveText(0.66,0.51,0.97,0.88,"brNDC");
+    pv2->AddText("up variation");
+    pv2->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres[upVar][fs][0], fitres_err[upVar][fs][0]));
+    pv2->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres[upVar][fs][1], fitres_err[upVar][fs][1]));
+    pv2->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres[upVar][fs][2], fitres_err[upVar][fs][2]));
+    pv2->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres[upVar][fs][3], fitres_err[upVar][fs][3]));
+    pv2->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres[upVar][fs][4], fitres_err[upVar][fs][4]));
+    pv2->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres[upVar][fs][5], fitres_err[upVar][fs][5]));
+    pv2->SetFillColor(kWhite);
+    pv2->SetBorderSize(1);
+    pv2->SetTextColor(kRed);
+    pv2->SetTextFont(42);
+    pv2->SetTextSize(0.037);
+    pv2->SetTextAlign(12); // text left aligned 
+    pv2->Draw();
+        
+    // print official CMS label and lumi 
+    writeExtraText = WRITEEXTRATEXTONPLOTS;
+    extraText  = "Preliminary";
+    lumi_sqrtS = lumiText + " (13 TeV)";
+    cmsTextSize = 0.42;
+    lumiTextSize = 0.35;
+    extraOverCmsTextSize = 0.72;
+    relPosX = 0.12;
+    CMS_lumi(canvUp,0,0);
+
+    // write 4lepton scale on plots
+    TPaveText* pv3 = new TPaveText(0.75,0.3,0.95,0.4,"brNDC");
+    pv3->AddText((sFinalState[fs] + " up scale:").c_str());
+    pv3->AddText(Form("%.6f",vec_4lScaleUp[fs]));
+    pv3->SetFillColor(kWhite);
+    pv3->SetBorderSize(1);
+    pv3->SetTextFont(42);
+    pv3->SetTextSize(0.037);
+    pv3->SetTextAlign(12); // text left aligned 
+    pv3->Draw();
+
+    canvUp->Update();
+
+    canvUp->SaveAs((outputPath4lScaleFitPlots_maxVar + "/scaleUp_" + sFinalState_maxVar[fs] + ".pdf").c_str());
+    canvUp->SaveAs((outputPath4lScaleFitPlots_maxVar + "/scaleUp_" + sFinalState_maxVar[fs] + ".png").c_str());
+
+
+
+    // ****************
+    // *** dn variation 
+    TCanvas *canvDn = new TCanvas("canvDn","canvDn");
+    canvDn->cd();
+  
+    frame4l[nominal][fs]->Draw();
+    frame4l[dnVar][fs]->Draw("same");
+
+    // draw fit results on canvas (nominal)
+    TPaveText* pv1Dn = new TPaveText(0.10,0.51,0.41,0.88,"brNDC");
+    pv1Dn->AddText("Nominal distribution");
+    pv1Dn->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres[distrNominal][fs][0], fitres_err[distrNominal][fs][0]));
+    pv1Dn->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres[distrNominal][fs][1], fitres_err[distrNominal][fs][1]));
+    pv1Dn->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres[distrNominal][fs][2], fitres_err[distrNominal][fs][2]));
+    pv1Dn->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres[distrNominal][fs][3], fitres_err[distrNominal][fs][3]));
+    pv1Dn->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres[distrNominal][fs][4], fitres_err[distrNominal][fs][4]));
+    pv1Dn->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres[distrNominal][fs][5], fitres_err[distrNominal][fs][5]));
+    pv1Dn->SetFillColor(kWhite);
+    pv1Dn->SetBorderSize(1);
+    pv1Dn->SetTextColor(kBlue);
+    pv1Dn->SetTextFont(42);
+    pv1Dn->SetTextSize(0.037);
+    pv1Dn->SetTextAlign(12); // text left aligned 
+    pv1Dn->Draw();
+
+    // draw fit results on canvas (dn var)
+    TPaveText* pv2Dn = new TPaveText(0.66,0.51,0.97,0.88,"brNDC");
+    pv2Dn->AddText("dn variation");
+    pv2Dn->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres[dnVar][fs][0], fitres_err[dnVar][fs][0]));
+    pv2Dn->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres[dnVar][fs][1], fitres_err[dnVar][fs][1]));
+    pv2Dn->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres[dnVar][fs][2], fitres_err[dnVar][fs][2]));
+    pv2Dn->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres[dnVar][fs][3], fitres_err[dnVar][fs][3]));
+    pv2Dn->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres[dnVar][fs][4], fitres_err[dnVar][fs][4]));
+    pv2Dn->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres[dnVar][fs][5], fitres_err[dnVar][fs][5]));
+    pv2Dn->SetFillColor(kWhite);
+    pv2Dn->SetBorderSize(1);
+    pv2Dn->SetTextColor(kRed);
+    pv2Dn->SetTextFont(42);
+    pv2Dn->SetTextSize(0.037);
+    pv2Dn->SetTextAlign(12); // text left aligned 
+    pv2Dn->Draw();
+        
+    // print official CMS label and lumi 
+    writeExtraText = WRITEEXTRATEXTONPLOTS;
+    extraText  = "Preliminary";
+    lumi_sqrtS = lumiText + " (13 TeV)";
+    cmsTextSize = 0.42;
+    lumiTextSize = 0.35;
+    extraOverCmsTextSize = 0.72;
+    relPosX = 0.12;
+    CMS_lumi(canvDn,0,0);
+
+    // write 4lepton scale on plots
+    TPaveText* pv3Dn = new TPaveText(0.75,0.3,0.95,0.4,"brNDC");
+    pv3Dn->AddText((sFinalState[fs] + " dn scale:").c_str());
+    pv3Dn->AddText(Form("%.6f",vec_4lScaleDn[fs]));
+    pv3Dn->SetFillColor(kWhite);
+    pv3Dn->SetBorderSize(1);
+    pv3Dn->SetTextFont(42);
+    pv3Dn->SetTextSize(0.037);
+    pv3Dn->SetTextAlign(12); // text left aligned 
+    pv3Dn->Draw();
+
+    canvDn->Update();
+
+    canvDn->SaveAs((outputPath4lScaleFitPlots_maxVar + "/scaleDn_" + sFinalState_maxVar[fs] + ".pdf").c_str());
+    canvDn->SaveAs((outputPath4lScaleFitPlots_maxVar + "/scaleDn_" + sFinalState_maxVar[fs] + ".png").c_str());
+
+
+  } //end for on final states 
+  //**********************
+
+} // end compute 4l scale function max variation
+
+
+
+
+
 
 
 
@@ -1386,8 +1898,8 @@ void ComputeLeptonScaleSyst()
   if(COMPUTE4lSCALE) compute4lScale_perCatVariation(outputPath4lScaleFitPlots_perCat, lumiText); 
 
   // compute 4l scale assigning as lepton pT variation the maximum value obtained per category  
-  // if(REDO4lHISTOS) do4lHistograms_maxVariation(inputPathMC_ggH, lumi); 
-  // if(COMPUTE4lSCALE) compute4lScale_maxVariation(outputPath4lScaleFitPlots_maxVar, lumiText); 
+  if(REDO4lHISTOS) do4lHistograms_maxVariation(inputPathMC_ggH, lumi); 
+  if(COMPUTE4lSCALE) compute4lScale_maxVariation(outputPath4lScaleFitPlots_maxVar, lumiText); 
 
   
 }
