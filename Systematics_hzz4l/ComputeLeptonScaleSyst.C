@@ -116,6 +116,7 @@ string sCategpT[nCatpT] = {
 // processes
 enum Process {Data=0, DY=1};
 
+// *** per category variation *** 
 //final state (per category variation)
 const int nFinalStates = 3;
 enum FinalState {fs4e = 0, fs4mu = 1, fs2e2mu = 2};
@@ -125,6 +126,7 @@ string sFinalState[nFinalStates] = {
   "fs_2e2mu"
 };
 
+// *** per category variation *** 
 //variations of the 4l distribution (per category variation)
 const int nVariations4lDistr = 2;
 enum variations4lDistr {distrNominal = 0, distrVar = 1};
@@ -133,6 +135,8 @@ string sVariations4lDistr[nVariations4lDistr] = {
   "distr_var"
 };
 
+
+// *** max variation from 2l scale ***
 //final state (per max variation)
 const int nFinalStates_maxVar = 2;
 enum FinalState_maxVar {finalState4e = 0, finalState4mu = 1};
@@ -141,6 +145,7 @@ string sFinalState_maxVar[nFinalStates_maxVar] = {
   "fs_4mu"
 };
 
+// *** max variation from 2l scale ***
 //variations of the 4l distribution (max variation)  
 const int nVariations4lDistr_maxVar = 3;
 enum variations4lDistr_maxVar {nominal = 0, upVar = 1, dnVar = 2};
@@ -148,6 +153,25 @@ string sVariations4lDistr_maxVar[nVariations4lDistr_maxVar] = {
   "nominal",
   "upVar",
   "dnVar"
+};
+
+
+// *** Rochester variation *** 
+//final state (Rochester)
+const int nFinalStates_Rochester = 2;
+enum FinalState_Rochester {FS4e = 0, FS4mu = 1};
+string sFinalState_Rochester[nFinalStates_Rochester] = {
+  "fs_4e",
+  "fs_4mu"
+};
+
+// *** Rochester variation *** 
+//variations of the 4l distribution (Rochester)  
+const int nVariations4lDistr_Rochester = 2;
+enum variations4lDistr_Rochester {Nominal = 0, VarUp = 1};
+string sVariations4lDistr_Rochester[nVariations4lDistr_Rochester] = {
+  "nominal",
+  "upVar"
 };
 
 
@@ -1847,14 +1871,379 @@ void compute4lScale_maxVariation(string outputPath4lScaleFitPlots_maxVar, string
 } // end compute 4l scale function max variation
 
 
+//******************************************
+//apply rochester corrections uncertainties 
+//******************************************
+float compute4lInvMass_RochesterCorr(vector<Float_t> *LepPt, vector<Float_t> *LepEta, vector<Float_t> *LepPhi, float* vec_lepMass, vector<Float_t> *LepScale_Unc)
+{
+  
+  TLorentzVector lep0;
+  TLorentzVector lep1;
+  TLorentzVector lep2;
+  TLorentzVector lep3;
+
+  lep0.SetPtEtaPhiM( LepPt->at(0) * LepScale_Unc->at(0), LepEta->at(0), LepPhi->at(0), vec_lepMass[0] );
+  lep1.SetPtEtaPhiM( LepPt->at(1) * LepScale_Unc->at(1), LepEta->at(1), LepPhi->at(1), vec_lepMass[1] );
+  lep2.SetPtEtaPhiM( LepPt->at(2) * LepScale_Unc->at(2), LepEta->at(2), LepPhi->at(2), vec_lepMass[2] );
+  lep3.SetPtEtaPhiM( LepPt->at(3) * LepScale_Unc->at(3), LepEta->at(3), LepPhi->at(3), vec_lepMass[3] );
+
+  return (lep0 + lep1 + lep2 + lep3).M();
+
+} // end of compute invariant mass function
+
+// do 4l histos with rochester corrections uncertainties as scale 
+void do4lHistograms_RochesterCorr(string inputPathMC_ggH, float lumi) 
+{
+
+  TH1::SetDefaultSumw2(true);
+
+  TFile* inputFile;
+  TTree* inputTree;
+  TH1F* hCounters;
+  Double_t gen_sumWeights;
+  Float_t partialSampleWeight;
+
+  Int_t nRun;
+  Long64_t nEvent;
+  Int_t nLumi;
+
+  Short_t ZZsel;
+  Float_t ZZMass;
+  Short_t Z1Flav;
+  Short_t Z2Flav;
+  vector<Float_t> *LepPt = 0;
+  vector<Float_t> *LepEta = 0;
+  vector<Float_t> *LepPhi = 0;
+  vector<Float_t> *LepLepId = 0;
+  vector<Float_t> *LepScale_Unc = 0; // Rochester correction uncertainty := up variation/nominal
+  Float_t xsec;
+  Float_t overallEventWeight;
+
+  
+  // define 4l histos 
+  TH1F* h4lDistrib[nVariations4lDistr_Rochester][nFinalStates_Rochester]; 
+  for(int var=0; var<nVariations4lDistr_Rochester; var++){
+    for(int fs=0; fs<nFinalStates_Rochester; fs++){
+
+      h4lDistrib[var][fs] = new TH1F(Form("h4lDistrib_%s_%s",sVariations4lDistr_Rochester[var].c_str(),sFinalState_Rochester[fs].c_str()),Form("h4lDistrib_%s_%s",sVariations4lDistr_Rochester[var].c_str(),sFinalState_Rochester[fs].c_str()),70,105.,140.);
+      h4lDistrib[var][fs]->Sumw2(true);
+    }
+  }
+
+ 
+  int currentFinalState = -1;
+ 
+
+  string dataset = "ggH125";
+  string inputFileName = string(Form("%s%s/ZZ4lAnalysis.root",inputPathMC_ggH.c_str(),dataset.c_str()));
+  inputFile = TFile::Open(inputFileName.c_str());
+
+  hCounters = (TH1F*)inputFile->Get("ZZTree/Counters");
+  gen_sumWeights = (Long64_t)hCounters->GetBinContent(40);
+  partialSampleWeight = lumi * 1000 / gen_sumWeights;
+
+
+  inputTree = (TTree*)inputFile->Get("ZZTree/candTree");
+  inputTree->SetBranchAddress("RunNumber", &nRun);
+  inputTree->SetBranchAddress("EventNumber", &nEvent);
+  inputTree->SetBranchAddress("LumiNumber", &nLumi);
+  inputTree->SetBranchAddress("ZZsel", &ZZsel);      
+  inputTree->SetBranchAddress("ZZMass", &ZZMass);   
+  inputTree->SetBranchAddress("Z1Flav", &Z1Flav);
+  inputTree->SetBranchAddress("Z2Flav", &Z2Flav);
+  inputTree->SetBranchAddress("LepPt", &LepPt);
+  inputTree->SetBranchAddress("LepEta", &LepEta);
+  inputTree->SetBranchAddress("LepPhi", &LepPhi);
+  inputTree->SetBranchAddress("LepLepId", &LepLepId);
+  inputTree->SetBranchAddress("LepScale_Unc", &LepScale_Unc);
+  inputTree->SetBranchAddress("xsec", &xsec); 
+  inputTree->SetBranchAddress("overallEventWeight", &overallEventWeight);
+  
+  
+  //process tree 
+  Long64_t entries = inputTree->GetEntries();
+  cout<<"Processing dataset "<<dataset<<" ("<<entries<<" entries) ..."<<endl;
+  
+  for(Long64_t z=0; z<entries; ++z){
+
+    inputTree->GetEntry(z);
+
+
+    if(LepEta->size()!=4){
+        cout<<"error in event "<<nRun<<":"<<nLumi<<":"<<nEvent<<", stored "<<LepEta->size()<<" leptons instead of 4"<<endl;
+        continue;
+    }
+
+
+    if( !(ZZsel>=90) ) continue;
+
+
+    Double_t eventWeight = partialSampleWeight * xsec * overallEventWeight ;
+
+
+    //*** find final state 
+    if(Z1Flav==-121){
+	if(Z2Flav==-121) currentFinalState = finalState4e;
+        else currentFinalState = -1;
+    }else if(Z1Flav==-169){
+	if(Z2Flav==-169) currentFinalState = finalState4mu;
+        else currentFinalState = -1;
+    }else currentFinalState = -1;
+     
+    
+    if(currentFinalState < 0) continue;
+
+    //*** assign lepton mass 
+    float vec_lepMass[4];
+
+    for(int l=0; l<4; l++){
+      if(int(fabs(LepLepId->at(l))) == 11 )     {vec_lepMass[l] = mass_ele_nominalPDG;}
+      else if(int(fabs(LepLepId->at(l))) == 13 ){vec_lepMass[l] = mass_mu_nominalPDG; } 
+    }
+   
+    // *** define ZZmass with lep pT scale variations  
+    float ZZMass_UpVar = compute4lInvMass_RochesterCorr(LepPt, LepEta, LepPhi, vec_lepMass, LepScale_Unc);
+        
+    cout<<ZZMass<<" "<<ZZMass_UpVar<<endl;
+      
+
+    //*** fill 4l histos 
+    h4lDistrib[Nominal][currentFinalState]->Fill(ZZMass,eventWeight);
+    h4lDistrib[VarUp][currentFinalState]->Fill(ZZMass_UpVar,eventWeight);
+    
+  } //end loop over tree entries
 
 
 
+  // write histos in a file 
+  TFile* fOut4lhist = new TFile("file_MC4lHistos_RochesterCorr.root","recreate");
+  fOut4lhist->cd();
+  for(int var=0; var<nVariations4lDistr_Rochester; var++){
+    for(int fs=0; fs<nFinalStates_Rochester; fs++){
+       
+      h4lDistrib[var][fs]->Write(h4lDistrib[var][fs]->GetName());
+      delete h4lDistrib[var][fs];
+    }
+  }
+  fOut4lhist->Close();
+  delete fOut4lhist;
 
 
 
+}// end do4lHistograms function RochesterCorr
 
-// *** main function
+
+void compute4lScale_RochesterCorr(string outputPath4lScaleFitPlots_RochesterCorr, string lumiText)
+{ 
+
+  // read file with 4l histos 
+  TFile* fin4lhist = TFile::Open("file_MC4lHistos_RochesterCorr.root");
+
+  // input histos
+  TH1F* hin4l[nVariations4lDistr_Rochester][nFinalStates_Rochester]; 
+
+  // vec for store fit results and computing 4l scale
+  float vec_4lfitRes[nVariations4lDistr_Rochester][nFinalStates_Rochester];
+
+  // vec with fit results 
+  double fitres[nVariations4lDistr_Rochester][nFinalStates_Rochester][6];
+  double fitres_err[nVariations4lDistr_Rochester][nFinalStates_Rochester][6];
+
+  // m4l rooplots 
+  RooPlot* frame4l[nVariations4lDistr_Rochester][nFinalStates_Rochester];
+  
+
+  for(int var=0; var<nVariations4lDistr_Rochester; var++){
+    for(int fs=0; fs<nFinalStates_Rochester; fs++){
+
+      hin4l[var][fs] = (TH1F*)fin4lhist->Get(Form("h4lDistrib_%s_%s",sVariations4lDistr_Rochester[var].c_str(),sFinalState_Rochester[fs].c_str()));
+
+      
+      //*** FIT ***
+      RooRealVar m4l = RooRealVar("m4l","m4l",105,140);
+      
+      RooDataHist dhm4l("dhm4l","dhm4l",m4l,Import(*hin4l[var][fs]));      
+
+      RooRealVar mean_4lDCB("mean_4lDCB","mean_4lDCB",124.,120.,130.);
+      RooRealVar sigma_4lDCB("sigma_4lDCB","sigma_4lDCB",1.6,0.001,30.);
+      RooRealVar a1_4lDCB("a1_4lDCB","a1_4lDCB",1.46,0.5,50.);   
+      RooRealVar n1_4lDCB("n1_4lDCB","n1_4lDCB",1.92,0.,50.);
+      RooRealVar a2_4lDCB("a2_4lDCB","a2_4lDCB",1.46,0.,50.);
+      RooRealVar n2_4lDCB("n2_4lDCB","n2_4lDCB",20.,0.,50.);
+
+      RooDoubleCB DCB4l_pdf("DCB4l_pdf","Double Crystal ball function",m4l,mean_4lDCB,sigma_4lDCB,a1_4lDCB,n1_4lDCB,a2_4lDCB,n2_4lDCB);
+
+      m4l.setRange("range115130gev",115,130);
+   
+      // do the fit
+      DCB4l_pdf.chi2FitTo(dhm4l, Range("range115130gev"));
+
+      // store fir res 
+      fitres[var][fs][0] = mean_4lDCB.getVal();
+      fitres[var][fs][1] = sigma_4lDCB.getVal();
+      fitres[var][fs][2] = a1_4lDCB.getVal();
+      fitres[var][fs][3] = n1_4lDCB.getVal();
+      fitres[var][fs][4] = a2_4lDCB.getVal();
+      fitres[var][fs][5] = n2_4lDCB.getVal();
+
+      fitres_err[var][fs][0] = mean_4lDCB.getError();
+      fitres_err[var][fs][1] = sigma_4lDCB.getError();
+      fitres_err[var][fs][2] = a1_4lDCB.getError();
+      fitres_err[var][fs][3] = n1_4lDCB.getError();
+      fitres_err[var][fs][4] = a2_4lDCB.getError();
+      fitres_err[var][fs][5] = n2_4lDCB.getError();
+      
+
+      // plot on frame 
+      frame4l[var][fs] = m4l.frame();
+      frame4l[var][fs]->SetName(hin4l[var][fs]->GetName());
+      frame4l[var][fs]->SetTitle("");
+      dhm4l.plotOn(frame4l[var][fs],DataError(RooAbsData::SumW2), MarkerStyle(var==distrNominal?kOpenCircle:kFullCircle));
+      DCB4l_pdf.plotOn(frame4l[var][fs], NormRange("range115130gev"), LineColor(var==distrNominal?kBlue:kRed));
+
+      
+      TCanvas* c = new TCanvas(hin4l[var][fs]->GetName(),hin4l[var][fs]->GetName()); 
+      c->cd();
+      frame4l[var][fs]->Draw();
+
+      // draw fit results on canvas
+      TPaveText* pv1 = new TPaveText(0.10,0.55,0.41,0.88,"brNDC");
+      pv1->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres[var][fs][0], fitres_err[var][fs][0]));
+      pv1->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres[var][fs][1], fitres_err[var][fs][1]));
+      pv1->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres[var][fs][2], fitres_err[var][fs][2]));
+      pv1->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres[var][fs][3], fitres_err[var][fs][3]));
+      pv1->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres[var][fs][4], fitres_err[var][fs][4]));
+      pv1->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres[var][fs][5], fitres_err[var][fs][5]));
+      pv1->SetFillColor(kWhite);
+      pv1->SetBorderSize(1);
+      pv1->SetTextFont(42);
+      pv1->SetTextSize(0.037);
+      pv1->SetTextAlign(12); // text left aligned 
+      pv1->Draw();
+
+      
+      // print official CMS label and lumi 
+      writeExtraText = WRITEEXTRATEXTONPLOTS;
+      extraText  = "Preliminary";
+      lumi_sqrtS = lumiText + " (13 TeV)";
+      cmsTextSize = 0.42;
+      lumiTextSize = 0.35;
+      extraOverCmsTextSize = 0.72;
+      relPosX = 0.12;
+      CMS_lumi(c,0,0);
+
+      
+      c->Update();
+
+      c->SaveAs((outputPath4lScaleFitPlots_RochesterCorr + "/" + hin4l[var][fs]->GetName() + ".pdf").c_str());
+      c->SaveAs((outputPath4lScaleFitPlots_RochesterCorr + "/" + hin4l[var][fs]->GetName() + ".png").c_str());
+
+      
+      // store 4l fit res 
+      vec_4lfitRes[var][fs] = mean_4lDCB.getVal(); 
+
+    }
+  }
+
+
+  //***********************************************************
+  // compute 4l scale 
+  float vec_4lScaleUp[nFinalStates_Rochester];
+  for(int fs=0; fs<nFinalStates_Rochester; fs++){
+
+    vec_4lScaleUp[fs] = ( vec_4lfitRes[VarUp][fs] - vec_4lfitRes[Nominal][fs] ) / vec_4lfitRes[Nominal][fs];
+
+    cout<< sFinalState_Rochester[fs] <<": "<<vec_4lScaleUp[fs] <<endl;
+  }
+  //***********************************************************
+
+
+  //**********************
+  // compare 4l fit plots 
+  for(int fs=0; fs<nFinalStates_Rochester; fs++){
+
+    // ****************
+    // *** up variation 
+    TCanvas *canvUp = new TCanvas("canvUp","canvUp");
+    canvUp->cd();
+  
+    frame4l[Nominal][fs]->Draw();
+    frame4l[VarUp][fs]->Draw("same");
+
+    // draw fit results on canvas (nominal)
+    TPaveText* pv1 = new TPaveText(0.10,0.51,0.41,0.88,"brNDC");
+    pv1->AddText("Nominal distribution");
+    pv1->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres[Nominal][fs][0], fitres_err[Nominal][fs][0]));
+    pv1->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres[Nominal][fs][1], fitres_err[Nominal][fs][1]));
+    pv1->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres[Nominal][fs][2], fitres_err[Nominal][fs][2]));
+    pv1->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres[Nominal][fs][3], fitres_err[Nominal][fs][3]));
+    pv1->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres[Nominal][fs][4], fitres_err[Nominal][fs][4]));
+    pv1->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres[Nominal][fs][5], fitres_err[Nominal][fs][5]));
+    pv1->SetFillColor(kWhite);
+    pv1->SetBorderSize(1);
+    pv1->SetTextColor(kBlue);
+    pv1->SetTextFont(42);
+    pv1->SetTextSize(0.037);
+    pv1->SetTextAlign(12); // text left aligned 
+    pv1->Draw();
+
+    // draw fit results on canvas (up var)
+    TPaveText* pv2 = new TPaveText(0.66,0.51,0.97,0.88,"brNDC");
+    pv2->AddText("up variation");
+    pv2->AddText(Form("DCB mean: %.3f #pm %.3f",  fitres[VarUp][fs][0], fitres_err[VarUp][fs][0]));
+    pv2->AddText(Form("DCB sigma: %.3f #pm %.3f", fitres[VarUp][fs][1], fitres_err[VarUp][fs][1]));
+    pv2->AddText(Form("DCB a1: %.3f #pm %.3f",    fitres[VarUp][fs][2], fitres_err[VarUp][fs][2]));
+    pv2->AddText(Form("DCB n1: %.3f #pm %.3f",    fitres[VarUp][fs][3], fitres_err[VarUp][fs][3]));
+    pv2->AddText(Form("DCB a2: %.3f #pm %.3f",    fitres[VarUp][fs][4], fitres_err[VarUp][fs][4]));
+    pv2->AddText(Form("DCB n2: %.3f #pm %.3f",    fitres[VarUp][fs][5], fitres_err[VarUp][fs][5]));
+    pv2->SetFillColor(kWhite);
+    pv2->SetBorderSize(1);
+    pv2->SetTextColor(kRed);
+    pv2->SetTextFont(42);
+    pv2->SetTextSize(0.037);
+    pv2->SetTextAlign(12); // text left aligned 
+    pv2->Draw();
+        
+    // print official CMS label and lumi 
+    writeExtraText = WRITEEXTRATEXTONPLOTS;
+    extraText  = "Preliminary";
+    lumi_sqrtS = lumiText + " (13 TeV)";
+    cmsTextSize = 0.42;
+    lumiTextSize = 0.35;
+    extraOverCmsTextSize = 0.72;
+    relPosX = 0.12;
+    CMS_lumi(canvUp,0,0);
+
+    // write 4lepton scale on plots
+    TPaveText* pv3 = new TPaveText(0.75,0.3,0.95,0.4,"brNDC");
+    pv3->AddText((sFinalState_Rochester[fs] + " up scale:").c_str());
+    pv3->AddText(Form("%.6f",vec_4lScaleUp[fs]));
+    pv3->SetFillColor(kWhite);
+    pv3->SetBorderSize(1);
+    pv3->SetTextFont(42);
+    pv3->SetTextSize(0.037);
+    pv3->SetTextAlign(12); // text left aligned 
+    pv3->Draw();
+
+    canvUp->Update();
+
+    canvUp->SaveAs((outputPath4lScaleFitPlots_RochesterCorr + "/scaleUp_" + sFinalState_Rochester[fs] + ".pdf").c_str());
+    canvUp->SaveAs((outputPath4lScaleFitPlots_RochesterCorr + "/scaleUp_" + sFinalState_Rochester[fs] + ".png").c_str());
+
+
+  } //end for on final states 
+  //**********************
+
+} // end compute 4l scale function RochesterCorr
+
+//******************************************
+//******************************************
+
+
+
+// *********************
+// *** main function ***
+// *********************
 void ComputeLeptonScaleSyst()
 {
  
@@ -1867,6 +2256,7 @@ void ComputeLeptonScaleSyst()
   string outputPathCompare2lDataMcFit = "plotsSysts_CompareDataMC2lFit";
   string outputPath4lScaleFitPlots_perCat = "plotsSysts_4leptonScaleFits_perCatVariation";
   string outputPath4lScaleFitPlots_maxVar = "plotsSysts_4leptonScaleFits_maxVariation";
+  string outputPath4lScaleFitPlots_RochesterCorr = "plotsSysts_4leptonScaleFits_RochesterCorr";
   
 
   float lumi = 41.30; //fb-1
@@ -1882,6 +2272,7 @@ void ComputeLeptonScaleSyst()
 
   if(COMPUTE4lSCALE) gSystem->Exec(("mkdir -p "+outputPath4lScaleFitPlots_perCat).c_str()); //dir for 4lepton scale fit plots per categ
   if(COMPUTE4lSCALE) gSystem->Exec(("mkdir -p "+outputPath4lScaleFitPlots_maxVar).c_str()); //dir for 4lepton scale fit plots max var 
+  if(COMPUTE4lSCALE) gSystem->Exec(("mkdir -p "+outputPath4lScaleFitPlots_RochesterCorr).c_str()); //dir for 4lepton scale fit plots RochesterCorr 
 
 
   // execute functions 
@@ -1900,6 +2291,10 @@ void ComputeLeptonScaleSyst()
   // compute 4l scale assigning as lepton pT variation the maximum value obtained per category  
   if(REDO4lHISTOS) do4lHistograms_maxVariation(inputPathMC_ggH, lumi); 
   if(COMPUTE4lSCALE) compute4lScale_maxVariation(outputPath4lScaleFitPlots_maxVar, lumiText); 
+
+  // compute 4l scale applying Rochester corrections uncertainties as lepton scale 
+  if(REDO4lHISTOS) do4lHistograms_RochesterCorr(inputPathMC_ggH, lumi); 
+  if(COMPUTE4lSCALE) compute4lScale_RochesterCorr(outputPath4lScaleFitPlots_RochesterCorr, lumiText);   
 
   
 }
