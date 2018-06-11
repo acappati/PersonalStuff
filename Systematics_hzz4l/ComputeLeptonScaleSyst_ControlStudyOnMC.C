@@ -156,7 +156,7 @@ float compute2lInvMass(float pTLep1, float etaLep1, float phiLep1, int IdLep1, f
 
 // *** read file and do histograms (events separated into categories based on pT and Eta of 1 of the 2 leptons, 
 //     determined randomly, and integrating over the other) as explained in AN2016_442 (Section 9)
-void do2lHistograms_AN(string inputPathMC_DY, string inputPathData, float lumi, string sampletype_name)
+void do2lHistograms_AN(string inputPathMC_DY, float lumi, string sampletype_name)
 {
 
   TH1::SetDefaultSumw2(true);
@@ -1428,18 +1428,17 @@ void ComputeLeptonScaleSyst_ControlStudyOnMC()
 
  
   // *** choose data/mc input path 
-  string inputPathMC_DY = "/data3/Higgs/180416/MC_main/";
-  string inputPathData = "/data3/Higgs/180416/";
-  string inputPathMC_ggH = "/data3/Higgs/180416/MC_main/";
-
+  string inputPathMC_DY = "/data3/Higgs/180531/MC_main/";    // new production
+  //string inputPathMC_DY = "/data3/Higgs/180416/MC_main/";
+ 
   string outputPathFitResultsPlots = string(Form("plotsSysts_FitResults_%s",sampletype_name.c_str())).c_str();
   string outputPathDileptonScalePlots = string(Form("plotsSysts_DileptonScale_%s",sampletype_name.c_str())).c_str();
   string outputPathCompare2lDataMcFit = string(Form("plotsSysts_CompareDataMC2lFit_%s",sampletype_name.c_str())).c_str();
   
   
   // *** define luminosity
-  float lumi = 41.30; //fb-1
-  string lumiText = "41.30 fb^{-1}";
+  float lumi = 41.4; //fb-1
+  string lumiText = "41.4 fb^{-1}";
 
 
   // *** create output directories
@@ -1456,7 +1455,7 @@ void ComputeLeptonScaleSyst_ControlStudyOnMC()
   //**************************
 
   // do histos function
-  if(REDO2lHISTOS) do2lHistograms_AN(inputPathMC_DY, inputPathData, lumi, sampletype_name); //read MC file and do histograms (events separated into categories 
+  if(REDO2lHISTOS) do2lHistograms_AN(inputPathMC_DY, lumi, sampletype_name); //read MC file and do histograms (events separated into categories 
                                                                                             //based on pT and Eta of 1 of the 2 leptons, determined randomly, and integrating
                                                                                             //over the other) as explained in AN2016_442 (Section 9)
                                             
