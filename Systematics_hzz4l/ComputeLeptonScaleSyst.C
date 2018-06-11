@@ -2247,9 +2247,13 @@ void compute4lScale_RochesterCorr(string outputPath4lScaleFitPlots_RochesterCorr
 void ComputeLeptonScaleSyst()
 {
  
-  string inputPathData = "/data3/Higgs/180416/";
-  string inputPathMC_DY = "/data3/Higgs/180416/MC_main/";
-  string inputPathMC_ggH = "/data3/Higgs/180416/MC_main/";
+  string inputPathData = "/data3/Higgs/180531/";
+  string inputPathMC_DY = "/data3/Higgs/180531/MC_main/";
+  string inputPathMC_ggH = "/data3/Higgs/180531/MC_main/";
+
+  //string inputPathData = "/data3/Higgs/180416/";
+  //string inputPathMC_DY = "/data3/Higgs/180416/MC_main/";
+  //string inputPathMC_ggH = "/data3/Higgs/180416/MC_main/";  // bad filling of LepScale_Unc for muons
 
   string outputPathFitResultsPlots = "plotsSysts_FitResults";
   string outputPathDileptonScalePlots = "plotsSysts_DileptonScale";
@@ -2259,8 +2263,8 @@ void ComputeLeptonScaleSyst()
   string outputPath4lScaleFitPlots_RochesterCorr = "plotsSysts_4leptonScaleFits_RochesterCorr";
   
 
-  float lumi = 41.30; //fb-1
-  string lumiText = "41.30 fb^{-1}";
+  float lumi = 41.4; //fb-1
+  string lumiText = "41.4 fb^{-1}";
 
 
   // create output directories
