@@ -671,8 +671,8 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
   mg_ele->Add(graph_eleCatEta1);
   mg_ele->Add(graph_eleCatEta2);
 
-  //mg_ele->SetMinimum(-0.01);
-  //mg_ele->SetMaximum(0.01);
+  mg_ele->SetMinimum(-0.0075);
+  mg_ele->SetMaximum(0.0045);
 
   TCanvas* can_ele = new TCanvas("can_ele","can_ele",600,600);
   mg_ele->Draw("ap"); 
@@ -722,7 +722,7 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
 
   can_ele->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_electrons.png").c_str());
   can_ele->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_electrons.pdf").c_str());
-
+  can_ele->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_electrons.root").c_str());
    
 
   // muon plots
@@ -744,8 +744,8 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
   mg_mu->Add(graph_muCatEta4);
   mg_mu->Add(graph_muCatEta5);
 
-  //mg_mu->SetMinimum(-0.005);
-  //mg_mu->SetMaximum(0.005);
+  mg_mu->SetMinimum(-0.0075);
+  mg_mu->SetMaximum(0.0045);
  
   TCanvas* can_mu = new TCanvas("can_mu","can_mu",600,600);
   mg_mu->Draw("ap");
@@ -795,7 +795,7 @@ void computeDileptonScale(string outputPathDileptonScalePlots, string lumiText)
 
   can_mu->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_muons.png").c_str());
   can_mu->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_muons.pdf").c_str());
-
+  can_mu->SaveAs((outputPathDileptonScalePlots + "/DileptonScale_muons.root").c_str());
 
 
   // --- save dilepton scale into a file 
