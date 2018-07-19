@@ -159,51 +159,84 @@ for i in range(0,len(recorded)):
 
 #***************************************************
 #inclusive ISO and SIP histos 
-OutputPathISOSIP               = "ISOSIP_Plots_" + period + "_" + treeText
-NameList_ISOSIPMax_inclusive   = ["ISOMax_inclusive","SIPMax_inclusive"]
-TitleList_ISOSIPMax_inclusive  = ["ISO","SIP"]
-HistoList_ISOSIPMax_Ele_inclusive  = []
-HistoList_ISOSIPMax_Mu_inclusive   = []
+OutputPathISOSIP = "ISOSIP_Plots_" + period + "_" + treeText
 gSystem.Exec("mkdir -p " + OutputPathISOSIP) # create output directory
 
-HistoList_ISOSIPMax_Ele_inclusive.append(ElectronISO_F1_Max_hist[0])
-HistoList_ISOSIPMax_Ele_inclusive.append(ElectronSIP_F1_Max_hist[0])
-HistoList_ISOSIPMax_Mu_inclusive.append(MuonISO_F1_Max_hist[0])
-HistoList_ISOSIPMax_Mu_inclusive.append(MuonSIP_F1_Max_hist[0])
 
-for i in range(1,len(recorded)) :
+for i in range(0,len(recorded)) :
 
-    HistoList_ISOSIPMax_Ele_inclusive[0] += ElectronISO_F1_Max_hist[i]
-    HistoList_ISOSIPMax_Ele_inclusive[1] += ElectronSIP_F1_Max_hist[1]
-    HistoList_ISOSIPMax_Mu_inclusive[0]  += MuonISO_F1_Max_hist[i]
-    HistoList_ISOSIPMax_Mu_inclusive[1]  += MuonSIP_F1_Max_hist[i]
+     c1 = TCanvas("c1","c1",800,600)
+     ElectronISO_F1_Max_hist[i].SetTitle(ElectronISO_F1_Max_hist[i].GetName())
+     ElectronISO_F1_Max_hist[i].SetXTitle("ele Max ISO")
+     ElectronISO_F1_Max_hist[i].SetYTitle("events")
+     ElectronISO_F1_Max_hist[i].Draw("histo")
+     c1.SaveAs(OutputPathISOSIP + "/" + ElectronISO_F1_Max_hist[i].GetName() + ".pdf")
+     c1.SaveAs(OutputPathISOSIP + "/" + ElectronISO_F1_Max_hist[i].GetName() + ".png")
+     c1.SaveAs(OutputPathISOSIP + "/" + ElectronISO_F1_Max_hist[i].GetName() + ".root")
 
-# draw ISO and SIP plots
-for j in range(0,len(HistoList_ISOSIPMax_Ele_inclusive)) :
-    
-    canvas = TCanvas("canvas","canvas",800,600)
-    HistoList_ISOSIPMax_Mu_inclusive[j].SetTitle(TitleList_ISOSIPMax_inclusive[j])
-    HistoList_ISOSIPMax_Mu_inclusive[j].SetXTitle(TitleList_ISOSIPMax_inclusive[j])
-    HistoList_ISOSIPMax_Mu_inclusive[j].SetYTitle("events")
-    
-    HistoList_ISOSIPMax_Ele_inclusive[j].SetLineColor(kBlue)
-    HistoList_ISOSIPMax_Ele_inclusive[j].Scale(1./HistoList_ISOSIPMax_Ele_inclusive[j].Integral())
-    HistoList_ISOSIPMax_Mu_inclusive[j].Scale(1./ HistoList_ISOSIPMax_Mu_inclusive[j].Integral())
-    HistoList_ISOSIPMax_Mu_inclusive[j].SetLineColor(kRed)
-    canvas.cd()
-    HistoList_ISOSIPMax_Mu_inclusive[j].Draw("histo")
-    HistoList_ISOSIPMax_Ele_inclusive[j].Draw("histosame")
-        
-    legend = TLegend(0.75,0.76,0.98,0.95)
-    legend.AddEntry(HistoList_ISOSIPMax_Ele_inclusive[j],"Electrons", "f")
-    legend.AddEntry(HistoList_ISOSIPMax_Mu_inclusive[j], "Muons","f")
-    legend.SetFillColor(kWhite)
-    legend.SetLineColor(kBlack)
-    legend.Draw()    
+     c2 = TCanvas("c2","c2",800,600)
+     ElectronISO_F1_Min_hist[i].SetTitle(ElectronISO_F1_Min_hist[i].GetName())
+     ElectronISO_F1_Min_hist[i].SetXTitle("ele Min ISO")
+     ElectronISO_F1_Min_hist[i].SetYTitle("events")
+     ElectronISO_F1_Min_hist[i].Draw("histo")
+     c2.SaveAs(OutputPathISOSIP + "/" + ElectronISO_F1_Min_hist[i].GetName() + ".pdf")
+     c2.SaveAs(OutputPathISOSIP + "/" + ElectronISO_F1_Min_hist[i].GetName() + ".png")
+     c2.SaveAs(OutputPathISOSIP + "/" + ElectronISO_F1_Min_hist[i].GetName() + ".root")
 
-    canvas.Update()
-    canvas.SaveAs(OutputPathISOSIP + "/" + NameList_ISOSIPMax_inclusive[j] + ".pdf")
-    canvas.SaveAs(OutputPathISOSIP + "/" + NameList_ISOSIPMax_inclusive[j] + ".png")
+     c3 = TCanvas("c3","c3",800,600)
+     ElectronSIP_F1_Max_hist[i].SetTitle(ElectronSIP_F1_Max_hist[i].GetName())
+     ElectronSIP_F1_Max_hist[i].SetXTitle("ele Max SIP")
+     ElectronSIP_F1_Max_hist[i].SetYTitle("events")
+     ElectronSIP_F1_Max_hist[i].Draw("histo")
+     c3.SaveAs(OutputPathISOSIP + "/" + ElectronSIP_F1_Max_hist[i].GetName() + ".pdf")
+     c3.SaveAs(OutputPathISOSIP + "/" + ElectronSIP_F1_Max_hist[i].GetName() + ".png")
+     c3.SaveAs(OutputPathISOSIP + "/" + ElectronSIP_F1_Max_hist[i].GetName() + ".root")
+
+     c4 = TCanvas("c3","c3",800,600)
+     ElectronSIP_F1_Min_hist[i].SetTitle(ElectronSIP_F1_Min_hist[i].GetName())
+     ElectronSIP_F1_Min_hist[i].SetXTitle("ele Min SIP")
+     ElectronSIP_F1_Min_hist[i].SetYTitle("events")
+     ElectronSIP_F1_Min_hist[i].Draw("histo")
+     c4.SaveAs(OutputPathISOSIP + "/" + ElectronSIP_F1_Min_hist[i].GetName() + ".pdf")
+     c4.SaveAs(OutputPathISOSIP + "/" + ElectronSIP_F1_Min_hist[i].GetName() + ".png")
+     c4.SaveAs(OutputPathISOSIP + "/" + ElectronSIP_F1_Min_hist[i].GetName() + ".root")
+
+     c5 = TCanvas("c1","c1",800,600)
+     MuonISO_F1_Max_hist[i].SetTitle(MuonISO_F1_Max_hist[i].GetName())
+     MuonISO_F1_Max_hist[i].SetXTitle("mu Max ISO")
+     MuonISO_F1_Max_hist[i].SetYTitle("events")
+     MuonISO_F1_Max_hist[i].Draw("histo")
+     c5.SaveAs(OutputPathISOSIP + "/" + MuonISO_F1_Max_hist[i].GetName() + ".pdf")
+     c5.SaveAs(OutputPathISOSIP + "/" + MuonISO_F1_Max_hist[i].GetName() + ".png")
+     c5.SaveAs(OutputPathISOSIP + "/" + MuonISO_F1_Max_hist[i].GetName() + ".root")
+
+     c6 = TCanvas("c2","c2",800,600)
+     MuonISO_F1_Min_hist[i].SetTitle(MuonISO_F1_Min_hist[i].GetName())
+     MuonISO_F1_Min_hist[i].SetXTitle("mu Min ISO")
+     MuonISO_F1_Min_hist[i].SetYTitle("events")
+     MuonISO_F1_Min_hist[i].Draw("histo")
+     c6.SaveAs(OutputPathISOSIP + "/" + MuonISO_F1_Min_hist[i].GetName() + ".pdf")
+     c6.SaveAs(OutputPathISOSIP + "/" + MuonISO_F1_Min_hist[i].GetName() + ".png")
+     c6.SaveAs(OutputPathISOSIP + "/" + MuonISO_F1_Min_hist[i].GetName() + ".root")
+
+     c7 = TCanvas("c3","c3",800,600)
+     MuonSIP_F1_Max_hist[i].SetTitle(MuonSIP_F1_Max_hist[i].GetName())
+     MuonSIP_F1_Max_hist[i].SetXTitle("mu Max SIP")
+     MuonSIP_F1_Max_hist[i].SetYTitle("events")
+     MuonSIP_F1_Max_hist[i].Draw("histo")
+     c7.SaveAs(OutputPathISOSIP + "/" + MuonSIP_F1_Max_hist[i].GetName() + ".pdf")
+     c7.SaveAs(OutputPathISOSIP + "/" + MuonSIP_F1_Max_hist[i].GetName() + ".png")
+     c7.SaveAs(OutputPathISOSIP + "/" + MuonSIP_F1_Max_hist[i].GetName() + ".root")
+
+     c8 = TCanvas("c3","c3",800,600)
+     MuonSIP_F1_Min_hist[i].SetTitle(MuonSIP_F1_Min_hist[i].GetName())
+     MuonSIP_F1_Min_hist[i].SetXTitle("mu Min SIP")
+     MuonSIP_F1_Min_hist[i].SetYTitle("events")
+     MuonSIP_F1_Min_hist[i].Draw("histo")
+     c8.SaveAs(OutputPathISOSIP + "/" + MuonSIP_F1_Min_hist[i].GetName() + ".pdf")
+     c8.SaveAs(OutputPathISOSIP + "/" + MuonSIP_F1_Min_hist[i].GetName() + ".png")
+     c8.SaveAs(OutputPathISOSIP + "/" + MuonSIP_F1_Min_hist[i].GetName() + ".root")
+
 
 #***************************************************
 
