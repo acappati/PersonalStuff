@@ -124,10 +124,22 @@ def loop():
                 mass4l        = tree.ZZMass
 
                 #### additional variab
-                LepLepId = tree.LepLepId
-                LepPt    = tree.LepPt
-                LepEta   = tree.LepEta
-                LepPhi   = tree.LepPhi
+                LepLepId0 = tree.LepLepId[0]
+                LepLepId1 = tree.LepLepId[1]
+                LepLepId2 = tree.LepLepId[2]
+                LepLepId3 = tree.LepLepId[3]
+                LepPt0    = tree.LepPt[0]
+                LepPt1    = tree.LepPt[1]
+                LepPt2    = tree.LepPt[2]
+                LepPt3    = tree.LepPt[3]
+                LepEta0   = tree.LepEta[0]
+                LepEta1   = tree.LepEta[1]
+                LepEta2   = tree.LepEta[2]
+                LepEta3   = tree.LepEta[3]
+                LepPhi0   = tree.LepPhi[0]
+                LepPhi1   = tree.LepPhi[1]
+                LepPhi2   = tree.LepPhi[2]
+                LepPhi3   = tree.LepPhi[3]
                 ####
 
 
@@ -164,13 +176,7 @@ def loop():
         for aCand in sortedCands:
             line += aCand.printOut(opt)
             line += "\n"
-            #### additional lines
-            line += "lepID:" + str(LepLepId[0]) + ":" + str(LepLepId[1]) + ":" + str(LepLepId[2]) + ":" + str(LepLepId[3]) + "\n"  
-            line += "lepPt:" + str(float("%.3f"%LepPt[0]))  + ":" + str(float("%.3f"%LepPt[1]))  + ":" + str(float("%.3f"%LepPt[2]))  + ":" + str(float("%.3f"%LepPt[3]))  + "\n"  
-            line += "lepEta:" + str(float("%.3f"%LepEta[0])) + ":" + str(float("%.3f"%LepEta[1])) + ":" + str(float("%.3f"%LepEta[2])) + ":" + str(float("%.3f"%LepEta[3])) + "\n"  
-            line += "lepPhi:" + str(float("%.3f"%LepPhi[0])) + ":" + str(float("%.3f"%LepPhi[1])) + ":" + str(float("%.3f"%LepPhi[2])) + ":" + str(float("%.3f"%LepPhi[3])) + "\n"  
-            ####
-
+            
 
         outFile.write(line)
         outFile.close()
