@@ -66,19 +66,40 @@ void takeEvent(){
 
     if(ZZsel < 0.) continue; // skip events that do not pass the trigger
 
-    if(LepLepId->at(0) == -13 && LepLepId->at(1) == 13 && LepLepId->at(2) == -13 && LepLepId->at(3) == 13){   //Z->4mu events
-
-      if(ZZMass < 90.3 || ZZMass > 92.) continue;
+    if(LepLepId->at(0) == -13 && LepLepId->at(1) == 13 && LepLepId->at(2) == -13 && LepLepId->at(3) == 13){   //ZZ->4mu events
 
 
-      cout<<"----------------------------"<<endl;
-      cout<<"RunNumber:LumiNumber:EventNumber = "<<nRun<<":"<<nLumi<<":"<<nEvent<<endl;
-      cout<<"Mass   = "<<ZZMass<<endl;
-      cout<<"LepID  = "<<LepLepId->at(0)<<setw(12)<<LepLepId->at(1)<<setw(12)<<LepLepId->at(2)<<setw(12)<<LepLepId->at(3)<<endl;
-      cout<<"LepPt  = "<<LepPt->at(0)<<setw(12)<<LepPt->at(1)<<setw(12)<<LepPt->at(2)<<setw(12)<<LepPt->at(3)<<endl;
-      cout<<"LepEta = "<<LepEta->at(0)<<setw(12)<<LepEta->at(1)<<setw(12)<<LepEta->at(2)<<setw(12)<<LepEta->at(3)<<endl;
-      cout<<"LepPhi = "<<LepPhi->at(0)<<setw(12)<<LepPhi->at(1)<<setw(12)<<LepPhi->at(2)<<setw(12)<<LepPhi->at(3)<<endl;     
-      cout<<"----------------------------"<<endl;
+      if(fabs(LepEta->at(0)) >= 0.8 || fabs(LepEta->at(1)) >= 0.8 || fabs(LepEta->at(2)) >= 0.8 || fabs(LepEta->at(3)) >= 0.8) continue;
+
+
+      // --- Z->4mu events
+      if(ZZMass >= 90.3 && ZZMass < 92.){
+
+        cout<<"----------------------------"<<endl;
+        cout<<"Z->4mu"<<endl;
+        cout<<"RunNumber:LumiNumber:EventNumber = "<<nRun<<":"<<nLumi<<":"<<nEvent<<endl;
+        cout<<"Mass   = "<<ZZMass<<endl;
+        cout<<"LepID  = "<<LepLepId->at(0)<<setw(12)<<LepLepId->at(1)<<setw(12)<<LepLepId->at(2)<<setw(12)<<LepLepId->at(3)<<endl;
+        cout<<"LepPt  = "<<LepPt->at(0)<<setw(12)<<LepPt->at(1)<<setw(12)<<LepPt->at(2)<<setw(12)<<LepPt->at(3)<<endl;
+        cout<<"LepEta = "<<LepEta->at(0)<<setw(12)<<LepEta->at(1)<<setw(12)<<LepEta->at(2)<<setw(12)<<LepEta->at(3)<<endl;
+        cout<<"LepPhi = "<<LepPhi->at(0)<<setw(12)<<LepPhi->at(1)<<setw(12)<<LepPhi->at(2)<<setw(12)<<LepPhi->at(3)<<endl;     
+        cout<<"----------------------------"<<endl;
+      }
+
+
+      // --- H->4mu events
+      if(ZZMass >= (125.09-1.1) && ZZMass <= (125.09+1.1)){
+
+        cout<<"----------------------------"<<endl;
+        cout<<"H->4mu"<<endl;
+        cout<<"RunNumber:LumiNumber:EventNumber = "<<nRun<<":"<<nLumi<<":"<<nEvent<<endl;
+        cout<<"Mass   = "<<ZZMass<<endl;
+        cout<<"LepID  = "<<LepLepId->at(0)<<setw(12)<<LepLepId->at(1)<<setw(12)<<LepLepId->at(2)<<setw(12)<<LepLepId->at(3)<<endl;
+        cout<<"LepPt  = "<<LepPt->at(0)<<setw(12)<<LepPt->at(1)<<setw(12)<<LepPt->at(2)<<setw(12)<<LepPt->at(3)<<endl;
+        cout<<"LepEta = "<<LepEta->at(0)<<setw(12)<<LepEta->at(1)<<setw(12)<<LepEta->at(2)<<setw(12)<<LepEta->at(3)<<endl;
+        cout<<"LepPhi = "<<LepPhi->at(0)<<setw(12)<<LepPhi->at(1)<<setw(12)<<LepPhi->at(2)<<setw(12)<<LepPhi->at(3)<<endl;     
+        cout<<"----------------------------"<<endl;
+      }
       
 
     }
