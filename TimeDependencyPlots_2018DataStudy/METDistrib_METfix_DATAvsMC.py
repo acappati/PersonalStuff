@@ -65,9 +65,9 @@ if(period == "data2017_preMETfix"):
         print ("Error: wrong option!")
 
 elif(period == "data2017_withMETfix"):
-    inputDATAtree    = TFile.Open("/data3/Higgs/181015_2017_MET/AllData/ZZ4lAnalysis.root")        #2017 data (rereco json)   
-    inputMCDYtree    = TFile.Open("/data3/Higgs/181015_2017_MET/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC 
-    inputMCTTbartree = TFile.Open("/data3/Higgs/181015_2017_MET/TTTo2L2Nu/ZZ4lAnalysis.root")      #TTbarJets 2017 MC
+    inputDATAtree    = TFile.Open("/afs/cern.ch/user/a/acappati/work/H4l/181207_data2017METcorr_Condor/CMSSW_9_4_9/src/ZZAnalysis/AnalysisStep/test/prod/PROD_samples_2017_Data_4d56ac6/AAAOK/AllData/ZZ4lAnalysis.root")        #2017 data (rereco json)   
+    inputMCDYtree    = TFile.Open("/afs/cern.ch/user/a/acappati/work/H4l/181207_data2017METcorr_Condor/CMSSW_9_4_9/src/ZZAnalysis/AnalysisStep/test/prod/PROD_samples_2017_MC_METfix_549ab78/AAAOK/DYJetsToLL_M50/ZZ4lAnalysis.root") #DYJets 2017 MC 
+    inputMCTTbartree = TFile.Open("/afs/cern.ch/user/a/acappati/work/H4l/181207_data2017METcorr_Condor/CMSSW_9_4_9/src/ZZAnalysis/AnalysisStep/test/prod/PROD_samples_2017_MC_METfix_549ab78/AAAOK/TTTo2L2Nu/ZZ4lAnalysis.root")      #TTbarJets 2017 MC
     lumi     = 41.30   # fb-1
     lumiText = '41.30 fb^{-1}'
     if(ZZTree):
@@ -116,6 +116,7 @@ if(redoDATAHistos) :
     treeDATA.SetBranchStatus("*",0)  # disable all branches
     if ZTree :
         treeDATA.SetBranchStatus("Zsel",1)
+        treeDATA.SetBranchStatus("ZMass",1)
     else :
         treeDATA.SetBranchStatus("ZZsel",1)
     treeDATA.SetBranchStatus("LepLepId",1)
@@ -129,6 +130,10 @@ if(redoDATAHistos) :
         else :
             if ( event.ZZsel < 0 ) : continue # skip events that do not pass the trigger
   
+        
+        if ZTree :
+            if ( event.ZMass <= 60 ) : continue  # skip events with mass of the 2leptons < 60 GeV
+
 
         # Z->ee histos
         if(int(math.fabs(event.LepLepId[0])) == 11 ):
@@ -179,6 +184,11 @@ if(redoMCDYHistos) :
             if ( event.Zsel < 0 ) : continue # skip events that do not pass the trigger
         else :
             if ( event.ZZsel < 0 ) : continue # skip events that do not pass the trigger
+
+
+
+        if ZTree :
+            if ( event.ZMass <= 60 ) : continue  # skip events with mass of the 2leptons < 60 GeV
 
 
         weight = partialSampleWeight*event.xsec*event.overallEventWeight
@@ -233,6 +243,10 @@ if(redoMCTTbarHistos) :
             if ( event.Zsel < 0 ) : continue # skip events that do not pass the trigger
         else :
             if ( event.ZZsel < 0 ) : continue # skip events that do not pass the trigger
+
+
+        if ZTree :
+            if ( event.ZMass <= 60 ) : continue  # skip events with mass of the 2leptons < 60 GeV
 
 
         weight = partialSampleWeight*event.xsec*event.overallEventWeight
