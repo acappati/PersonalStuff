@@ -38,14 +38,18 @@ void expectedYields(){
   double brZtoee   = 3.3632 * 0.01;
   double brZtomumu = 3.3662 * 0.01;
 
-  double brWtoeNu  = 10.71 * 0.1;
-  double brWtomuNu = 10.63 * 0.1;
+  double brWtoeNu  = 10.71 * 0.01;
+  double brWtomuNu = 10.63 * 0.01;
 
 
   
   double brHto4l = brHToZZ *(brZtoee + brZtomumu)*(brZtoee + brZtomumu); 
   
   double brHtoWW2l2Nu = brHToWW *(brWtoeNu + brWtomuNu)*(brWtoeNu + brWtomuNu);
+
+  cout<<"ZZ->4l  : "<<(brZtoee + brZtomumu)*(brZtoee + brZtomumu)<<endl;
+  cout<<"brHto4l : "<<brHto4l<<endl;
+  cout<<"brHtoWW2l2Nu : "<<brHtoWW2l2Nu<<endl;
 
 
   double brHHto4lbb         = brHto4l * brHtobb;
