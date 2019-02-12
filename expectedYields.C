@@ -52,11 +52,13 @@ void expectedYields(){
   cout<<"brHtoWW2l2Nu : "<<brHtoWW2l2Nu<<endl;
 
 
-  double brHHto4lbb         = brHto4l * brHtobb;
-  double brHHto4ltautau     = brHto4l * brHtoTauTau;
-  double brHHto4lGammaGamma = brHto4l * brHToGammaGamma;
-  double brHHto4lWW2l2Nu    = brHto4l * brHtoWW2l2Nu;
-  double brHHto8l           = brHto4l * brHto4l;
+  // --- the factor 2 in the following BR formulas is due to the fact that one Higgs (H1) can go 
+  //     in 4l and the other one (H2) to X, but also H2 can go to 4l and H1 to X 
+  double brHHto4lbb         = 2. * brHto4l * brHtobb;
+  double brHHto4ltautau     = 2. * brHto4l * brHtoTauTau;
+  double brHHto4lGammaGamma = 2. * brHto4l * brHToGammaGamma;
+  double brHHto4lWW2l2Nu    = 2. * brHto4l * brHtoWW2l2Nu;
+  double brHHto8l           = 2. * brHto4l * brHto4l;
 
   cout<<"BR "<<endl;
   cout<<"brHHto4lbb         : "<<brHHto4lbb         <<endl;                
