@@ -55,7 +55,7 @@ void yields4lX(){
 
 
 
-  // TFile* inputFile = new TFile("mc_4ltautau/ZZXAnalysis.root");
+  //TFile* inputFile = new TFile("mc_4ltautau/ZZXAnalysis.root");
   //TFile* inputFile = new TFile("mc_4lgammagamma/ZZXAnalysis.root");
   TFile* inputFile = new TFile("mc_4lbb/ZZXAnalysis.root");
   
@@ -140,11 +140,13 @@ void yields4lX(){
     cout<<"genHEPMCweight:            "<<genHEPMCweight<<endl;
     cout<<"dataMCWeight:              "<<dataMCWeight<<endl;
     cout<<"trigEffWeight:             "<<trigEffWeight<<endl;
-    
+    cout<<"       "<<endl;
+    cout<<" BR: "<<genBR<<endl;
     
 
   }
 
+  
   cout<<" ---"<<endl;
   cout<<" yield: "<<yield<<endl;
   cout<<" ---"<<endl;
